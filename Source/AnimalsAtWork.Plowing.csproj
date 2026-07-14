@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- RimWorld 1.6 tourne sur Mono et charge des assemblies .NET Framework 4.7.2.
+       La DLL est produite directement dans ../Assemblies, le dossier que le jeu scanne. -->
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <AssemblyName>AnimalsAtWork.Plowing</AssemblyName>
+    <RootNamespace>AnimalsAtWork.Plowing</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <OutputPath>../Assemblies/</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <DebugType>none</DebugType>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Assemblies de référence du jeu (compile-only, rien n'est copié) -->
+    <PackageReference Include="Krafs.Rimworld.Ref" Version="1.6.*" />
+    <!-- Fournie à l'exécution par le mod Harmony (brrainz.harmony) : on ne l'embarque pas -->
+    <PackageReference Include="Lib.Harmony" Version="2.*">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+    <!-- Assemblies de référence .NET Framework, nécessaires pour compiler net472 sur macOS -->
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.*" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>

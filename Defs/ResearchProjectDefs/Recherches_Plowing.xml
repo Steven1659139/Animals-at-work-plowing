@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Onglet dédié : évite tout conflit de position avec l'arbre principal
+       et accueillera les recherches des phases suivantes (charrette, labour). -->
+  <ResearchTabDef>
+    <defName>AAW_Recherches</defName>
+    <label>animals at work</label>
+    <generalTitle>Animals at Work</generalTitle>
+    <generalDescription>Research related to animal power: harnessing, hitching, and putting farm animals to work.</generalDescription>
+  </ResearchTabDef>
+
+  <ResearchProjectDef>
+    <defName>AAW_Harnachement</defName>
+    <label>harnessing</label>
+    <description>Craft draft harnesses fitted to farm animals. A harness spreads the strain across the beast's shoulders and opens the way to animal labor: plows, carts and hitched implements.</description>
+    <baseCost>500</baseCost>
+    <techLevel>Neolithic</techLevel>
+    <tab>AAW_Recherches</tab>
+    <researchViewX>0.00</researchViewX>
+    <researchViewY>2.50</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>AAW_Charretterie</defName>
+    <label>carting</label>
+    <description>Build wooden draft carts. A beast hitched to a cart loads several stacks at once and delivers them in a single trip around the colony, and carries an extra hundred kilograms in caravans.</description>
+    <baseCost>800</baseCost>
+    <techLevel>Neolithic</techLevel>
+    <prerequisites>
+      <li>AAW_Harnachement</li>
+    </prerequisites>
+    <tab>AAW_Recherches</tab>
+    <researchViewX>1.00</researchViewX>
+    <researchViewY>2.50</researchViewY>
+  </ResearchProjectDef>
+
+</Defs>

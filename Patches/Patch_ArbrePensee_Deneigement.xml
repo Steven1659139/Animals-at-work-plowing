@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Patch>
+
+  <!-- Insère le comportement déneigeur dans l'arbre de pensée des animaux
+       apprivoisés, avant la branche Forage, au même ancrage que l'attelage et
+       le labour. Les patchs s'appliquent par ordre alphabétique de fichier,
+       chacun s'insérant juste avant Forage : l'ordre final est charretier,
+       déneigeur, laboureur. Aucune condition de dressage : le JobGiver ne
+       s'active que pour les espèces de trait (ModExtension_BeteDeTrait)
+       équipées d'un harnais et d'un grattoir. -->
+  <Operation Class="PatchOperationInsert">
+    <xpath>Defs/ThinkTreeDef[defName="Animal"]//li[@Class="ThinkNode_ConditionalTrainableCompleted"][trainable="Forage"]</xpath>
+    <value>
+      <li Class="ThinkNode_Tagger">
+        <tagToGive>TrainedAnimalBehavior</tagToGive>
+        <subNodes>
+          <li Class="AnimalsAtWork.Plowing.JobGiver_Deneigeur" />
+        </subNodes>
+      </li>
+    </value>
+  </Operation>
+
+</Patch>

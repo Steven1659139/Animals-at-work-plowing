@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <AAW_HarnaisRompu>{0}'s harness snapped from all the work.</AAW_HarnaisRompu>
+  <AAW_CharrueRompue>{0}'s plow broke apart in the furrow.</AAW_CharrueRompue>
+  <AAW_CharretteRompue>{0}'s cart has fallen apart from wear.</AAW_CharretteRompue>
+  <AAW_GrattoirRompu>{0}'s snow scraper wore through on the ice.</AAW_GrattoirRompu>
+  <AAW_AutoriserLabour>Allow plowing</AAW_AutoriserLabour>
+  <AAW_AutoriserLabourDesc>If on, harnessed beasts pulling a plow will turn the earth of this growing zone.</AAW_AutoriserLabourDesc>
+  <AAW_AlerteHarnais>Need draft harness</AAW_AlerteHarnais>
+  <AAW_AlerteHarnaisDesc>Draft work is waiting, but these beasts have no draft harness to don and none is available. Craft draft harnesses at a crafting spot or tailoring bench.</AAW_AlerteHarnaisDesc>
+  <AAW_Detacher>Unhitch</AAW_Detacher>
+  <AAW_DetacherDesc>Drop this beast's harness and hitched implement on the ground. It will stop working until re-equipped.</AAW_DetacherDesc>
+  <AAW_InspectHarnais>Harness: {0}%</AAW_InspectHarnais>
+  <AAW_InspectCharrue>Plow: {0}%</AAW_InspectCharrue>
+  <AAW_InspectCharrette>Cart: {0}%</AAW_InspectCharrette>
+  <AAW_InspectGrattoir>Snow scraper: {0}%</AAW_InspectGrattoir>
+  <AAW_InspectCargaison>Cargo: {0} / {1} kg</AAW_InspectCargaison>
+  <AAW_BonusCharrette>draft cart</AAW_BonusCharrette>
+</LanguageData>

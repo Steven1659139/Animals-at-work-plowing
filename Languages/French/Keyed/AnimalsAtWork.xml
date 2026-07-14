@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <AAW_HarnaisRompu>Le harnais de {0} s'est rompu à force de travail.</AAW_HarnaisRompu>
+  <AAW_CharrueRompue>La charrue de {0} s'est brisée dans le sillon.</AAW_CharrueRompue>
+  <AAW_CharretteRompue>La charrette de {0} a rendu l'âme, usée par le service.</AAW_CharretteRompue>
+  <AAW_GrattoirRompu>Le grattoir de {0} s'est usé jusqu'au bois sur la neige.</AAW_GrattoirRompu>
+  <AAW_AutoriserLabour>Autoriser le labour</AAW_AutoriserLabour>
+  <AAW_AutoriserLabourDesc>Si activé, les bêtes harnachées tirant une charrue retourneront la terre de cette zone de culture.</AAW_AutoriserLabourDesc>
+  <AAW_AlerteHarnais>Harnais de trait manquant</AAW_AlerteHarnais>
+  <AAW_AlerteHarnaisDesc>Du travail de trait attend, mais ces bêtes n'ont aucun harnais à enfiler et il n'y en a aucun de disponible. Confectionnez des harnais à un poste d'artisanat ou un établi de couture.</AAW_AlerteHarnaisDesc>
+  <AAW_Detacher>Détacher</AAW_Detacher>
+  <AAW_DetacherDesc>Dépose au sol le harnais et l'attelage de cette bête. Elle cessera de travailler tant qu'elle n'est pas rééquipée.</AAW_DetacherDesc>
+  <AAW_InspectHarnais>Harnais : {0} %</AAW_InspectHarnais>
+  <AAW_InspectCharrue>Charrue : {0} %</AAW_InspectCharrue>
+  <AAW_InspectCharrette>Charrette : {0} %</AAW_InspectCharrette>
+  <AAW_InspectGrattoir>Grattoir : {0} %</AAW_InspectGrattoir>
+  <AAW_InspectCargaison>Cargaison : {0} / {1} kg</AAW_InspectCargaison>
+  <AAW_BonusCharrette>charrette de trait</AAW_BonusCharrette>
+</LanguageData>

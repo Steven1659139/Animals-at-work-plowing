@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Patch>
+
+  <!-- Marque les bêtes de trait vanilla. Aucun dressage n'est requis ni
+       modifié : seules les espèces portant ce marqueur iront d'elles-mêmes
+       s'atteler au harnais, à la charrue ou à la charrette (JobGiver_Labourer
+       et JobGiver_Charretier vérifient l'extension). -->
+  <Operation Class="PatchOperationAddModExtension">
+    <xpath>Defs/ThingDef[defName="Horse" or defName="Donkey" or defName="Cow" or defName="Muffalo" or defName="Bison" or defName="Yak" or defName="Dromedary" or defName="Elephant"]</xpath>
+    <value>
+      <li Class="AnimalsAtWork.Plowing.ModExtension_BeteDeTrait" />
+    </value>
+  </Operation>
+
+</Patch>

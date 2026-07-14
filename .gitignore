@@ -1,0 +1,6 @@
+# Compilation .NET (la DLL finale vit dans Assemblies/, elle, est versionnée)
+Source/bin/
+Source/obj/
+
+# macOS
+.DS_Store

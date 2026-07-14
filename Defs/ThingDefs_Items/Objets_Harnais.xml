@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Texture peinte en tons clairs : le jeu la teinte de la couleur du cuir utilisé. -->
+  <ThingDef ParentName="ResourceBase">
+    <defName>AAW_HarnaisDeTrait</defName>
+    <label>draft harness</label>
+    <description>An assembly of straps, laces and buckles cut from leather, the foundation of all draft work. True draft species (horses, donkeys, cattle, muffalo, bison, yaks, dromedaries and elephants) harness themselves whenever a plow, cart or snow scraper awaits. It frays slowly with every plowed cell and loaded stack, lasting about two hundred jobs.</description>
+    <graphicData>
+      <texPath>Things/Item/AAW_HarnaisDeTrait</texPath>
+      <graphicClass>Graphic_Single</graphicClass>
+    </graphicData>
+    <stackLimit>10</stackLimit>
+    <stuffCategories>
+      <li>Leathery</li>
+    </stuffCategories>
+    <costStuffCount>45</costStuffCount>
+    <statBases>
+      <MaxHitPoints>100</MaxHitPoints>
+      <Mass>4</Mass>
+      <WorkToMake>4200</WorkToMake>
+      <Flammability>1.0</Flammability>
+    </statBases>
+    <thingCategories>
+      <li>Manufactured</li>
+    </thingCategories>
+    <recipeMaker>
+      <workSpeedStat>GeneralLaborSpeed</workSpeedStat>
+      <workSkill>Crafting</workSkill>
+      <unfinishedThingDef>UnfinishedComponent</unfinishedThingDef>
+      <researchPrerequisite>AAW_Harnachement</researchPrerequisite>
+      <recipeUsers>
+        <li>CraftingSpot</li>
+        <li>HandTailoringBench</li>
+        <li>ElectricTailoringBench</li>
+      </recipeUsers>
+      <displayPriority>150</displayPriority>
+    </recipeMaker>
+  </ThingDef>
+
+</Defs>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+  <packageId>royaltea.animalsatwork.plowing</packageId>
+  <name>Animals at Work — Plowing</name>
+  <author>Royal-Tea</author>
+  <supportedVersions>
+    <li>1.6</li>
+  </supportedVersions>
+  <modDependencies>
+    <li>
+      <packageId>brrainz.harmony</packageId>
+      <displayName>Harmony</displayName>
+      <steamWorkshopUrl>steam://url/CommunityFilePage/2009463077</steamWorkshopUrl>
+      <downloadUrl>https://github.com/pardeike/HarmonyRimWorld/releases/latest</downloadUrl>
+    </li>
+  </modDependencies>
+  <loadAfter>
+    <li>brrainz.harmony</li>
+  </loadAfter>
+  <description>Every beast earns its keep.
+
+First module of the Animals at Work series: animal plowing.
+
+- No training, no combat cows: draft work is a matter of gear. True draft species (horses, donkeys, cattle, muffalo, bison, yaks, dromedaries and elephants; animal mods can opt in with a two-line patch) equip themselves and get to work, no intelligence required. An Unhitch button takes it all off.
+- The draft harness: stitched from leather, the foundation of all draft work, donned by the beast itself and carried as gear. Its wear shows right on the animal, and an alert fires when work is waiting with no harness left.
+- The plow: wood and share. A harnessed beast drags it across your growing zones (+30% fertility), never in frozen ground, and only where the zone allows it (one toggle per growing zone). The bigger the beast, the faster the furrow. The soil settles back after a season, and the work never ends.
+- The draft cart: hitched by any harnessed beast, drawn behind it with the cargo in plain sight. It loads several stacks at once (up to 300 kg) and delivers the whole round in one trip, plus an extra 100 kg in caravans. One implement per beast: plow, cart or scraper. Gear drops when the beast dies.
+- The snow scraper: a broad wooden blade for the same beasts whose plows sit idle in frozen ground. A harnessed beast drags it across your snow-clearing area and scrapes the cells bare, with no colonist shovels and no skill lost. Beasts swap implements with the seasons on their own: plow down when the earth freezes over or is fully turned, scraper down when the snow is gone.
+- The tack rack: a dedicated stand where colonists store harnesses, plows, carts and scrapers: three pieces per cell, safe from deterioration, ready for the beasts to help themselves.
+
+Requires Harmony. Every Animals at Work module is standalone. French translation included (traduction française incluse).
+
+Also in the series: Herding Dogs, Handy Monkeys, Pest Control.
+
+───────── Version française ─────────
+
+Chaque bête gagne sa pitance.
+
+Premier module de la série Animals at Work : le labour animal.
+
+- Ni dressage, ni vaches de combat : le trait est affaire d'équipement. Les vraies espèces de trait (chevaux, ânes, bovins, muffalos, bisons, yaks, dromadaires et éléphants ; les mods d'animaux peuvent s'inscrire avec un patch de deux lignes) s'équipent d'elles-mêmes et se mettent au travail, sans intelligence requise. Un bouton « Détacher » retire tout.
+- Le harnais de trait : cousu dans le cuir, socle de tout travail de trait, enfilé par la bête elle-même et porté en équipement. Son usure se lit sur l'animal, et une alerte prévient quand du travail attend sans harnais disponible.
+- La charrue : du bois et un soc. Une bête harnachée la traîne sur vos zones de culture (+30 % de fertilité), jamais en sol gelé, et seulement où la zone l'autorise (un bouton par zone de culture). Plus la bête est grosse, plus le sillon avance. La terre se tasse après une saison, et l'ouvrage ne finit jamais.
+- La charrette de trait : attelée par toute bête harnachée, tirée derrière elle avec le chargement bien en vue. Plusieurs piles d'un coup (jusqu'à 300 kg), toute la tournée en un seul voyage, et 100 kg de plus en caravane. Un seul attelage par bête : charrue, charrette ou grattoir. L'équipement tombe à la mort de la bête.
+- Le grattoir à neige : une large lame de bois pour les mêmes bêtes dont la charrue chôme dans la terre gelée. Une bête harnachée racle votre zone de déneigement, sans colon à la pelle ni compétence perdue. Les bêtes changent d'attelage au fil des saisons, d'elles-mêmes : charrue posée quand la terre gèle ou est toute retournée, grattoir posé quand la neige est partie.
+- Le râtelier d'attelage : un support dédié où les colons rangent harnais, charrues, charrettes et grattoirs : trois pièces par case, à l'abri de la détérioration, à portée des bêtes.
+
+Nécessite Harmony. Chaque module Animals at Work est autonome.
+
+Autres modules : chiens de berger, singes artisans, lutte antiparasitaire.</description>
+</ModMetaData>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Râtelier d'attelage : étagère spécialisée (structure calquée sur
+       ShelfBase/StorageShelfBase de Core, sans hériter pour éviter le
+       prérequis ComplexFurniture). N'accepte que l'équipement de trait ;
+       priorité Importante par défaut pour que les colons y rangent les
+       pièces d'eux-mêmes. Texture en tons clairs, teintée par le matériau. -->
+  <ThingDef ParentName="FurnitureBase">
+    <defName>AAW_Ratelier</defName>
+    <label>tack rack</label>
+    <description>A sturdy rack for draft gear: harnesses hang from pegs; plows, carts and snow scrapers lean against the frame. Holds up to three pieces per cell, keeps them from deteriorating, and draft beasts help themselves whenever work awaits.</description>
+    <thingClass>Building_Storage</thingClass>
+    <graphicData>
+      <texPath>Things/Building/AAW_Ratelier</texPath>
+      <graphicClass>Graphic_Single</graphicClass>
+      <drawSize>(2,1)</drawSize>
+    </graphicData>
+    <altitudeLayer>Building</altitudeLayer>
+    <passability>PassThroughOnly</passability>
+    <fillPercent>0.4</fillPercent>
+    <castEdgeShadows>true</castEdgeShadows>
+    <pathCost>50</pathCost>
+    <size>(2,1)</size>
+    <stuffCategories>
+      <li>Woody</li>
+      <li>Metallic</li>
+    </stuffCategories>
+    <costStuffCount>40</costStuffCount>
+    <defaultPlacingRot>South</defaultPlacingRot>
+    <statBases>
+      <MaxHitPoints>120</MaxHitPoints>
+      <Mass>10</Mass>
+      <WorkToBuild>800</WorkToBuild>
+      <Flammability>1.0</Flammability>
+      <Beauty>1</Beauty>
+    </statBases>
+    <building>
+      <preventDeteriorationOnTop>true</preventDeteriorationOnTop>
+      <ignoreStoredThingsBeauty>true</ignoreStoredThingsBeauty>
+      <maxItemsInCell>3</maxItemsInCell>
+      <blueprintClass>Blueprint_Storage</blueprintClass>
+      <paintable>true</paintable>
+      <fixedStorageSettings>
+        <filter>
+          <thingDefs>
+            <li>AAW_HarnaisDeTrait</li>
+            <li>AAW_Charrue</li>
+            <li>AAW_Charrette</li>
+            <li>AAW_Grattoir</li>
+          </thingDefs>
+        </filter>
+      </fixedStorageSettings>
+      <defaultStorageSettings>
+        <priority>Important</priority>
+        <filter>
+          <thingDefs>
+            <li>AAW_HarnaisDeTrait</li>
+            <li>AAW_Charrue</li>
+            <li>AAW_Charrette</li>
+            <li>AAW_Grattoir</li>
+          </thingDefs>
+        </filter>
+      </defaultStorageSettings>
+    </building>
+    <inspectorTabs>
+      <li>ITab_Storage</li>
+    </inspectorTabs>
+    <surfaceType>Item</surfaceType>
+    <canOverlapZones>false</canOverlapZones>
+    <researchPrerequisites>
+      <li>AAW_Harnachement</li>
+    </researchPrerequisites>
+    <uiOrder>2050</uiOrder>
+  </ThingDef>
+
+</Defs>

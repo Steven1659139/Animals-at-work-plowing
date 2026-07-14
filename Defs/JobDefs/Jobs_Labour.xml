@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <JobDef>
+    <defName>AAW_Labourer</defName>
+    <driverClass>AnimalsAtWork.Plowing.JobDriver_Labourer</driverClass>
+    <reportString>plowing the soil.</reportString>
+  </JobDef>
+
+  <JobDef>
+    <defName>AAW_Deneiger</defName>
+    <driverClass>AnimalsAtWork.Plowing.JobDriver_Deneiger</driverClass>
+    <reportString>clearing snow.</reportString>
+  </JobDef>
+
+  <JobDef>
+    <defName>AAW_Harnacher</defName>
+    <driverClass>AnimalsAtWork.Plowing.JobDriver_Harnacher</driverClass>
+    <reportString>getting harnessed.</reportString>
+  </JobDef>
+
+  <JobDef>
+    <defName>AAW_Atteler</defName>
+    <driverClass>AnimalsAtWork.Plowing.JobDriver_Atteler</driverClass>
+    <reportString>hitching up.</reportString>
+  </JobDef>
+
+  <JobDef>
+    <defName>AAW_ChargerCharrette</defName>
+    <driverClass>AnimalsAtWork.Plowing.JobDriver_ChargerCharrette</driverClass>
+    <reportString>loading the cart.</reportString>
+  </JobDef>
+
+  <JobDef>
+    <defName>AAW_ViderCharrette</defName>
+    <driverClass>AnimalsAtWork.Plowing.JobDriver_ViderCharrette</driverClass>
+    <reportString>delivering the cart's load.</reportString>
+  </JobDef>
+
+</Defs>
