@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Un colon prend en charge les bêtes de trait marquées : il les équipe,
+       les mène au champ à la corde, puis les ramène à l'enclos quand le travail
+       est fini. Rangé sous la Manipulation des animaux, là où vit déjà le
+       roping vanilla. -->
+  <WorkGiverDef>
+    <defName>AAW_BeteDeTrait</defName>
+    <label>manage draft beasts</label>
+    <giverClass>AnimalsAtWork.Plowing.WorkGiver_BeteDeTrait</giverClass>
+    <workType>Handling</workType>
+    <verb>manage</verb>
+    <gerund>managing draft beasts</gerund>
+    <priorityInType>60</priorityInType>
+    <scanThings>true</scanThings>
+    <scanCells>false</scanCells>
+    <requiredCapacities>
+      <li>Manipulation</li>
+    </requiredCapacities>
+    <prioritizeSustains>true</prioritizeSustains>
+  </WorkGiverDef>
+
+</Defs>

@@ -10,10 +10,11 @@ namespace AnimalsAtWork.Plowing
     {
         public static JobDef AAW_Labourer;
         public static JobDef AAW_Deneiger;
-        public static JobDef AAW_Harnacher;
-        public static JobDef AAW_Atteler;
         public static JobDef AAW_ChargerCharrette;
         public static JobDef AAW_ViderCharrette;
+        public static JobDef AAW_ColonEquiper;
+        public static JobDef AAW_MenerAuTravail;
+        public static JobDef AAW_RamenerAEnclos;
         public static ThingDef AAW_HarnaisDeTrait;
         public static ThingDef AAW_Charrue;
         public static ThingDef AAW_Charrette;

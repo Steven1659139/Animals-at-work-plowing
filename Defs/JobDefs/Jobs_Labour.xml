@@ -14,18 +14,6 @@
   </JobDef>
 
   <JobDef>
-    <defName>AAW_Harnacher</defName>
-    <driverClass>AnimalsAtWork.Plowing.JobDriver_Harnacher</driverClass>
-    <reportString>getting harnessed.</reportString>
-  </JobDef>
-
-  <JobDef>
-    <defName>AAW_Atteler</defName>
-    <driverClass>AnimalsAtWork.Plowing.JobDriver_Atteler</driverClass>
-    <reportString>hitching up.</reportString>
-  </JobDef>
-
-  <JobDef>
     <defName>AAW_ChargerCharrette</defName>
     <driverClass>AnimalsAtWork.Plowing.JobDriver_ChargerCharrette</driverClass>
     <reportString>loading the cart.</reportString>
@@ -35,6 +23,25 @@
     <defName>AAW_ViderCharrette</defName>
     <driverClass>AnimalsAtWork.Plowing.JobDriver_ViderCharrette</driverClass>
     <reportString>delivering the cart's load.</reportString>
+  </JobDef>
+
+  <!-- Côté colon : équiper la bête, la mener au travail, la ramener à l'enclos. -->
+  <JobDef>
+    <defName>AAW_ColonEquiper</defName>
+    <driverClass>AnimalsAtWork.Plowing.JobDriver_ColonEquiper</driverClass>
+    <reportString>harnessing TargetA.</reportString>
+  </JobDef>
+
+  <JobDef>
+    <defName>AAW_MenerAuTravail</defName>
+    <driverClass>AnimalsAtWork.Plowing.JobDriver_Mener</driverClass>
+    <reportString>leading TargetA out to work.</reportString>
+  </JobDef>
+
+  <JobDef>
+    <defName>AAW_RamenerAEnclos</defName>
+    <driverClass>AnimalsAtWork.Plowing.JobDriver_Mener</driverClass>
+    <reportString>leading TargetA back to the pen.</reportString>
   </JobDef>
 
 </Defs>

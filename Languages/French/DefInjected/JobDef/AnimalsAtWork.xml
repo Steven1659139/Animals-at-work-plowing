@@ -2,8 +2,9 @@
 <LanguageData>
   <AAW_Labourer.reportString>laboure le sol.</AAW_Labourer.reportString>
   <AAW_Deneiger.reportString>déneige.</AAW_Deneiger.reportString>
-  <AAW_Harnacher.reportString>s'attelle au harnais.</AAW_Harnacher.reportString>
-  <AAW_Atteler.reportString>s'attelle.</AAW_Atteler.reportString>
   <AAW_ChargerCharrette.reportString>charge la charrette.</AAW_ChargerCharrette.reportString>
   <AAW_ViderCharrette.reportString>livre le contenu de la charrette.</AAW_ViderCharrette.reportString>
+  <AAW_ColonEquiper.reportString>équipe TargetA.</AAW_ColonEquiper.reportString>
+  <AAW_MenerAuTravail.reportString>mène TargetA au travail.</AAW_MenerAuTravail.reportString>
+  <AAW_RamenerAEnclos.reportString>ramène TargetA à l'enclos.</AAW_RamenerAEnclos.reportString>
 </LanguageData>

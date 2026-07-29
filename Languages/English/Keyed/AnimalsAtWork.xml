@@ -20,4 +20,8 @@
   <AAW_InspectGrattoir>Snow scraper: {0}%</AAW_InspectGrattoir>
   <AAW_InspectCargaison>Cargo: {0} / {1} kg</AAW_InspectCargaison>
   <AAW_BonusCharrette>draft cart</AAW_BonusCharrette>
+  <!-- Libellés du clic droit « Prioritize ... (beast) » -->
+  <AAW_GerundEquiper>harnessing</AAW_GerundEquiper>
+  <AAW_GerundMener>leading out to work</AAW_GerundMener>
+  <AAW_GerundRamener>leading back to the pen</AAW_GerundRamener>
 </LanguageData>

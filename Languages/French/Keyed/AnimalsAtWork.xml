@@ -20,4 +20,8 @@
   <AAW_InspectGrattoir>Grattoir : {0} %</AAW_InspectGrattoir>
   <AAW_InspectCargaison>Cargaison : {0} / {1} kg</AAW_InspectCargaison>
   <AAW_BonusCharrette>charrette de trait</AAW_BonusCharrette>
+  <!-- Libellés du clic droit « Prioriser ... (bête) » -->
+  <AAW_GerundEquiper>harnacher</AAW_GerundEquiper>
+  <AAW_GerundMener>mener au travail</AAW_GerundMener>
+  <AAW_GerundRamener>ramener à l'enclos</AAW_GerundRamener>
 </LanguageData>

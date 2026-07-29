@@ -1,7 +1,6 @@
 using RimWorld;
 using UnityEngine;
 using Verse;
-using Verse.AI;
 
 namespace AnimalsAtWork.Plowing
 {
@@ -74,17 +73,15 @@ namespace AnimalsAtWork.Plowing
             }
         }
 
-        // Job « aller ramasser cet équipement au sol », ou null s'il n'y en a
-        // aucun d'accessible.
-        public static Job AllerChercher(Pawn pawn, ThingDef def, JobDef travail)
+        // Retire tout l'équipement de trait (harnais et attelage) au sol : les
+        // colons le rangeront au râtelier. Sert quand une bête cesse d'être bête
+        // de trait alors qu'elle était encore équipée.
+        public static void ToutDeposer(Pawn pawn)
         {
-            Thing cible = GenClosest.ClosestThingReachable(
-                pawn.Position, pawn.Map,
-                ThingRequest.ForDef(def),
-                PathEndMode.Touch,
-                TraverseParms.For(pawn),
-                validator: t => !t.IsForbidden(pawn) && pawn.CanReserve(t));
-            return cible == null ? null : JobMaker.MakeJob(travail, cible);
+            DeposerAttelage(pawn, AAW_DefOf.AAW_Charrue);
+            DeposerAttelage(pawn, AAW_DefOf.AAW_Charrette);
+            DeposerAttelage(pawn, AAW_DefOf.AAW_Grattoir);
+            DeposerAttelage(pawn, AAW_DefOf.AAW_HarnaisDeTrait);
         }
 
         // Première pile de cargaison à bord (hors harnais et charrette).
