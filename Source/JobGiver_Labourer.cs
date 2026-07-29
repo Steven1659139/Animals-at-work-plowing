@@ -1,14 +1,14 @@
-using System.Collections.Generic;
 using RimWorld;
 using Verse;
 using Verse.AI;
 
 namespace AnimalsAtWork.Plowing
 {
-    // Appelé par l'arbre de pensée quand une bête de trait apprivoisée cherche
-    // quoi faire. Aucun dressage : le travail est affaire d'équipement. La bête
-    // enfile d'abord un harnais, s'attelle à une charrue, puis laboure.
-    // Retourne null si rien de tout ça n'est possible (elle passe à autre chose).
+    // Cerveau de la bête laboureuse, dans l'arbre de pensée. Ne produit un job
+    // que si elle est en service (menée au champ par un colon) et déjà équipée.
+    // Elle laboure en sillons droits : chaque case retournée, elle poursuit tout
+    // droit tant que la suivante se laboure, sinon elle ouvre un nouveau sillon à
+    // la case la plus proche. Retourne null s'il n'y a rien à faire.
     public class JobGiver_Labourer : ThinkNode_JobGiver
     {
         private const float FertiliteMin = 0.9f;
@@ -32,59 +32,84 @@ namespace AnimalsAtWork.Plowing
             }
 
             MapComponent_Labour composante = map.GetComponent<MapComponent_Labour>();
-            bool travailEnAttente = composante.TravailLabourEnAttente();
-            // Terre gelée ou zones toutes retournées : la bête pose la charrue
-            // et l'attelage d'hiver (le grattoir à neige) redevient possible.
-            if (EquipementUtility.Porte(pawn, AAW_DefOf.AAW_Charrue) != null && !travailEnAttente)
-            {
-                EquipementUtility.DeposerAttelage(pawn, AAW_DefOf.AAW_Charrue);
-                return null;
-            }
-            if (!travailEnAttente)
+            // La bête ne laboure qu'une fois menée au champ par un colon (en
+            // service) et déjà équipée du harnais et de la charrue : elle ne
+            // s'attelle ni ne sort de l'enclos seule.
+            if (!composante.EstEnService(pawn)
+                || !composante.TacheAutorisee(pawn, TacheTrait.Labour)
+                || EquipementUtility.Porte(pawn, AAW_DefOf.AAW_HarnaisDeTrait) == null
+                || EquipementUtility.Porte(pawn, AAW_DefOf.AAW_Charrue) == null)
             {
                 return null;
             }
-            // Sans harnais sur le dos, la bête va d'abord en enfiler un.
-            if (EquipementUtility.Porte(pawn, AAW_DefOf.AAW_HarnaisDeTrait) == null)
+            if (!composante.TravailLabourEnAttente())
             {
-                return EquipementUtility.AllerChercher(pawn, AAW_DefOf.AAW_HarnaisDeTrait, AAW_DefOf.AAW_Harnacher);
-            }
-            // Puis il lui faut une charrue, jamais en plus d'un autre
-            // attelage : cette bête-là tire déjà autre chose.
-            if (EquipementUtility.Porte(pawn, AAW_DefOf.AAW_Charrue) == null)
-            {
-                if (EquipementUtility.AttelagePorte(pawn) != null)
-                {
-                    return null;
-                }
-                return EquipementUtility.AllerChercher(pawn, AAW_DefOf.AAW_Charrue, AAW_DefOf.AAW_Atteler);
+                return null;
             }
 
-            // Départ aléatoire plutôt qu'InRandomOrder : même étalement des
-            // bêtes entre zones et cases, sans copier-mélanger des listes
-            // entières à chaque décision.
-            List<Zone> zones = map.zoneManager.AllZones;
-            int departZone = Rand.Range(0, zones.Count);
-            for (int i = 0; i < zones.Count; i++)
+            IntVec3 cible = ChoisirCase(pawn, map, composante);
+            if (!cible.IsValid)
             {
-                if (!(zones[(departZone + i) % zones.Count] is Zone_Growing zoneCulture)
-                    || !composante.LabourAutorise(zoneCulture))
+                return null;
+            }
+            return JobMaker.MakeJob(AAW_DefOf.AAW_Labourer, cible);
+        }
+
+        // La prochaine case à labourer, en sillons droits : d'abord tout droit
+        // dans le sillon en cours (si la bête est encore dessus et que la case
+        // suivante se laboure), sinon la case labourable la plus proche, qui
+        // ouvre un nouveau sillon dans la meilleure direction.
+        private static IntVec3 ChoisirCase(Pawn pawn, Map map, MapComponent_Labour composante)
+        {
+            if (composante.EnSillon(pawn, out IntVec3 derniere, out IntVec3 direction)
+                && pawn.Position == derniere)
+            {
+                IntVec3 suite = derniere + direction;
+                if (Labourable(suite, map, composante)
+                    && pawn.CanReserveAndReach(suite, PathEndMode.OnCell, Danger.Some))
                 {
-                    continue;
-                }
-                List<IntVec3> cellules = zoneCulture.Cells;
-                int departCellule = Rand.Range(0, cellules.Count);
-                for (int j = 0; j < cellules.Count; j++)
-                {
-                    IntVec3 cellule = cellules[(departCellule + j) % cellules.Count];
-                    if (CelluleLabourable(cellule, map)
-                        && pawn.CanReserveAndReach(cellule, PathEndMode.OnCell, Danger.Some))
-                    {
-                        return JobMaker.MakeJob(AAW_DefOf.AAW_Labourer, cellule);
-                    }
+                    composante.NoterSillon(pawn, suite, direction);
+                    return suite;
                 }
             }
-            return null;
+
+            IntVec3 depart = CaseLabourableLaPlusProche(pawn, true);
+            if (!depart.IsValid)
+            {
+                composante.OublierSillon(pawn);
+                return IntVec3.Invalid;
+            }
+            composante.NoterSillon(pawn, depart, DirectionSillon(depart, map, composante));
+            return depart;
+        }
+
+        // Cardinaux testés dans cet ordre : les sillons partent horizontaux et
+        // serpentent (aller-retour) le long du champ.
+        private static readonly IntVec3[] Cardinaux =
+            { IntVec3.East, IntVec3.West, IntVec3.North, IntVec3.South };
+
+        // Direction d'un nouveau sillon depuis 'depart' : le premier cardinal
+        // dont la case voisine se laboure encore. Est par défaut.
+        private static IntVec3 DirectionSillon(IntVec3 depart, Map map, MapComponent_Labour composante)
+        {
+            foreach (IntVec3 d in Cardinaux)
+            {
+                if (Labourable(depart + d, map, composante))
+                {
+                    return d;
+                }
+            }
+            return IntVec3.East;
+        }
+
+        // La case se laboure-t-elle, dans une zone de culture où le labour est
+        // autorisé ? (Suivi de sillon, case par case.)
+        private static bool Labourable(IntVec3 cellule, Map map, MapComponent_Labour composante)
+        {
+            return cellule.InBounds(map)
+                && cellule.GetZone(map) is Zone_Growing zoneCulture
+                && composante.LabourAutorise(zoneCulture)
+                && CelluleLabourable(cellule, map);
         }
 
         // Y a-t-il une case à labourer quelque part (réservations mises à
@@ -107,6 +132,51 @@ namespace AnimalsAtWork.Plowing
                 }
             }
             return false;
+        }
+
+        // Case labourable la plus proche de 'acteur', atteignable par lui. Sert
+        // au colon pour choisir où lâcher la bête (reserver = false : il ne fait
+        // que s'y rendre) comme à la bête pour ouvrir un sillon (reserver = true,
+        // elle doit pouvoir la réserver). Tests coûteux (atteignabilité) en
+        // dernier, seulement pour une case plus proche que la meilleure trouvée.
+        public static IntVec3 CaseLabourableLaPlusProche(Pawn acteur, bool reserver)
+        {
+            Map map = acteur.Map;
+            MapComponent_Labour composante = map.GetComponent<MapComponent_Labour>();
+            IntVec3 meilleure = IntVec3.Invalid;
+            float meilleureDist = float.MaxValue;
+            foreach (Zone zone in map.zoneManager.AllZones)
+            {
+                if (!(zone is Zone_Growing zoneCulture) || !composante.LabourAutorise(zoneCulture))
+                {
+                    continue;
+                }
+                foreach (IntVec3 cellule in zoneCulture.Cells)
+                {
+                    float dist = cellule.DistanceToSquared(acteur.Position);
+                    if (dist >= meilleureDist || !CelluleLabourable(cellule, map))
+                    {
+                        continue;
+                    }
+                    bool accessible = reserver
+                        ? acteur.CanReserveAndReach(cellule, PathEndMode.OnCell, Danger.Some)
+                        : acteur.CanReach(cellule, PathEndMode.OnCell, Danger.Some);
+                    if (accessible)
+                    {
+                        meilleure = cellule;
+                        meilleureDist = dist;
+                    }
+                }
+            }
+            return meilleure;
+        }
+
+        // Case vers laquelle le colon mène la bête : la plus proche du colon.
+        // La bête re-scanne ensuite depuis là.
+        public static bool TrouverCelluleTravail(Pawn reacher, out IntVec3 result)
+        {
+            result = CaseLabourableLaPlusProche(reacher, false);
+            return result.IsValid;
         }
 
         private static bool CelluleLabourable(IntVec3 cellule, Map map)

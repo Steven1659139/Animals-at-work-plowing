@@ -28,6 +28,14 @@ namespace AnimalsAtWork.Plowing
                 return null;
             }
 
+            MapComponent_Labour composante = map.GetComponent<MapComponent_Labour>();
+            // La bête ne charrie qu'une fois menée dehors par un colon (en
+            // service) : elle ne s'attelle ni ne sort de l'enclos seule.
+            if (!composante.EstEnService(pawn))
+            {
+                return null;
+            }
+
             // Cargaison à bord : on livre avant tout (même si la charrette
             // vient de rendre l'âme en chemin, les piles doivent descendre).
             if (EquipementUtility.PremierCargo(pawn) != null)
@@ -35,25 +43,15 @@ namespace AnimalsAtWork.Plowing
                 return JobMaker.MakeJob(AAW_DefOf.AAW_ViderCharrette);
             }
 
-            if (!AAW_DefOf.AAW_Charretterie.IsFinished)
+            // Charretage coupé (interrupteur), recherche non faite, ou bête pas
+            // (encore) équipée : pas de nouvelle tournée. La cargaison à bord est
+            // déjà partie (bloc ci-dessus).
+            if (!composante.TacheAutorisee(pawn, TacheTrait.Charrette)
+                || !AAW_DefOf.AAW_Charretterie.IsFinished
+                || EquipementUtility.Porte(pawn, AAW_DefOf.AAW_HarnaisDeTrait) == null
+                || EquipementUtility.Porte(pawn, AAW_DefOf.AAW_Charrette) == null)
             {
                 return null;
-            }
-
-            // Sans harnais sur le dos, la bête va d'abord en enfiler un.
-            if (EquipementUtility.Porte(pawn, AAW_DefOf.AAW_HarnaisDeTrait) == null)
-            {
-                return EquipementUtility.AllerChercher(pawn, AAW_DefOf.AAW_HarnaisDeTrait, AAW_DefOf.AAW_Harnacher);
-            }
-            // Puis il lui faut une charrette, jamais en plus d'un autre
-            // attelage : cette bête-là tire déjà autre chose.
-            if (EquipementUtility.Porte(pawn, AAW_DefOf.AAW_Charrette) == null)
-            {
-                if (EquipementUtility.AttelagePorte(pawn) != null)
-                {
-                    return null;
-                }
-                return EquipementUtility.AllerChercher(pawn, AAW_DefOf.AAW_Charrette, AAW_DefOf.AAW_Atteler);
             }
 
             return TourneeDeChargement(pawn, map);

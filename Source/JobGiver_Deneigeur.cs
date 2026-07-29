@@ -1,31 +1,19 @@
-using System.Collections.Generic;
 using RimWorld;
 using Verse;
 using Verse.AI;
 
 namespace AnimalsAtWork.Plowing
 {
-    // Cerveau de la bête déneigeuse. Aucun dressage : elle enfile un harnais,
-    // s'attelle à un grattoir, puis racle la neige de la zone de déneigement
-    // vanilla. Quand la neige est partie, elle dépose le grattoir et se rend
-    // disponible pour la charrue ou la charrette. C'est le pendant hivernal du
-    // labour, qui s'arrête justement quand le sol gèle.
+    // Cerveau de la bête déneigeuse, dans l'arbre de pensée. Ne produit un job
+    // que si elle est en service (menée sur zone par un colon) et déjà équipée.
+    // Elle racle la case enneigée la plus proche d'elle, de proche en proche,
+    // dans la zone de déneigement vanilla. C'est le pendant hivernal du labour,
+    // qui s'arrête justement quand le sol gèle.
     public class JobGiver_Deneigeur : ThinkNode_JobGiver
     {
         // Épaisseur en deçà de laquelle une case est considérée dégagée
         // (même seuil que le déneigement des colons vanilla).
         public const float NeigeMin = 0.2f;
-
-        // Si toutes les cases tirées sont réservées ou inaccessibles, la
-        // bête retentera à sa prochaine décision plutôt que de tester la
-        // zone entière d'un coup.
-        private const int EssaisReservation = 8;
-
-        // Tampon des cases enneigées de la zone, rebâti à chaque sélection
-        // (les JobGivers ne sont jamais réentrants) : on tire au hasard
-        // dedans plutôt que d'InRandomOrder tout ActiveCells, qui copiait et
-        // mélangeait des milliers de cellules à chaque décision.
-        private static readonly List<IntVec3> candidates = new List<IntVec3>();
 
         protected override Job TryGiveJob(Pawn pawn)
         {
@@ -43,61 +31,70 @@ namespace AnimalsAtWork.Plowing
                 return null;
             }
 
-            bool travailEnAttente = map.GetComponent<MapComponent_Labour>().TravailDeneigementEnAttente();
-            // Sans neige, le grattoir n'est que du bois mort sur le dos : la
-            // bête le pose et l'attelage d'été redevient possible.
-            if (EquipementUtility.Porte(pawn, AAW_DefOf.AAW_Grattoir) != null && !travailEnAttente)
+            MapComponent_Labour composante = map.GetComponent<MapComponent_Labour>();
+            // La bête ne racle qu'une fois menée sur zone par un colon (en
+            // service) et déjà équipée du harnais et du grattoir : elle ne
+            // s'attelle ni ne sort de l'enclos seule.
+            if (!composante.EstEnService(pawn)
+                || !composante.TacheAutorisee(pawn, TacheTrait.Deneigement)
+                || EquipementUtility.Porte(pawn, AAW_DefOf.AAW_HarnaisDeTrait) == null
+                || EquipementUtility.Porte(pawn, AAW_DefOf.AAW_Grattoir) == null)
             {
-                EquipementUtility.DeposerAttelage(pawn, AAW_DefOf.AAW_Grattoir);
                 return null;
             }
-            if (!travailEnAttente)
+            if (!composante.TravailDeneigementEnAttente())
             {
                 return null;
-            }
-            // Sans harnais sur le dos, la bête va d'abord en enfiler un.
-            if (EquipementUtility.Porte(pawn, AAW_DefOf.AAW_HarnaisDeTrait) == null)
-            {
-                return EquipementUtility.AllerChercher(pawn, AAW_DefOf.AAW_HarnaisDeTrait, AAW_DefOf.AAW_Harnacher);
-            }
-            // Puis il lui faut un grattoir, jamais en plus d'un autre
-            // attelage : cette bête-là tire déjà autre chose.
-            if (EquipementUtility.Porte(pawn, AAW_DefOf.AAW_Grattoir) == null)
-            {
-                if (EquipementUtility.AttelagePorte(pawn) != null)
-                {
-                    return null;
-                }
-                return EquipementUtility.AllerChercher(pawn, AAW_DefOf.AAW_Grattoir, AAW_DefOf.AAW_Atteler);
             }
 
-            candidates.Clear();
-            foreach (IntVec3 cellule in map.areaManager.SnowOrSandClear.ActiveCells)
+            IntVec3 cible = CaseEnneigeeLaPlusProche(pawn);
+            if (!cible.IsValid)
             {
-                if (CelluleEnneigee(cellule, map))
-                {
-                    candidates.Add(cellule);
-                }
+                return null;
             }
-            for (int essai = 0; essai < EssaisReservation && candidates.Count > 0; essai++)
-            {
-                int i = Rand.Range(0, candidates.Count);
-                IntVec3 cellule = candidates[i];
-                if (pawn.CanReserveAndReach(cellule, PathEndMode.OnCell, Danger.Some))
-                {
-                    candidates.Clear();
-                    return JobMaker.MakeJob(AAW_DefOf.AAW_Deneiger, cellule);
-                }
-                candidates[i] = candidates[candidates.Count - 1];
-                candidates.RemoveAt(candidates.Count - 1);
-            }
-            candidates.Clear();
-            return null;
+            return JobMaker.MakeJob(AAW_DefOf.AAW_Deneiger, cible);
         }
 
         public static bool CelluleEnneigee(IntVec3 cellule, Map map)
         {
             return map.snowGrid.GetDepth(cellule) >= NeigeMin;
+        }
+
+        // Case enneigée la plus proche de 'acteur', atteignable par lui. Sert à
+        // la bête pour racler au plus près (reserver = true, elle doit pouvoir la
+        // réserver) comme au colon pour choisir où la lâcher (reserver = false,
+        // il ne fait que s'y rendre). Test coûteux (atteignabilité) en dernier,
+        // seulement pour une case plus proche que la meilleure trouvée.
+        public static IntVec3 CaseEnneigeeLaPlusProche(Pawn acteur, bool reserver = true)
+        {
+            Map map = acteur.Map;
+            IntVec3 meilleure = IntVec3.Invalid;
+            float meilleureDist = float.MaxValue;
+            foreach (IntVec3 cellule in map.areaManager.SnowOrSandClear.ActiveCells)
+            {
+                float dist = cellule.DistanceToSquared(acteur.Position);
+                if (dist >= meilleureDist || !CelluleEnneigee(cellule, map))
+                {
+                    continue;
+                }
+                bool accessible = reserver
+                    ? acteur.CanReserveAndReach(cellule, PathEndMode.OnCell, Danger.Some)
+                    : acteur.CanReach(cellule, PathEndMode.OnCell, Danger.Some);
+                if (accessible)
+                {
+                    meilleure = cellule;
+                    meilleureDist = dist;
+                }
+            }
+            return meilleure;
+        }
+
+        // Case vers laquelle le colon mène la bête : la plus proche du colon.
+        // La bête re-scanne ensuite depuis là.
+        public static bool TrouverCelluleTravail(Pawn reacher, out IntVec3 result)
+        {
+            result = CaseEnneigeeLaPlusProche(reacher, false);
+            return result.IsValid;
         }
 
         // Y a-t-il de la neige à racler quelque part dans la zone de
