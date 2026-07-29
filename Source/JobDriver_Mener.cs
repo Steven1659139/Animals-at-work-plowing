@@ -26,41 +26,18 @@ namespace AnimalsAtWork.Plowing
         {
             this.FailOnDespawnedOrNull(TargetIndex.A);
             // Quoi qu'il arrive, on ne laisse pas la bête encordée dans le vide.
-            AddFinishAction(delegate (JobCondition condition)
+            AddFinishAction(delegate
             {
-                if (Prefs.DevMode)
-                {
-                    Log.Message($"[AAW] Mener {Bete?.LabelShortCap} ({job.def.defName}) : fin → {condition}");
-                }
                 pawn?.roping?.DropRopes();
             });
 
             yield return Toils_Rope.GotoRopeAttachmentInteractionCell(TargetIndex.A);
             yield return Toils_Rope.RopePawn(TargetIndex.A);
 
-            yield return Toils_General.Do(delegate
-            {
-                if (Prefs.DevMode)
-                {
-                    Log.Message($"[AAW] Mener {Bete?.LabelShortCap} : encordée={pawn.roping.IsRopingOthers}, "
-                        + $"départ colon {pawn.Position} → cible {job.GetTarget(TargetIndex.B).Cell}");
-                }
-            });
-
+            // Corde perdue en chemin (bête paniquée, downed…) : le job échoue,
+            // le WorkGiver reprendra la bête au prochain scan.
             Toil mener = Toils_Goto.Goto(TargetIndex.B, PathEndMode.OnCell);
-            mener.FailOn(() =>
-            {
-                if (pawn.roping.IsRopingOthers)
-                {
-                    return false;
-                }
-                if (Prefs.DevMode)
-                {
-                    Log.Message($"[AAW] Mener {Bete?.LabelShortCap} : corde perdue en chemin "
-                        + $"(bête {Bete?.Position}, colon {pawn.Position}) → échec");
-                }
-                return true;
-            });
+            mener.FailOn(() => !pawn.roping.IsRopingOthers);
             yield return mener;
 
             yield return Toils_General.Do(delegate
@@ -80,11 +57,6 @@ namespace AnimalsAtWork.Plowing
                 else
                 {
                     composante.DebutService(bete);
-                }
-                if (Prefs.DevMode)
-                {
-                    Log.Message($"[AAW] Mener {bete?.LabelShortCap} : ARRIVÉE colon {pawn.Position}, "
-                        + $"service={composante.EstEnService(bete)}");
                 }
                 pawn.roping.DropRope(bete);
             });
