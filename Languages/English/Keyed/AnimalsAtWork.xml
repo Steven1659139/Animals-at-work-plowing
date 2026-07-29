@@ -8,8 +8,12 @@
   <AAW_AutoriserLabourDesc>If on, harnessed beasts pulling a plow will turn the earth of this growing zone.</AAW_AutoriserLabourDesc>
   <AAW_AlerteHarnais>Need draft harness</AAW_AlerteHarnais>
   <AAW_AlerteHarnaisDesc>Draft work is waiting, but these beasts have no draft harness to don and none is available. Craft draft harnesses at a crafting spot or tailoring bench.</AAW_AlerteHarnaisDesc>
-  <AAW_Detacher>Unhitch</AAW_Detacher>
-  <AAW_DetacherDesc>Drop this beast's harness and hitched implement on the ground. It will stop working until re-equipped.</AAW_DetacherDesc>
+  <AAW_ToggleLabour>Plowing</AAW_ToggleLabour>
+  <AAW_ToggleLabourDesc>Whether this beast may plow. Turn off to keep this particular beast off the plow; it drops its plow at once. The per-zone "Allow plowing" toggle still decides where plowing happens.</AAW_ToggleLabourDesc>
+  <AAW_ToggleCharrette>Cart hauling</AAW_ToggleCharrette>
+  <AAW_ToggleCharretteDesc>Whether this beast may pull a cart to haul loose items to storage. Turn off to keep it off cart duty; it delivers any load already aboard, then drops the cart.</AAW_ToggleCharretteDesc>
+  <AAW_ToggleDeneigement>Snow clearing</AAW_ToggleDeneigement>
+  <AAW_ToggleDeneigementDesc>Whether this beast may pull a scraper to clear the snow-clear area. Turn off to keep it off snow duty; it drops its scraper at once.</AAW_ToggleDeneigementDesc>
   <AAW_InspectHarnais>Harness: {0}%</AAW_InspectHarnais>
   <AAW_InspectCharrue>Plow: {0}%</AAW_InspectCharrue>
   <AAW_InspectCharrette>Cart: {0}%</AAW_InspectCharrette>

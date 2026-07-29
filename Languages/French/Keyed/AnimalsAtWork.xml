@@ -8,8 +8,12 @@
   <AAW_AutoriserLabourDesc>Si activé, les bêtes harnachées tirant une charrue retourneront la terre de cette zone de culture.</AAW_AutoriserLabourDesc>
   <AAW_AlerteHarnais>Harnais de trait manquant</AAW_AlerteHarnais>
   <AAW_AlerteHarnaisDesc>Du travail de trait attend, mais ces bêtes n'ont aucun harnais à enfiler et il n'y en a aucun de disponible. Confectionnez des harnais à un poste d'artisanat ou un établi de couture.</AAW_AlerteHarnaisDesc>
-  <AAW_Detacher>Détacher</AAW_Detacher>
-  <AAW_DetacherDesc>Dépose au sol le harnais et l'attelage de cette bête. Elle cessera de travailler tant qu'elle n'est pas rééquipée.</AAW_DetacherDesc>
+  <AAW_ToggleLabour>Labour</AAW_ToggleLabour>
+  <AAW_ToggleLabourDesc>Si cette bête peut labourer. Décochez pour tenir cette bête-ci à l'écart de la charrue : elle la pose aussitôt. Le toggle « Autoriser le labour » par zone décide toujours de l'endroit.</AAW_ToggleLabourDesc>
+  <AAW_ToggleCharrette>Charrette</AAW_ToggleCharrette>
+  <AAW_ToggleCharretteDesc>Si cette bête peut tirer une charrette pour ranger les objets au sol. Décochez pour la retirer du charretage : elle livre d'abord la cargaison à bord, puis pose la charrette.</AAW_ToggleCharretteDesc>
+  <AAW_ToggleDeneigement>Déneigement</AAW_ToggleDeneigement>
+  <AAW_ToggleDeneigementDesc>Si cette bête peut tirer un grattoir pour déneiger la zone prévue. Décochez pour la retirer du déneigement : elle pose aussitôt son grattoir.</AAW_ToggleDeneigementDesc>
   <AAW_InspectHarnais>Harnais : {0} %</AAW_InspectHarnais>
   <AAW_InspectCharrue>Charrue : {0} %</AAW_InspectCharrue>
   <AAW_InspectCharrette>Charrette : {0} %</AAW_InspectCharrette>

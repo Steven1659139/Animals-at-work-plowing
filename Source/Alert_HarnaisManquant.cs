@@ -36,12 +36,16 @@ namespace AnimalsAtWork.Plowing
                 {
                     continue;
                 }
+                MapComponent_Labour composante = map.GetComponent<MapComponent_Labour>();
                 bool attelageEnAttente = Disponible(map, AAW_DefOf.AAW_Charrue)
                     || Disponible(map, AAW_DefOf.AAW_Charrette)
                     || Disponible(map, AAW_DefOf.AAW_Grattoir);
                 foreach (Pawn animal in map.mapPawns.SpawnedColonyAnimals)
                 {
+                    // Seules les bêtes que le joueur a marquées (opt-in) comptent :
+                    // un colon voudra les équiper mais aucun harnais n'est là.
                     if (animal.def.GetModExtension<ModExtension_BeteDeTrait>() == null
+                        || !composante.EstBeteDeTrait(animal)
                         || EquipementUtility.Porte(animal, AAW_DefOf.AAW_HarnaisDeTrait) != null)
                     {
                         continue;
