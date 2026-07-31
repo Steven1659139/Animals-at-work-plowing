@@ -9,6 +9,7 @@
 - While an animal is working, it is not treated as loose livestock: no handler comes to bring it back, no pen alert is raised, and it will not wander off on its own.
 - A working animal will not graze your sown crops, and feeds from a trough or from wild plants instead. If one reaches starvation with nothing else to eat, a colonist leads it home to feed.
 - Implements are still swapped with the seasons, but a colonist now does it: the plow is replaced by the snow scraper when the ground freezes, and the scraper by the plow in spring.
+- If you also run the Herding Dogs module, a dog trained in herding takes over the leading: the colonist harnesses the animal in the pen, the dog takes it out to the work area and brings it back home when the work is done. Harnessing needs hands, so it stays with the colonists. Neither module requires the other, but both need to be up to date for this to work.
 - The assembly has been rebuilt for RimWorld 1.6.
 
 Known limitation: leave at least three cells between a growing zone and any fence. A zone right against a fence, and above all one enclosed inside an animal pen, can leave the colonist leading the animal going back and forth through the gate. Fields laid out in the open are unaffected.
@@ -22,6 +23,7 @@ Known limitation: leave at least three cells between a growing zone and any fenc
 - Pendant qu'un animal travaille, il n'est pas traité comme du bétail échappé : aucun colon ne vient le ramener, aucune alerte d'enclos ne se déclenche, et il ne part pas en vadrouille de lui-même.
 - Un animal au travail ne broute pas vos cultures semées : il mange à l'auge ou des plantes sauvages. Si l'un d'eux atteint la famine sans rien d'autre à manger, un colon le ramène se nourrir.
 - Les attelages changent toujours au fil des saisons, mais c'est désormais un colon qui s'en charge : la charrue est remplacée par le grattoir à neige quand le sol gèle, et le grattoir par la charrue au printemps.
+- Si vous utilisez aussi le module Chiens de berger, c'est un chien dressé au troupeau qui prend en charge la menée : le colon harnache l'animal dans l'enclos, le chien l'emmène à la zone de travail et le ramène quand le travail est fini. Le harnachement demande des mains : il reste l'affaire des colons. Aucun des deux modules n'exige l'autre, mais les deux doivent être à jour pour que cela fonctionne.
 - L'assembly a été recompilée pour RimWorld 1.6.
 
 Limite connue : laissez au moins trois cases entre une zone de culture et une clôture. Une zone collée à une clôture, et surtout une zone enfermée dans un enclos à bétail, peut faire tourner en rond dans le portail le colon qui mène l'animal. Les champs tracés en terrain dégagé ne sont pas concernés.
