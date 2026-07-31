@@ -65,12 +65,22 @@ namespace AnimalsAtWork.Plowing
                 {
                     continue;
                 }
+                // Tout ne se dessine pas à plat sur un plateau : un cadavre n'a
+                // pas de graphicData propre (il est rendu par le pion qu'il
+                // contient), et Thing.Graphic renvoie alors BaseContent.BadGraphic,
+                // c'est-à-dire le carré magenta barré de rouge. On saute ces
+                // pièces-là sans consommer une des trois places visibles.
+                Material materiau = cargo.Graphic?.MatSingle;
+                if (materiau.NullOrBad())
+                {
+                    continue;
+                }
                 // Piles réparties le long du plateau, de l'arrière vers l'avant.
                 Vector3 posCargo = pos + orientation * new Vector3(0f, 0f, dessines * 0.30f - 0.35f);
                 posCargo.y = pos.y + 0.02f; // au-dessus du plateau
                 Graphics.DrawMesh(MeshPool.plane10,
                     Matrix4x4.TRS(posCargo, orientation, Vector3.one * TailleCargo),
-                    cargo.Graphic.MatSingle, 0);
+                    materiau, 0);
                 dessines++;
             }
         }
