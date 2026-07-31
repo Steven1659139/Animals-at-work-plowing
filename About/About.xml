@@ -31,7 +31,7 @@ EQUIPMENT
 
 - The draft harness is made of leather and is required for every draft task. Its condition is shown on the animal's inspect panel, and an alert appears when work is waiting and no harness is available.
 - The plow turns the soil of a growing zone and raises its fertility by 30%. It is never used on frozen ground, and each growing zone has its own toggle deciding whether it may be plowed there. Larger animals plow faster, and the soil returns to its original state after one season. Leave at least three cells between a growing zone and any fence: against a fence, or enclosed inside an animal pen, the zone can leave the colonist leading the animal going back and forth through the gate.
-- The draft cart carries several stacks at once, up to 300 kg, and delivers them in a single trip. It also adds 100 kg of carrying capacity in caravans.
+- The draft cart carries several stacks at once and delivers them in a single trip. It takes up to 300 kg, or as much as the animal can carry without being overloaded, whichever is less. It also adds 100 kg of carrying capacity in caravans.
 - The snow scraper clears the snow-clearing area without a colonist having to shovel it. A colonist swaps the plow for the scraper when the ground freezes, and swaps it back once the snow is gone.
 - An animal carries only one implement at a time, either the plow, the cart or the scraper, and its equipment falls to the ground when it dies.
 - The tack rack stores harnesses, plows, carts and scrapers at three items per cell, and its contents do not deteriorate.
@@ -56,7 +56,7 @@ METTRE UN ANIMAL AU TRAVAIL
 
 - Le harnais de trait est en cuir et il est nécessaire à toutes les tâches de trait. Son état se lit sur le panneau d'inspection de l'animal, et une alerte prévient quand du travail attend et qu'aucun harnais n'est disponible.
 - La charrue retourne le sol d'une zone de culture et lui donne 30 % de fertilité en plus. Elle n'est jamais utilisée en sol gelé, et chaque zone de culture a son propre interrupteur qui décide si elle peut y être labourée. Les gros animaux labourent plus vite, et le sol revient à son état d'origine après une saison. Laissez au moins trois cases entre une zone de culture et une clôture : collée à une clôture, ou enfermée dans un enclos à bétail, la zone peut faire tourner en rond dans le portail le colon qui mène l'animal.
-- La charrette de trait emporte plusieurs piles à la fois, jusqu'à 300 kg, et les livre en un seul voyage. Elle ajoute aussi 100 kg de capacité de transport en caravane.
+- La charrette de trait emporte plusieurs piles à la fois et les livre en un seul voyage. Elle prend jusqu'à 300 kg, ou autant que l'animal peut porter sans être surchargé, le plus petit des deux. Elle ajoute aussi 100 kg de capacité de transport en caravane.
 - Le grattoir à neige déneige la zone prévue sans qu'un colon ait à pelleter. Un colon échange la charrue contre le grattoir quand le sol gèle, et fait l'échange inverse une fois la neige partie.
 - Un animal ne porte qu'un attelage à la fois, charrue, charrette ou grattoir, et son équipement tombe au sol à sa mort.
 - Le râtelier d'attelage range harnais, charrues, charrettes et grattoirs à raison de trois pièces par case, et son contenu ne se détériore pas.
