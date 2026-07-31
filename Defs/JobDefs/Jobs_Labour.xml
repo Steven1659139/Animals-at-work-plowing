@@ -32,16 +32,21 @@
     <reportString>harnessing TargetA.</reportString>
   </JobDef>
 
+  <!-- casualInterruptible : comme les jobs de menée vanilla (RopeToPen…), on ne
+       laisse pas le colon abandonner la bête au bout de sa corde en cours de
+       route pour une envie passagère. -->
   <JobDef>
     <defName>AAW_MenerAuTravail</defName>
     <driverClass>AnimalsAtWork.Plowing.JobDriver_Mener</driverClass>
     <reportString>leading TargetA out to work.</reportString>
+    <casualInterruptible>false</casualInterruptible>
   </JobDef>
 
   <JobDef>
     <defName>AAW_RamenerAEnclos</defName>
     <driverClass>AnimalsAtWork.Plowing.JobDriver_Mener</driverClass>
     <reportString>leading TargetA back to the pen.</reportString>
+    <casualInterruptible>false</casualInterruptible>
   </JobDef>
 
 </Defs>
