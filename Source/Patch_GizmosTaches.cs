@@ -93,6 +93,9 @@ namespace AnimalsAtWork.Plowing
             }
             if (!charrette)
             {
+                // La cargaison part avec la charrette, sinon elle reste bloquée
+                // dans l'inventaire de la bête sans personne pour l'en sortir.
+                EquipementUtility.DeposerCargaison(bete);
                 EquipementUtility.DeposerAttelage(bete, AAW_DefOf.AAW_Charrette);
             }
             if (!deneige)

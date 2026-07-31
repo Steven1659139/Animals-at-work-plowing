@@ -73,11 +73,34 @@ namespace AnimalsAtWork.Plowing
             }
         }
 
-        // Retire tout l'équipement de trait (harnais et attelage) au sol : les
-        // colons le rangeront au râtelier. Sert quand une bête cesse d'être bête
-        // de trait alors qu'elle était encore équipée.
+        // La cargaison vit dans la charrette : quand la charrette s'en va, elle
+        // s'en va aussi. Sans ça, une bête dé-marquée gardait son chargement
+        // prisonnier de son inventaire pour toujours — et vanilla lui dessinait
+        // des sacoches sur le dos tant qu'il restait quoi que ce soit dedans
+        // (PawnRenderNodeWorker_AnimalPack teste innerContainer.Count > 0).
+        public static void DeposerCargaison(Pawn pawn)
+        {
+            if (pawn.inventory == null)
+            {
+                return;
+            }
+            ThingOwner contenu = pawn.inventory.innerContainer;
+            for (int i = contenu.Count - 1; i >= 0; i--)
+            {
+                if (!EstEquipement(contenu[i].def))
+                {
+                    contenu.TryDrop(contenu[i], pawn.Position, pawn.Map, ThingPlaceMode.Near, out _);
+                }
+            }
+        }
+
+        // Retire tout ce que la bête porte — cargaison, attelage et harnais — au
+        // sol : les colons rangeront l'équipement au râtelier et le chargement en
+        // stock. Sert quand une bête cesse d'être bête de trait alors qu'elle
+        // était encore équipée.
         public static void ToutDeposer(Pawn pawn)
         {
+            DeposerCargaison(pawn);
             DeposerAttelage(pawn, AAW_DefOf.AAW_Charrue);
             DeposerAttelage(pawn, AAW_DefOf.AAW_Charrette);
             DeposerAttelage(pawn, AAW_DefOf.AAW_Grattoir);
