@@ -4,13 +4,20 @@ using Verse;
 
 namespace AnimalsAtWork.Plowing
 {
-    // Le temps du service (menée au champ par un colon), une bête de trait
-    // n'est plus « errante » : elle n'est ni ramenée d'office à l'enclos, ni
-    // sujette à la fugue, et son cerveau ne cherche pas à vagabonder. Tout cela
-    // se réduit à une seule propriété vanilla — Pawn.Roamer — que consultent la
-    // gestion d'enclos (AnimalPenUtility.NeedsToBeManagedByRope), l'arbre de
-    // pensée (ThinkNode_ConditionalRoamer) et l'état mental d'errance
-    // (MentalStateWorker_Roaming). On la force donc à false pendant le service.
+    // Le temps du service (menée au champ), une bête de trait n'est plus
+    // « errante » : elle n'est ni ramenée d'office à l'enclos, ni sujette à la
+    // fugue, et son cerveau ne cherche pas à vagabonder. Tout cela se réduit à
+    // une seule propriété vanilla — Pawn.Roamer — que consultent la gestion
+    // d'enclos (AnimalPenUtility.NeedsToBeManagedByRope), l'arbre de pensée
+    // (ThinkNode_ConditionalRoamer) et l'état mental d'errance
+    // (MentalStateWorker_Roaming). On la force donc à false.
+    //
+    // La fenêtre s'ouvre dès le harnais bouclé, et pas seulement au départ pour
+    // le champ (ServiceTrait.DispenseeDEnclos) : entre les deux, un meneur
+    // interrompu peut lâcher la bête en chemin, et sans ça un autre meneur —
+    // colon ou chien de berger — la ramènerait aussitôt à l'enclos pour qu'on
+    // l'en ressorte juste après. Une bête harnachée qui n'a plus rien à faire
+    // dehors est ramenée par ServiceTrait.JobDeService, pas par les enclos.
     [HarmonyPatch(typeof(Pawn), nameof(Pawn.Roamer), MethodType.Getter)]
     public static class Patch_RoamerEnService
     {
@@ -23,7 +30,7 @@ namespace AnimalsAtWork.Plowing
                 return;
             }
             MapComponent_Labour composante = __instance.Map.GetComponent<MapComponent_Labour>();
-            if (composante != null && composante.EstEnService(__instance))
+            if (composante != null && ServiceTrait.DispenseeDEnclos(__instance, composante))
             {
                 __result = false;
             }
@@ -57,7 +64,7 @@ namespace AnimalsAtWork.Plowing
                 return;
             }
             MapComponent_Labour composante = __instance.Map.GetComponent<MapComponent_Labour>();
-            if (composante != null && composante.EstEnService(__instance))
+            if (composante != null && ServiceTrait.DispenseeDEnclos(__instance, composante))
             {
                 __result = true;
             }
