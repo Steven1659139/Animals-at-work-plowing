@@ -110,6 +110,16 @@ namespace AnimalsAtWork.Plowing
             {
                 composante.DebutService(ropee);
             }
+            // Juste avant de nous appeler, la classe de base coupe le job
+            // « suivre le meneur » de la bête, et EndCurrentJob lui en fait
+            // aussitôt chercher un autre — alors que l'état de service n'était
+            // pas encore posé. Nos JobGiver refusaient donc, la bête partait
+            // vagabonder, et ne revenait travailler qu'une fois sa promenade
+            // finie. On la refait décider maintenant que son état est à jour.
+            if (ropee.jobs != null && ropee.CurJob != null)
+            {
+                ropee.jobs.EndCurrentJob(JobCondition.InterruptForced);
+            }
         }
 
         // Pas de ramassage opportuniste en chemin : chaque bête a sa tâche et sa
