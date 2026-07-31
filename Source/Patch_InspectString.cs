@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using HarmonyLib;
 using RimWorld;
 using Verse;
@@ -64,16 +65,50 @@ namespace AnimalsAtWork.Plowing
             }
             MapComponent_Labour c = bete.Map.GetComponent<MapComponent_Labour>();
             Thing attelage = EquipementUtility.AttelagePorte(bete);
+            TacheTrait tache = ServiceTrait.TacheAServir(bete, c);
             return "[AAW dev] "
                 + $"service:{c.EstEnService(bete)} "
-                + $"tâche:{ServiceTrait.TacheAServir(bete, c)} "
+                + $"tâche:{tache} "
                 + $"jobBête:{bete.CurJob?.def.defName ?? "-"}\n"
                 + $"harnais:{EquipementUtility.Porte(bete, AAW_DefOf.AAW_HarnaisDeTrait) != null} "
-                + $"attelage:{attelage?.def.defName ?? "-"} "
-                + $"(surCarte h:{bete.Map.listerThings.ThingsOfDef(AAW_DefOf.AAW_HarnaisDeTrait).Count} "
-                + $"c:{bete.Map.listerThings.ThingsOfDef(AAW_DefOf.AAW_Charrue).Count})\n"
+                + $"attelage:{attelage?.def.defName ?? "-"}\n"
+                // Une pièce absente de la carte fait échouer l'étape « équiper »
+                // en silence, et donc disparaître le clic droit : on les compte
+                // toutes les quatre.
+                + $"surCarte harnais:{Compte(bete, AAW_DefOf.AAW_HarnaisDeTrait)} "
+                + $"charrue:{Compte(bete, AAW_DefOf.AAW_Charrue)} "
+                + $"grattoir:{Compte(bete, AAW_DefOf.AAW_Grattoir)} "
+                + $"charrette:{Compte(bete, AAW_DefOf.AAW_Charrette)}\n"
                 + $"encordée:{bete.roping.IsRoped} "
-                + $"par:{bete.roping.RopedByPawn?.LabelShort ?? "-"}";
+                + $"par:{bete.roping.RopedByPawn?.LabelShort ?? "-"}\n"
+                + Destination(bete, tache);
+        }
+
+        // Où un colon pourrait la mener pour la tâche du moment. « cible:- » avec
+        // une tâche non nulle signifie qu'il y a du travail quelque part mais
+        // aucune case joignable en menant la bête (clôture sans portail, porte
+        // fermée…) : c'est ce cas-là qui fait qu'aucun colon ne vient.
+        private static string Destination(Pawn bete, TacheTrait tache)
+        {
+            if (tache == TacheTrait.Aucune)
+            {
+                return "cible:aucune tâche";
+            }
+            List<Pawn> colons = bete.Map.mapPawns.FreeColonistsSpawned;
+            if (colons.Count == 0)
+            {
+                return "cible:aucun colon";
+            }
+            Pawn colon = colons[0];
+            string cible = ServiceTrait.TrouverCelluleTravail(bete, colon, tache, out IntVec3 c)
+                ? c.ToString()
+                : "-";
+            return $"cible:{cible} (menée par {colon.LabelShort})";
+        }
+
+        private static int Compte(Pawn bete, ThingDef def)
+        {
+            return bete.Map.listerThings.ThingsOfDef(def).Count;
         }
 
         private static string Pourcent(Thing objet)
