@@ -15,6 +15,12 @@ namespace AnimalsAtWork.Plowing
     {
         private const int PilesMax = 8;
         private const int PilesMin = 2;
+        // Rayon d'enchaînement : la première pile prise, les suivantes se
+        // cherchent autour d'ELLE, pas autour de la bête. La tournée reste un
+        // paquet compact au lieu d'une étoile aux quatre coins de la carte.
+        // Limite volontairement souple : si la tournée n'atteint pas PilesMin
+        // dans ce rayon, on la refait sans limite plutôt que de ne rien faire.
+        private const float RayonEnchainement = 25f;
 
         protected override Job TryGiveJob(Pawn pawn)
         {
@@ -59,10 +65,23 @@ namespace AnimalsAtWork.Plowing
 
         private static Job TourneeDeChargement(Pawn pawn, Map map)
         {
-            // Filtres bon marché d'abord, tri par distance, puis les tests
-            // coûteux (atteignabilité, recherche de rangement) seulement
-            // jusqu'à remplir la tournée, pas pour les centaines de piles
-            // qu'un raid laisse au sol.
+            // D'abord la tournée resserrée, qui est celle qu'on veut. Si elle ne
+            // réunit pas assez de piles (carte clairsemée, fin de ramassage), on
+            // reprend sans rayon : mieux vaut une tournée étalée que rien.
+            Job job = Tournee(pawn, map, RayonEnchainement * RayonEnchainement);
+            return job ?? Tournee(pawn, map, float.MaxValue);
+        }
+
+        // Itinéraire glouton : la pile la plus proche de la bête, puis à chaque
+        // fois la plus proche de la PRÉCÉDENTE. L'ordre de la file est donc
+        // l'ordre de passage, ce qui évite les allers-retours d'un bout à l'autre
+        // de la carte que donnait un simple tri par distance au point de départ.
+        private static Job Tournee(Pawn pawn, Map map, float rayonCarreMax)
+        {
+            // Filtres bon marché d'abord ; les tests coûteux (atteignabilité,
+            // recherche de rangement) ne tournent que pour une pile plus proche
+            // que la meilleure du tour, pas pour les centaines de piles qu'un
+            // raid laisse au sol. Une pile recalée est écartée définitivement.
             List<Thing> candidats = new List<Thing>();
             foreach (Thing t in map.listerHaulables.ThingsPotentiallyNeedingHauling())
             {
@@ -83,36 +102,68 @@ namespace AnimalsAtWork.Plowing
             {
                 return null;
             }
-            candidats.Sort((a, b) => a.Position.DistanceToSquared(pawn.Position)
-                .CompareTo(b.Position.DistanceToSquared(pawn.Position)));
 
             float masseLibre = EquipementUtility.CapaciteCharrette - EquipementUtility.MasseCargaison(pawn);
             List<LocalTargetInfo> cibles = new List<LocalTargetInfo>();
             List<int> quantites = new List<int>();
-            for (int i = 0; i < candidats.Count && cibles.Count < PilesMax; i++)
+            IntVec3 depuis = pawn.Position;
+            // La première pile se cherche sans rayon : c'est la plus proche de la
+            // bête, le rayon ne borne que l'enchaînement à partir d'elle.
+            float rayonCarre = float.MaxValue;
+
+            while (cibles.Count < PilesMax && candidats.Count > 0)
             {
-                Thing t = candidats[i];
-                if (!pawn.CanReserve(t)
-                    || !HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, t, false))
+                // Une passe = un tri par distance au point courant, puis on
+                // descend la liste jusqu'à la première pile valide. Les tests
+                // coûteux ne tournent donc que sur les plus proches, et jamais
+                // deux fois sur la même : une pile recalée sort de la liste.
+                IntVec3 origine = depuis;
+                candidats.Sort((a, b) => a.Position.DistanceToSquared(origine)
+                    .CompareTo(b.Position.DistanceToSquared(origine)));
+
+                Thing retenue = null;
+                int quantite = 0;
+                float masseRetenue = 0f;
+                while (candidats.Count > 0)
                 {
-                    continue;
+                    Thing t = candidats[0];
+                    // Liste triée : la première hors rayon met fin à la passe.
+                    if (t.Position.DistanceToSquared(origine) > rayonCarre)
+                    {
+                        break;
+                    }
+                    candidats.RemoveAt(0);
+                    if (!pawn.CanReserve(t)
+                        || !HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, t, false)
+                        || !StoreUtility.TryFindBestBetterStoreCellFor(t, pawn, map,
+                            StoreUtility.CurrentStoragePriorityOf(t), pawn.Faction, out _))
+                    {
+                        continue;
+                    }
+                    float unitaire = t.GetStatValue(StatDefOf.Mass);
+                    int n = unitaire <= 0f
+                        ? t.stackCount
+                        : Mathf.Min(t.stackCount, Mathf.FloorToInt(masseLibre / unitaire));
+                    if (n <= 0)
+                    {
+                        // La place libre ne fera que diminuer : cette pile ne
+                        // rentrera plus dans cette tournée-ci.
+                        continue;
+                    }
+                    retenue = t;
+                    quantite = n;
+                    masseRetenue = n * unitaire;
+                    break;
                 }
-                if (!StoreUtility.TryFindBestBetterStoreCellFor(t, pawn, map,
-                        StoreUtility.CurrentStoragePriorityOf(t), pawn.Faction, out _))
+                if (retenue == null)
                 {
-                    continue;
+                    break;
                 }
-                float unitaire = t.GetStatValue(StatDefOf.Mass);
-                int n = unitaire <= 0f
-                    ? t.stackCount
-                    : Mathf.Min(t.stackCount, Mathf.FloorToInt(masseLibre / unitaire));
-                if (n <= 0)
-                {
-                    continue;
-                }
-                cibles.Add(t);
-                quantites.Add(n);
-                masseLibre -= n * unitaire;
+                cibles.Add(retenue);
+                quantites.Add(quantite);
+                masseLibre -= masseRetenue;
+                depuis = retenue.Position;
+                rayonCarre = rayonCarreMax;
             }
             if (cibles.Count < PilesMin)
             {
