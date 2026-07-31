@@ -13,7 +13,11 @@ namespace AnimalsAtWork.Plowing
     // tranquille.
     public class JobGiver_Charretier : ThinkNode_JobGiver
     {
-        private const int PilesMax = 8;
+        // Garde-fou sur la longueur d'une tournée, pas la vraie limite : c'est la
+        // masse qui doit décider quand la charrette est pleine. Un plafond bas
+        // faisait rentrer les charrettes à moitié vides dès que la cargaison ne
+        // s'empilait pas — huit gravats de 20 kg ne font que 160 kg.
+        private const int PilesMax = 25;
         private const int PilesMin = 2;
         // Rayon d'enchaînement : la première pile prise, les suivantes se
         // cherchent autour d'ELLE, pas autour de la bête. La tournée reste un
@@ -103,7 +107,7 @@ namespace AnimalsAtWork.Plowing
                 return null;
             }
 
-            float masseLibre = EquipementUtility.CapaciteCharrette - EquipementUtility.MasseCargaison(pawn);
+            float masseLibre = EquipementUtility.MasseLibre(pawn);
             List<LocalTargetInfo> cibles = new List<LocalTargetInfo>();
             List<int> quantites = new List<int>();
             IntVec3 depuis = pawn.Position;

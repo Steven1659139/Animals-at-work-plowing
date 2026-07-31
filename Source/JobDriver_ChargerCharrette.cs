@@ -42,8 +42,7 @@ namespace AnimalsAtWork.Plowing
                 float unitaire = pile.GetStatValue(StatDefOf.Mass);
                 if (unitaire > 0f)
                 {
-                    float masseLibre = EquipementUtility.CapaciteCharrette - EquipementUtility.MasseCargaison(pawn);
-                    n = Mathf.Min(n, Mathf.FloorToInt(masseLibre / unitaire));
+                    n = Mathf.Min(n, Mathf.FloorToInt(EquipementUtility.MasseLibre(pawn) / unitaire));
                 }
                 if (n <= 0)
                 {

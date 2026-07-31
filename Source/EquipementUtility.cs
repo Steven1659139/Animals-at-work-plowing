@@ -125,6 +125,17 @@ namespace AnimalsAtWork.Plowing
             return null;
         }
 
+        // Ce que la bête peut encore charger, au plus petit des deux plafonds :
+        // la place restante dans la charrette, et ce qu'elle peut porter sans
+        // être surchargée. Les deux comptent — un âne plafonne vers 305 kg
+        // (bonus de charrette compris), soit moins que les 300 kg de cargaison
+        // une fois le harnais et la charrette déduits. Sans le second plafond,
+        // elle repartirait au ralenti sous le poids.
+        public static float MasseLibre(Pawn pawn)
+        {
+            return Mathf.Min(CapaciteCharrette - MasseCargaison(pawn), MassUtility.FreeSpace(pawn));
+        }
+
         public static float MasseCargaison(Pawn pawn)
         {
             if (pawn.inventory == null)
