@@ -179,6 +179,53 @@ namespace AnimalsAtWork.Plowing
             return tick < tickScan || tick - tickScan >= DureeCacheScans;
         }
 
+        // Cadence maximale du scan des animaux meneurs (JobGiver_Meneur), par
+        // meneur : ils sont naturellement décalés entre eux par le tick courant.
+        // Rien de ce qu'ils décident ne demande une réaction immédiate, et un
+        // chien oisif repasse par son arbre de pensée bien plus souvent que ça.
+        private const int IntervalleMeneur = 150;
+        // Passé ce délai sans mise à jour, l'entrée d'un meneur disparu (mort,
+        // vendu, dressage perdu) est purgée. État transitoire, jamais sauvegardé.
+        private const int TtlScanMeneur = 60000;
+        private readonly Dictionary<int, int> dernierScanMeneur = new Dictionary<int, int>();
+        private static readonly List<int> aPurger = new List<int>();
+
+        // Renvoie true (et note le tick) si ce meneur peut relancer son scan,
+        // false sinon — le JobGiver rend alors la main au reste de l'arbre.
+        public bool PeutScannerMeneur(Pawn meneur)
+        {
+            int tick = Find.TickManager.TicksGame;
+            // dernier <= tick garde contre le rechargement d'une partie plus
+            // ancienne (l'horloge recule) : dans ce cas, on relance le scan.
+            if (dernierScanMeneur.TryGetValue(meneur.thingIDNumber, out int dernier)
+                && dernier <= tick && tick - dernier < IntervalleMeneur)
+            {
+                return false;
+            }
+            dernierScanMeneur[meneur.thingIDNumber] = tick;
+            return true;
+        }
+
+        // Sans ça le dictionnaire enflerait sur toute la partie, au fil des
+        // meneurs croisés.
+        private void PurgerScansMeneur(int tick)
+        {
+            aPurger.Clear();
+            foreach (KeyValuePair<int, int> entree in dernierScanMeneur)
+            {
+                // Périmée, ou horloge revenue en arrière (rechargement).
+                if (tick < entree.Value || tick - entree.Value >= TtlScanMeneur)
+                {
+                    aPurger.Add(entree.Key);
+                }
+            }
+            for (int i = 0; i < aPurger.Count; i++)
+            {
+                dernierScanMeneur.Remove(aPurger[i]);
+            }
+            aPurger.Clear();
+        }
+
         public override void MapComponentTick()
         {
             if (Find.TickManager.TicksGame % IntervalleVerifTicks != 0)
@@ -186,6 +233,7 @@ namespace AnimalsAtWork.Plowing
                 return;
             }
             int maintenant = Find.TickManager.TicksGame;
+            PurgerScansMeneur(maintenant);
             for (int i = cases.Count - 1; i >= 0; i--)
             {
                 if (maintenant < expirations[i])
