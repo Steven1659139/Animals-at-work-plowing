@@ -17,37 +17,51 @@
   <loadAfter>
     <li>brrainz.harmony</li>
   </loadAfter>
-  <description>Every beast earns its keep.
+  <description>Animals pull plows, carts and snow scrapers. This is the first module of the Animals at Work series.
 
-First module of the Animals at Work series: animal plowing.
+PUTTING AN ANIMAL TO WORK
 
-- No training, no combat cows: draft work is a matter of gear, no intelligence required. True draft species qualify (horses, donkeys, cattle, muffalo, bison, yaks, dromedaries and elephants; animal mods can opt in with a two-line patch), but none of them is a draft beast until you say so: one toggle per task on the beast itself (Plowing, Cart hauling, Snow clearing), each appearing once its research is unlocked.
-- A colonist does the handling: under Animal handling, a colonist fetches the harness and the right implement, gears the beast up, then leads it out to the field on a rope. When no work is left, a colonist ropes it and walks it back to its pen, beasts that can't leave a pen on their own included. Out working, a beast won't graze your sown crops: it feeds from a trough or wild plants, and a colonist brings it home if it ever reaches real starvation.
-- The draft harness: stitched from leather, the foundation of all draft work, buckled on by a colonist and carried as gear. Its wear shows right on the animal, and an alert fires when work is waiting with no harness left.
-- The plow: wood and share. A harnessed beast drags it across your growing zones (+30% fertility), never in frozen ground, and only where the zone allows it (one toggle per growing zone). The bigger the beast, the faster the furrow. The soil settles back after a season, and the work never ends.
-- The draft cart: hitched by any harnessed beast, drawn behind it with the cargo in plain sight. It loads several stacks at once (up to 300 kg) and delivers the whole round in one trip, plus an extra 100 kg in caravans. One implement per beast: plow, cart or scraper. Gear drops when the beast dies.
-- The snow scraper: a broad wooden blade for the same beasts whose plows sit idle in frozen ground. A harnessed beast drags it across your snow-clearing area and scrapes the cells bare, with no colonist shovels and no skill lost. Implements still swap with the seasons, colonist-driven: the plow gives way to the scraper when the earth freezes over or is fully turned, and back again when the snow is gone.
-- The tack rack: a dedicated stand where colonists store harnesses, plows, carts and scrapers: three pieces per cell, safe from deterioration, ready to hand when a beast needs gearing up.
+- You choose which animals work by turning on a task on the animal itself: Plowing, Cart hauling or Snow clearing. No animal does draft work until you turn one on, and each toggle only appears once its research is unlocked.
+- The eligible species are horses, donkeys, cattle, muffalo, bison, yaks, dromedaries and elephants. None of them needs training, because draft work depends on the equipment rather than on what the animal can be taught. Animal mods can add their own species with a two-line patch.
+- A colonist assigned to Animal handling brings the harness and the right implement, equips the animal, then leads it to the work area on a rope. Once there is nothing left to do, a colonist leads it back to its pen.
+- While an animal is working, it is not treated as loose livestock: no handler comes to bring it back, no pen alert is raised, and it will not wander off on its own.
+- A working animal will not graze your sown crops, and feeds from a trough or from wild plants instead. If one reaches starvation with nothing else to eat, a colonist leads it home to feed.
 
-Requires Harmony. Every Animals at Work module is standalone. French translation included (traduction française incluse).
+EQUIPMENT
 
-Also in the series: Herding Dogs, Handy Monkeys, Pest Control.
+- The draft harness is made of leather and is required for every draft task. Its condition is shown on the animal's inspect panel, and an alert appears when work is waiting and no harness is available.
+- The plow turns the soil of a growing zone and raises its fertility by 30%. It is never used on frozen ground, and each growing zone has its own toggle deciding whether it may be plowed there. Larger animals plow faster, and the soil returns to its original state after one season. Leave at least three cells between a growing zone and any fence: against a fence, or enclosed inside an animal pen, the zone can leave the colonist leading the animal going back and forth through the gate.
+- The draft cart carries several stacks at once, up to 300 kg, and delivers them in a single trip. It also adds 100 kg of carrying capacity in caravans.
+- The snow scraper clears the snow-clearing area without a colonist having to shovel it. A colonist swaps the plow for the scraper when the ground freezes, and swaps it back once the snow is gone.
+- An animal carries only one implement at a time, either the plow, the cart or the scraper, and its equipment falls to the ground when it dies.
+- The tack rack stores harnesses, plows, carts and scrapers at three items per cell, and its contents do not deteriorate.
+
+Requires Harmony. Each Animals at Work module works on its own. English and French are both included.
+
+Also in the series: Herding Dogs, Handy Monkeys.
 
 ───────── Version française ─────────
 
-Chaque bête gagne sa pitance.
+Les animaux tirent charrues, charrettes et grattoirs à neige. C'est le premier module de la série Animals at Work.
 
-Premier module de la série Animals at Work : le labour animal.
+METTRE UN ANIMAL AU TRAVAIL
 
-- Ni dressage, ni vaches de combat : le trait est affaire d'équipement, sans intelligence requise. Les vraies espèces de trait sont éligibles (chevaux, ânes, bovins, muffalos, bisons, yaks, dromadaires et éléphants ; les mods d'animaux peuvent s'inscrire avec un patch de deux lignes), mais aucune n'est bête de trait tant que vous ne l'avez pas décidé : un interrupteur par tâche sur la bête elle-même (Labour, Charrette, Déneigement), chacun n'apparaissant qu'une fois sa recherche débloquée.
-- C'est le colon qui s'en charge : sous la Manipulation d'animaux, il va chercher le harnais et le bon attelage, équipe la bête, puis la mène au champ à la corde. Quand plus rien n'attend, un colon l'encorde et la ramène à son enclos, y compris les bêtes qui ne peuvent pas en sortir seules. Au travail dehors, une bête ne broute pas vos cultures semées : elle mange à l'auge ou de l'herbe sauvage, et un colon la ramène si elle atteint la famine réelle.
-- Le harnais de trait : cousu dans le cuir, socle de tout travail de trait, sanglé par un colon et porté en équipement. Son usure se lit sur l'animal, et une alerte prévient quand du travail attend sans harnais disponible.
-- La charrue : du bois et un soc. Une bête harnachée la traîne sur vos zones de culture (+30 % de fertilité), jamais en sol gelé, et seulement où la zone l'autorise (un bouton par zone de culture). Plus la bête est grosse, plus le sillon avance. La terre se tasse après une saison, et l'ouvrage ne finit jamais.
-- La charrette de trait : attelée par toute bête harnachée, tirée derrière elle avec le chargement bien en vue. Plusieurs piles d'un coup (jusqu'à 300 kg), toute la tournée en un seul voyage, et 100 kg de plus en caravane. Un seul attelage par bête : charrue, charrette ou grattoir. L'équipement tombe à la mort de la bête.
-- Le grattoir à neige : une large lame de bois pour les mêmes bêtes dont la charrue chôme dans la terre gelée. Une bête harnachée racle votre zone de déneigement, sans colon à la pelle ni compétence perdue. Les attelages changent toujours au fil des saisons, menés par le colon : la charrue laisse place au grattoir quand la terre gèle ou est toute retournée, et inversement quand la neige est partie.
-- Le râtelier d'attelage : un support dédié où les colons rangent harnais, charrues, charrettes et grattoirs : trois pièces par case, à l'abri de la détérioration, sous la main quand il faut équiper une bête.
+- Vous choisissez quels animaux travaillent en activant une tâche sur l'animal lui-même : Labour, Charrette ou Déneigement. Aucun animal ne fait de travail de trait tant que vous n'en avez pas activé une, et chaque interrupteur n'apparaît qu'une fois sa recherche débloquée.
+- Les espèces éligibles sont les chevaux, les ânes, les bovins, les muffalos, les bisons, les yaks, les dromadaires et les éléphants. Aucun n'a besoin d'être dressé, car le travail de trait dépend de l'équipement et non de ce que l'animal peut apprendre. Les mods d'animaux peuvent ajouter leurs propres espèces avec un patch de deux lignes.
+- Un colon affecté à la Manipulation d'animaux apporte le harnais et l'attelage voulu, équipe l'animal, puis le mène à la zone de travail à la corde. Quand il n'y a plus rien à faire, un colon le ramène à son enclos.
+- Pendant qu'un animal travaille, il n'est pas traité comme du bétail échappé : aucun colon ne vient le ramener, aucune alerte d'enclos ne se déclenche, et il ne part pas en vadrouille de lui-même.
+- Un animal au travail ne broute pas vos cultures semées : il mange à l'auge ou des plantes sauvages. Si l'un d'eux atteint la famine sans rien d'autre à manger, un colon le ramène se nourrir.
 
-Nécessite Harmony. Chaque module Animals at Work est autonome.
+ÉQUIPEMENT
 
-Autres modules : chiens de berger, singes artisans, lutte antiparasitaire.</description>
+- Le harnais de trait est en cuir et il est nécessaire à toutes les tâches de trait. Son état se lit sur le panneau d'inspection de l'animal, et une alerte prévient quand du travail attend et qu'aucun harnais n'est disponible.
+- La charrue retourne le sol d'une zone de culture et lui donne 30 % de fertilité en plus. Elle n'est jamais utilisée en sol gelé, et chaque zone de culture a son propre interrupteur qui décide si elle peut y être labourée. Les gros animaux labourent plus vite, et le sol revient à son état d'origine après une saison. Laissez au moins trois cases entre une zone de culture et une clôture : collée à une clôture, ou enfermée dans un enclos à bétail, la zone peut faire tourner en rond dans le portail le colon qui mène l'animal.
+- La charrette de trait emporte plusieurs piles à la fois, jusqu'à 300 kg, et les livre en un seul voyage. Elle ajoute aussi 100 kg de capacité de transport en caravane.
+- Le grattoir à neige déneige la zone prévue sans qu'un colon ait à pelleter. Un colon échange la charrue contre le grattoir quand le sol gèle, et fait l'échange inverse une fois la neige partie.
+- Un animal ne porte qu'un attelage à la fois, charrue, charrette ou grattoir, et son équipement tombe au sol à sa mort.
+- Le râtelier d'attelage range harnais, charrues, charrettes et grattoirs à raison de trois pièces par case, et son contenu ne se détériore pas.
+
+Nécessite Harmony. Chaque module Animals at Work fonctionne seul. L'anglais et le français sont tous deux inclus.
+
+Autres modules : chiens de berger, singes artisans.</description>
 </ModMetaData>

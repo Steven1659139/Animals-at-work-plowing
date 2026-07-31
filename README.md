@@ -1,20 +1,25 @@
 # Animals at Work — Plowing
 
-*Every beast earns its keep.*
-
-First module of the **Animals at Work** series for RimWorld 1.6: animals doing useful, autonomous work.
+First module of the **Animals at Work** series for RimWorld 1.6: animals doing useful work.
 
 ## Features
 
-- **No training, no combat cows.** Draft work is a matter of gear, not intelligence. True draft species qualify (horses, donkeys, cattle, muffalo, bison, yaks, dromedaries and elephants; animal mods can opt in with a two-line patch) — but none of them is a draft beast until you say so. One toggle per task on the beast itself (**Plowing**, **Cart hauling**, **Snow clearing**), each appearing once its research is unlocked.
-- **A colonist does the handling.** Under Animal handling, a colonist fetches the harness and the right implement, gears the beast up, then leads it out to the field on a rope. When no work is left, a colonist ropes it and walks it back to its pen — beasts that can't leave a pen on their own included. Out working, a beast won't graze your sown crops: it feeds from a trough or wild plants, and a colonist brings it home if it ever reaches real starvation.
-- **Draft harness.** Stitched from leather, the foundation of all draft work, buckled on by a colonist and carried as gear (~200 jobs per harness). Wear shows on the animal's inspect panel; an alert fires when work is waiting with no harness left.
-- **Plow.** Wood and share (~50 cells per share). A harnessed beast drags it across your growing zones (+30% fertility), never in frozen ground, and only where the zone allows it (one toggle per growing zone). The bigger the beast, the faster the furrow. The soil settles back after a season; the work never ends.
-- **Draft cart.** Hitched by any harnessed beast, drawn behind it with the cargo in plain sight. Loads several stacks at once (up to 300 kg / 8 stacks) and delivers the whole round in one trip, no more back-and-forth, plus an extra 100 kg in caravans. Wears out after ~100 loaded stacks. One implement per beast: plow, cart or scraper; gear drops when the beast dies.
-- **Snow scraper.** A broad wooden blade (~100 cells per blade) for the same beasts whose plows sit idle in frozen ground. A harnessed beast drags it across the vanilla snow-clearing area and scrapes the cells bare, with no colonist shovels, and snow clearing never trained a skill anyway. Implements still swap with the seasons, colonist-driven: the plow gives way to the scraper when the earth freezes over or is fully turned, and back again when the snow is gone.
-- **Tack rack.** A dedicated stand where colonists store harnesses, plows, carts and scrapers (three pieces per cell, no deterioration). They draw from it to gear a beast up and put the gear back when it's done; carts never treat draft gear as cargo.
+- **Choosing which animals work.** You turn on a task on the animal itself (**Plowing**, **Cart hauling**, **Snow clearing**), and each toggle only appears once its research is unlocked. The eligible species are horses, donkeys, cattle, muffalo, bison, yaks, dromedaries and elephants; none of them needs training, because draft work depends on the equipment rather than on what the animal can be taught. Animal mods can add their own species with a two-line patch.
+- **Colonist handling.** A colonist assigned to Animal handling brings the harness and the right implement, equips the animal, then leads it to the work area on a rope. Once there is nothing left to do, a colonist leads it back to its pen. While an animal is working it is not treated as loose livestock, so no handler comes to bring it back, no pen alert is raised, and it will not wander off. It also leaves sown crops alone and feeds from a trough or from wild plants, and a colonist leads it home if it reaches starvation.
+- **Draft harness.** Made of leather and required for every draft task, it lasts about 200 jobs. Its condition is shown on the animal's inspect panel, and an alert appears when work is waiting and no harness is available.
+- **Plow.** Wood and a share, good for about 50 cells. It turns the soil of a growing zone and raises its fertility by 30%, is never used on frozen ground, and each growing zone has its own toggle deciding whether it may be plowed there. Larger animals plow faster, and the soil returns to its original state after one season. Leave at least three cells between a growing zone and any fence — see *Known limitation* below.
+- **Draft cart.** Carries several stacks at once, up to 300 kg or 8 stacks, and delivers them in a single trip instead of going back and forth. It also adds 100 kg of carrying capacity in caravans, and wears out after about 100 loaded stacks.
+- **Snow scraper.** A wooden blade good for about 100 cells, for the same animals whose plows sit idle in frozen ground. It clears the vanilla snow-clearing area without a colonist having to shovel it. A colonist swaps the plow for the scraper when the ground freezes or the soil is fully turned, and swaps it back once the snow is gone.
+- **One implement at a time.** An animal carries either the plow, the cart or the scraper, and its equipment falls to the ground when it dies.
+- **Tack rack.** A stand where colonists store harnesses, plows, carts and scrapers, three items per cell and no deterioration. They draw from it to equip an animal and put the gear back when it is done, and carts never treat draft equipment as cargo.
 
 Requires [Harmony](https://github.com/pardeike/HarmonyRimWorld). Standalone module. English + French included.
+
+## Known limitation
+
+**Keep growing zones clear of fences — at least three cells.** A zone that sits right against a fence, and above all one enclosed inside an animal pen, can leave the colonist leading the animal going back and forth through the gate instead of settling it down to work.
+
+The cause is a pile-up of vanilla rules that contradict each other around a rope. A roped animal may cross a gate it could never open on its own (`Building_Door.PawnCanOpen` accepts `IsRopedByPawn`), so while the rope is held the animal *looks* able to reach the work from the wrong side of the fence — and once released it no longer is. The mod already checks proximity, reachability and pen membership before dropping the rope; this configuration still slips through. Fields laid out in the open are unaffected.
 
 ## The series
 

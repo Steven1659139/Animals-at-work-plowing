@@ -5,13 +5,13 @@
   <AAW_CharretteRompue>La charrette de {0} a rendu l'âme, usée par le service.</AAW_CharretteRompue>
   <AAW_GrattoirRompu>Le grattoir de {0} s'est usé jusqu'au bois sur la neige.</AAW_GrattoirRompu>
   <AAW_AutoriserLabour>Autoriser le labour</AAW_AutoriserLabour>
-  <AAW_AutoriserLabourDesc>Si activé, les bêtes harnachées tirant une charrue retourneront la terre de cette zone de culture.</AAW_AutoriserLabourDesc>
+  <AAW_AutoriserLabourDesc>Si activé, les bêtes harnachées tirant une charrue retourneront la terre de cette zone de culture.\n\nLaissez au moins trois cases entre la zone et une clôture. Une zone collée à une clôture, ou enfermée dans un enclos à bétail, peut faire tourner en rond le colon qui mène la bête : il la lâche du mauvais côté de la barrière, où elle n'atteint pas son travail.</AAW_AutoriserLabourDesc>
   <AAW_AlerteHarnais>Harnais de trait manquant</AAW_AlerteHarnais>
   <AAW_AlerteHarnaisDesc>Du travail de trait attend, mais ces bêtes n'ont aucun harnais à enfiler et il n'y en a aucun de disponible. Confectionnez des harnais à un poste d'artisanat ou un établi de couture.</AAW_AlerteHarnaisDesc>
   <AAW_ToggleLabour>Labour</AAW_ToggleLabour>
   <AAW_ToggleLabourDesc>Si cette bête peut labourer. Décochez pour tenir cette bête-ci à l'écart de la charrue : elle la pose aussitôt. Le toggle « Autoriser le labour » par zone décide toujours de l'endroit.</AAW_ToggleLabourDesc>
   <AAW_ToggleCharrette>Charrette</AAW_ToggleCharrette>
-  <AAW_ToggleCharretteDesc>Si cette bête peut tirer une charrette pour ranger les objets au sol. Décochez pour la retirer du charretage : elle livre d'abord la cargaison à bord, puis pose la charrette.</AAW_ToggleCharretteDesc>
+  <AAW_ToggleCharretteDesc>Si cette bête peut tirer une charrette pour ranger les objets au sol. Décochez pour la retirer du charretage : elle livre d'abord la cargaison déjà à bord, puis pose la charrette.</AAW_ToggleCharretteDesc>
   <AAW_ToggleDeneigement>Déneigement</AAW_ToggleDeneigement>
   <AAW_ToggleDeneigementDesc>Si cette bête peut tirer un grattoir pour déneiger la zone prévue. Décochez pour la retirer du déneigement : elle pose aussitôt son grattoir.</AAW_ToggleDeneigementDesc>
   <AAW_InspectHarnais>Harnais : {0} %</AAW_InspectHarnais>
