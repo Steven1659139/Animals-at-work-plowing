@@ -2,13 +2,16 @@
 <Patch>
 
   <!-- Insère le comportement charretier dans l'arbre de pensée des animaux
-       apprivoisés, avant la branche Forage, au même ancrage que le labour.
+       apprivoisés, au même ancrage que le labour : juste après la branche Haul.
+       Voir Patch_ArbrePensee_Labour.xml pour la raison de cet ancrage (la
+       branche Forage dépend d'Odyssey et n'existe pas sans l'extension).
        Aucune condition de dressage : le JobGiver ne s'active que pour les
-       espèces de trait (ModExtension_BeteDeTrait) équipées d'un harnais et
-       d'une charrette. Il gère tout : s'atteler, charger plusieurs piles,
+       espèces de trait (ModExtension_BeteDeTrait) en service et équipées d'un
+       harnais et d'une charrette. Il gère tout : charger plusieurs piles,
        livrer. -->
   <Operation Class="PatchOperationInsert">
-    <xpath>Defs/ThinkTreeDef[defName="Animal"]//li[@Class="ThinkNode_ConditionalTrainableCompleted"][trainable="Forage"]</xpath>
+    <xpath>Defs/ThinkTreeDef[defName="Animal"]//li[@Class="ThinkNode_ChancePerHour_Constant"][.//trainable="Haul"]</xpath>
+    <order>Append</order>
     <value>
       <li Class="ThinkNode_Tagger">
         <tagToGive>TrainedAnimalBehavior</tagToGive>

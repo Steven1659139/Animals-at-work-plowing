@@ -2,12 +2,19 @@
 <Patch>
 
   <!-- Insère le comportement « labour » dans l'arbre de pensée des animaux
-       apprivoisés, juste avant la branche Forage (Core/ThinkTreeDefs/Animal.xml).
+       apprivoisés, juste après la branche Haul (Core/ThinkTreeDefs/Animal.xml).
+       L'ancrage est le bloc Haul et non le bloc Forage qui le suit : Forage
+       porte MayRequire="Ludeon.RimWorld.Odyssey" et n'existe donc pas sans
+       l'extension, ce qui faisait échouer le patch et laissait les bêtes
+       équipées sans jamais travailler. Le bloc Haul, lui, est du jeu de base.
+       L'ordre des trois patchs entre eux est sans importance : une bête ne
+       porte qu'un attelage à la fois, donc un seul JobGiver peut répondre.
        Aucune condition de dressage : le JobGiver ne s'active que pour les
-       espèces de trait (ModExtension_BeteDeTrait) équipées d'un harnais et
-       d'une charrue. -->
+       espèces de trait (ModExtension_BeteDeTrait) en service et équipées d'un
+       harnais et d'une charrue. -->
   <Operation Class="PatchOperationInsert">
-    <xpath>Defs/ThinkTreeDef[defName="Animal"]//li[@Class="ThinkNode_ConditionalTrainableCompleted"][trainable="Forage"]</xpath>
+    <xpath>Defs/ThinkTreeDef[defName="Animal"]//li[@Class="ThinkNode_ChancePerHour_Constant"][.//trainable="Haul"]</xpath>
+    <order>Append</order>
     <value>
       <li Class="ThinkNode_Tagger">
         <tagToGive>TrainedAnimalBehavior</tagToGive>
