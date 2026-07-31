@@ -8,7 +8,10 @@
     <defName>AAW_SolLaboure</defName>
     <label>plowed soil</label>
     <description>Earth turned and aerated by a harnessed draft animal. Crops grow noticeably better here than in packed soil. The earth settles back on its own after a season, and will need plowing again.</description>
-    <texturePath>Terrain/AAW_SolLaboure</texturePath>
+    <!-- On réutilise la texture vanilla du sol riche : les sillons dessinés
+         faisaient tache sur la carte. -->
+    <texturePath>Terrain/Surfaces/SoilRich</texturePath>
+    <pollutedTexturePath>Terrain/Surfaces/SoilRichPolluted</pollutedTexturePath>
     <edgeType>FadeRough</edgeType>
     <categoryType>Soil</categoryType>
     <renderPrecedence>336</renderPrecedence>
