@@ -60,26 +60,26 @@ namespace AnimalsAtWork.Plowing
             return map.snowGrid.GetDepth(cellule) >= NeigeMin;
         }
 
-        // Case enneigée la plus proche de 'acteur', atteignable par lui. Sert à
-        // la bête pour racler au plus près (reserver = true, elle doit pouvoir la
-        // réserver) comme au colon pour choisir où la lâcher (reserver = false,
-        // il ne fait que s'y rendre). Test coûteux (atteignabilité) en dernier,
-        // seulement pour une case plus proche que la meilleure trouvée.
-        public static IntVec3 CaseEnneigeeLaPlusProche(Pawn acteur, bool reserver = true)
+        // Case enneigée la plus proche de la bête, dans les deux usages :
+        //   meneur == null → la bête racle seule, elle doit pouvoir réserver.
+        //   meneur != null → un colon l'y mène à la corde (voir ServiceTrait).
+        // Test coûteux (atteignabilité) en dernier, seulement pour une case plus
+        // proche que la meilleure trouvée.
+        public static IntVec3 CaseEnneigeeLaPlusProche(Pawn bete, Pawn meneur = null)
         {
-            Map map = acteur.Map;
+            Map map = bete.Map;
             IntVec3 meilleure = IntVec3.Invalid;
             float meilleureDist = float.MaxValue;
             foreach (IntVec3 cellule in map.areaManager.SnowOrSandClear.ActiveCells)
             {
-                float dist = cellule.DistanceToSquared(acteur.Position);
+                float dist = cellule.DistanceToSquared(bete.Position);
                 if (dist >= meilleureDist || !CelluleEnneigee(cellule, map))
                 {
                     continue;
                 }
-                bool accessible = reserver
-                    ? acteur.CanReserveAndReach(cellule, PathEndMode.OnCell, Danger.Some)
-                    : acteur.CanReach(cellule, PathEndMode.OnCell, Danger.Some);
+                bool accessible = meneur == null
+                    ? bete.CanReserveAndReach(cellule, PathEndMode.OnCell, Danger.Some)
+                    : ServiceTrait.MeneurPeutYMener(meneur, bete, cellule);
                 if (accessible)
                 {
                     meilleure = cellule;
@@ -89,11 +89,11 @@ namespace AnimalsAtWork.Plowing
             return meilleure;
         }
 
-        // Case vers laquelle le colon mène la bête : la plus proche du colon.
-        // La bête re-scanne ensuite depuis là.
-        public static bool TrouverCelluleTravail(Pawn reacher, out IntVec3 result)
+        // Case vers laquelle le colon mène la bête : la plus proche d'elle et
+        // joignable en la menant. Elle re-scanne ensuite depuis là.
+        public static bool TrouverCelluleTravail(Pawn bete, Pawn meneur, out IntVec3 result)
         {
-            result = CaseEnneigeeLaPlusProche(reacher, false);
+            result = CaseEnneigeeLaPlusProche(bete, meneur);
             return result.IsValid;
         }
 

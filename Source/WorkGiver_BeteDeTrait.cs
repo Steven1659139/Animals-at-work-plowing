@@ -126,8 +126,29 @@ namespace AnimalsAtWork.Plowing
             {
                 return JobMener(pawn, bete, tache);
             }
+            // En service mais hors de portée de tout travail : elle a été lâchée
+            // au mauvais endroit, ou le chemin s'est fermé depuis (portail muré,
+            // clôture posée autour d'elle). Sans ce rattrapage elle resterait
+            // « au travail » à tourner en rond, le colon la croyant occupée.
+            // Une bête déjà à l'ouvrage tranche la question sans rien scanner.
+            if (!ALOuvrage(bete) && !ServiceTrait.PeutTravaillerSeule(bete, tache))
+            {
+                return JobMener(pawn, bete, tache);
+            }
             // Équipée et en service : elle travaille seule, le colon la laisse.
             return null;
+        }
+
+        // La bête est-elle en train de faire l'un de nos travaux ? Si oui, elle
+        // est manifestement à portée du sien, et la question ne mérite pas le
+        // scan des zones qu'elle coûterait.
+        private static bool ALOuvrage(Pawn bete)
+        {
+            JobDef job = bete.CurJobDef;
+            return job == AAW_DefOf.AAW_Labourer
+                || job == AAW_DefOf.AAW_Deneiger
+                || job == AAW_DefOf.AAW_ChargerCharrette
+                || job == AAW_DefOf.AAW_ViderCharrette;
         }
 
         private static Job JobEquiper(Pawn pawn, Pawn bete, ThingDef def, bool forced)
@@ -147,7 +168,7 @@ namespace AnimalsAtWork.Plowing
 
         private static Job JobMener(Pawn pawn, Pawn bete, TacheTrait tache)
         {
-            if (!ServiceTrait.TrouverCelluleTravail(pawn, tache, out IntVec3 cellule))
+            if (!ServiceTrait.TrouverCelluleTravail(bete, pawn, tache, out IntVec3 cellule))
             {
                 return null;
             }
@@ -166,7 +187,11 @@ namespace AnimalsAtWork.Plowing
             {
                 cellule = pen.parent.Position;
             }
-            return JobMaker.MakeJob(AAW_DefOf.AAW_RamenerAEnclos, bete, cellule);
+            Job job = JobMaker.MakeJob(AAW_DefOf.AAW_RamenerAEnclos, bete, cellule);
+            // Le marqueur d'enclos en cible C, comme JobDriver_RopeToPen : c'est
+            // lui qui dira si la bête a franchi la clôture (voir JobDriver_Mener).
+            job.SetTarget(TargetIndex.C, pen.parent);
+            return job;
         }
     }
 }

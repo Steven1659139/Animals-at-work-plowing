@@ -69,33 +69,57 @@ namespace AnimalsAtWork.Plowing
             return false;
         }
 
+        // Le trajet que fera l'attelage colon + bête au bout de la corde. Ni
+        // l'accès du colon seul (il saute les clôtures, la bête non), ni celui de
+        // la bête seule (menée, elle franchit les portes que le colon ouvre pour
+        // elle — Building_Door consulte roping.RopedByPawn) : c'est l'hybride que
+        // vanilla utilise pour ses enclos (AnimalPenUtility.CheckUseAndReach).
+        // Départ depuis la bête, paramètres de trajet du colon, clôtures selon la
+        // bête.
+        public static bool MeneurPeutYMener(Pawn meneur, Pawn bete, IntVec3 cellule)
+        {
+            return bete.Map.reachability.CanReach(
+                bete.Position, cellule, PathEndMode.OnCell,
+                TraverseParms.For(meneur, Danger.Some).WithFenceblockedOf(bete));
+        }
+
+        // La bête peut-elle rejoindre le travail toute seule, de là où elle est ?
+        // Elle est son propre meneur : on mesure donc ses seules capacités, sans
+        // les portes qu'un colon lui ouvrirait. Faux pour une bête en service
+        // lâchée au mauvais endroit — dans son enclos, par exemple — qui resterait
+        // sinon éternellement « au travail » sans pouvoir travailler.
+        public static bool PeutTravaillerSeule(Pawn bete, TacheTrait tache)
+        {
+            return TrouverCelluleTravail(bete, bete, tache, out _);
+        }
+
         // Une case vers laquelle le colon mène la bête pour cette tâche : au plus
-        // près du travail, atteignable par le colon (la bête est encore à
-        // l'enclos, donc c'est l'accès du colon qui compte). La bête re-scanne
-        // depuis là une fois lâchée.
-        public static bool TrouverCelluleTravail(Pawn roper, TacheTrait tache, out IntVec3 cellule)
+        // près d'elle et joignable en la menant. Elle re-scanne depuis là une fois
+        // lâchée.
+        public static bool TrouverCelluleTravail(Pawn bete, Pawn meneur, TacheTrait tache, out IntVec3 cellule)
         {
             switch (tache)
             {
                 case TacheTrait.Labour:
-                    return JobGiver_Labourer.TrouverCelluleTravail(roper, out cellule);
+                    return JobGiver_Labourer.TrouverCelluleTravail(bete, meneur, out cellule);
                 case TacheTrait.Deneigement:
-                    return JobGiver_Deneigeur.TrouverCelluleTravail(roper, out cellule);
+                    return JobGiver_Deneigeur.TrouverCelluleTravail(bete, meneur, out cellule);
                 case TacheTrait.Charrette:
-                    return TrouverCharrette(roper, out cellule);
+                    return TrouverCharrette(bete, meneur, out cellule);
                 default:
                     cellule = IntVec3.Invalid;
                     return false;
             }
         }
 
-        private static bool TrouverCharrette(Pawn roper, out IntVec3 cellule)
+        private static bool TrouverCharrette(Pawn bete, Pawn meneur, out IntVec3 cellule)
         {
             Thing pile = GenClosest.ClosestThingReachable(
-                roper.Position, roper.Map,
+                bete.Position, bete.Map,
                 ThingRequest.ForGroup(ThingRequestGroup.HaulableEver),
-                PathEndMode.Touch, TraverseParms.For(roper), 9999f,
-                t => !EquipementUtility.EstEquipement(t.def) && !t.IsForbidden(roper));
+                PathEndMode.Touch,
+                TraverseParms.For(meneur, Danger.Some).WithFenceblockedOf(bete), 9999f,
+                t => !EquipementUtility.EstEquipement(t.def) && !t.IsForbidden(meneur));
             cellule = pile != null ? pile.Position : IntVec3.Invalid;
             return pile != null;
         }

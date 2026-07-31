@@ -73,7 +73,7 @@ namespace AnimalsAtWork.Plowing
                 }
             }
 
-            IntVec3 depart = CaseLabourableLaPlusProche(pawn, true);
+            IntVec3 depart = CaseLabourableLaPlusProche(pawn);
             if (!depart.IsValid)
             {
                 composante.OublierSillon(pawn);
@@ -134,14 +134,14 @@ namespace AnimalsAtWork.Plowing
             return false;
         }
 
-        // Case labourable la plus proche de 'acteur', atteignable par lui. Sert
-        // au colon pour choisir où lâcher la bête (reserver = false : il ne fait
-        // que s'y rendre) comme à la bête pour ouvrir un sillon (reserver = true,
-        // elle doit pouvoir la réserver). Tests coûteux (atteignabilité) en
-        // dernier, seulement pour une case plus proche que la meilleure trouvée.
-        public static IntVec3 CaseLabourableLaPlusProche(Pawn acteur, bool reserver)
+        // Case labourable la plus proche de la bête, dans les deux usages :
+        //   meneur == null → la bête ouvre un sillon seule, elle doit réserver.
+        //   meneur != null → un colon l'y mène à la corde (voir ServiceTrait).
+        // Tests coûteux (atteignabilité) en dernier, seulement pour une case plus
+        // proche que la meilleure trouvée.
+        public static IntVec3 CaseLabourableLaPlusProche(Pawn bete, Pawn meneur = null)
         {
-            Map map = acteur.Map;
+            Map map = bete.Map;
             MapComponent_Labour composante = map.GetComponent<MapComponent_Labour>();
             IntVec3 meilleure = IntVec3.Invalid;
             float meilleureDist = float.MaxValue;
@@ -153,14 +153,14 @@ namespace AnimalsAtWork.Plowing
                 }
                 foreach (IntVec3 cellule in zoneCulture.Cells)
                 {
-                    float dist = cellule.DistanceToSquared(acteur.Position);
+                    float dist = cellule.DistanceToSquared(bete.Position);
                     if (dist >= meilleureDist || !CelluleLabourable(cellule, map))
                     {
                         continue;
                     }
-                    bool accessible = reserver
-                        ? acteur.CanReserveAndReach(cellule, PathEndMode.OnCell, Danger.Some)
-                        : acteur.CanReach(cellule, PathEndMode.OnCell, Danger.Some);
+                    bool accessible = meneur == null
+                        ? bete.CanReserveAndReach(cellule, PathEndMode.OnCell, Danger.Some)
+                        : ServiceTrait.MeneurPeutYMener(meneur, bete, cellule);
                     if (accessible)
                     {
                         meilleure = cellule;
@@ -171,11 +171,11 @@ namespace AnimalsAtWork.Plowing
             return meilleure;
         }
 
-        // Case vers laquelle le colon mène la bête : la plus proche du colon.
-        // La bête re-scanne ensuite depuis là.
-        public static bool TrouverCelluleTravail(Pawn reacher, out IntVec3 result)
+        // Case vers laquelle le colon mène la bête : la plus proche d'elle et
+        // joignable en la menant. Elle re-scanne ensuite depuis là.
+        public static bool TrouverCelluleTravail(Pawn bete, Pawn meneur, out IntVec3 result)
         {
-            result = CaseLabourableLaPlusProche(reacher, false);
+            result = CaseLabourableLaPlusProche(bete, meneur);
             return result.IsValid;
         }
 
