@@ -59,7 +59,7 @@ namespace AnimalsAtWork.Plowing
         {
             if (!bete.Spawned
                 || bete.Faction != Faction.OfPlayer
-                || bete.def.GetModExtension<ModExtension_BeteDeTrait>() == null)
+                || !BeteDeTrait.Est(bete.def))
             {
                 return null;
             }

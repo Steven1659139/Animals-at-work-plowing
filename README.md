@@ -4,7 +4,8 @@ First module of the **Animals at Work** series for RimWorld 1.6: animals doing u
 
 ## Features
 
-- **Choosing which animals work.** You turn on a task on the animal itself (**Plowing**, **Cart hauling**, **Snow clearing**), and each toggle only appears once its research is unlocked. The eligible species are horses, donkeys, cattle, muffalo, bison, yaks, dromedaries and elephants; none of them needs training, because draft work depends on the equipment rather than on what the animal can be taught. Animal mods can add their own species with a two-line patch.
+- **Choosing which animals work.** You turn on a task on the animal itself (**Plowing**, **Cart hauling**, **Snow clearing**), and each toggle only appears once its research is unlocked. The eligible species are horses, donkeys, cattle, muffalo, bison, yaks, dromedaries and elephants; none of them needs training, because draft work depends on the equipment rather than on what the animal can be taught.
+- **Modded animals work out of the box.** Any species vanilla considers a pack animal is eligible, which covers most modded beasts of burden without you or the mod author doing anything. Beyond that, open the mod settings and tick anything else you want harnessed, or untick what you do not — every animal in your game is listed there, largest first, with a search box, and each row says why it is already eligible. Your choice applies everywhere at once: plowing, cart hauling, snow clearing, the harness alert and the inspect panel. Being eligible only makes the task switches appear; you still turn each animal's work on yourself.
 - **Colonist handling.** A colonist assigned to Animal handling brings the harness and the right implement, equips the animal, then leads it to the work area on a rope. Once there is nothing left to do, a colonist leads it back to its pen. While an animal is working it is not treated as loose livestock, so no handler comes to bring it back, no pen alert is raised, and it will not wander off. It also leaves sown crops alone and feeds from a trough or from wild plants, and a colonist leads it home if it reaches starvation.
 - **Herding dogs as handlers.** With the [Herding Dogs](https://github.com/Steven1659139/Animals-at-Work-Herding-Dogs) module installed, a dog trained in herding does the leading in the colonists' place: the colonist harnesses the animal in the pen, the dog takes it out to the work area and brings it back once there is nothing left to do. Harnessing needs hands, so it stays with the colonists. Neither module requires the other.
 - **Draft harness.** Made of leather and required for every draft task, it lasts about 200 jobs. Its condition is shown on the animal's inspect panel, and an alert appears when work is waiting and no harness is available.
@@ -15,6 +16,23 @@ First module of the **Animals at Work** series for RimWorld 1.6: animals doing u
 - **Tack rack.** A stand where colonists store harnesses, plows, carts and scrapers, three items per cell and no deterioration. They draw from it to equip an animal and put the gear back when it is done, and carts never treat draft equipment as cargo.
 
 Requires [Harmony](https://github.com/pardeike/HarmonyRimWorld). Standalone module. English + French included.
+
+## For animal mod authors
+
+If your species is a pack animal (`<packAnimal>true</packAnimal>`), it is already eligible and you have nothing to do. Otherwise players can tick it in the mod settings — or you can mark it yourself so they never have to. Drop this in a file under your mod's `Patches/` folder; `MayRequire` makes the whole operation vanish when Plowing is not installed, so it is safe to ship unconditionally:
+
+```xml
+<Operation Class="PatchOperationAddModExtension" MayRequire="royaltea.animalsatwork.plowing">
+  <xpath>Defs/ThingDef[defName="YourAnimal"]</xpath>
+  <value>
+    <li Class="AnimalsAtWork.Plowing.ModExtension_BeteDeTrait" />
+  </value>
+</Operation>
+```
+
+No training and no research gating on your side: draft work depends on the equipment, so a marked species can be harnessed as soon as the player has researched it. A player can still untick a species you marked, if they would rather not harness it.
+
+*(The [Herding Dogs](https://github.com/Steven1659139/Animals-at-Work-Herding-Dogs) module solves the same problem through vanilla training instead: herding carries the same requirements as vanilla hauling, so anything that hauls already herds, and mod authors steer it with the standard `trainableTags` and `untrainableTags`.)*
 
 ## Known limitation
 

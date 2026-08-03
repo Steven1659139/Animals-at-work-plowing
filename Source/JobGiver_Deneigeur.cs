@@ -22,7 +22,7 @@ namespace AnimalsAtWork.Plowing
             {
                 return null;
             }
-            if (pawn.def.GetModExtension<ModExtension_BeteDeTrait>() == null)
+            if (!BeteDeTrait.Est(pawn.def))
             {
                 return null;
             }

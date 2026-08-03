@@ -22,7 +22,13 @@
 PUTTING AN ANIMAL TO WORK
 
 - You choose which animals work by turning on a task on the animal itself: Plowing, Cart hauling or Snow clearing. No animal does draft work until you turn one on, and each toggle only appears once its research is unlocked.
-- The eligible species are horses, donkeys, cattle, muffalo, bison, yaks, dromedaries and elephants. None of them needs training, because draft work depends on the equipment rather than on what the animal can be taught. Animal mods can add their own species with a two-line patch.
+- The eligible species are horses, donkeys, cattle, muffalo, bison, yaks, dromedaries and elephants. None of them needs training, because draft work depends on the equipment rather than on what the animal can be taught.
+- Animals from animal mods work out of the box: any species the game considers a pack animal is eligible, which covers most modded beasts of burden with nothing to install and nothing to write. Beyond that, open the mod settings and tick anything else you want harnessed, or untick what you do not - every animal in your game is listed there, largest first, with a search box. Being eligible only makes the task switches appear; you still turn each animal's work on yourself.
+- Animal mod authors: if your species is a pack animal, it already works and there is nothing to do. Otherwise mark it once and your players never have to touch the settings - drop this in your Patches folder, where MayRequire makes it vanish when this mod is absent, so it is safe to ship unconditionally:
+    &lt;Operation Class="PatchOperationAddModExtension" MayRequire="royaltea.animalsatwork.plowing"&gt;
+      &lt;xpath&gt;Defs/ThingDef[defName="YourAnimal"]&lt;/xpath&gt;
+      &lt;value&gt;&lt;li Class="AnimalsAtWork.Plowing.ModExtension_BeteDeTrait" /&gt;&lt;/value&gt;
+    &lt;/Operation&gt;
 - A colonist assigned to Animal handling brings the harness and the right implement, equips the animal, then leads it to the work area on a rope. Once there is nothing left to do, a colonist leads it back to its pen.
 - With the Herding Dogs module installed, a dog trained in herding does the leading instead. The colonist still harnesses the animal, then the dog takes it out to the work area and brings it back to the pen when the work is done. Harnessing needs hands, so it stays with the colonists.
 - While an animal is working, it is not treated as loose livestock: no handler comes to bring it back, no pen alert is raised, and it will not wander off on its own.
@@ -48,7 +54,13 @@ Les animaux tirent charrues, charrettes et grattoirs à neige. C'est le premier 
 METTRE UN ANIMAL AU TRAVAIL
 
 - Vous choisissez quels animaux travaillent en activant une tâche sur l'animal lui-même : Labour, Charrette ou Déneigement. Aucun animal ne fait de travail de trait tant que vous n'en avez pas activé une, et chaque interrupteur n'apparaît qu'une fois sa recherche débloquée.
-- Les espèces éligibles sont les chevaux, les ânes, les bovins, les muffalos, les bisons, les yaks, les dromadaires et les éléphants. Aucun n'a besoin d'être dressé, car le travail de trait dépend de l'équipement et non de ce que l'animal peut apprendre. Les mods d'animaux peuvent ajouter leurs propres espèces avec un patch de deux lignes.
+- Les espèces éligibles sont les chevaux, les ânes, les bovins, les muffalos, les bisons, les yaks, les dromadaires et les éléphants. Aucun n'a besoin d'être dressé, car le travail de trait dépend de l'équipement et non de ce que l'animal peut apprendre.
+- Les animaux des mods fonctionnent d'emblée : toute espèce que le jeu considère comme bête de somme est éligible, ce qui couvre l'essentiel des bêtes de trait moddées sans rien à installer ni rien à écrire. Au-delà, ouvrez les réglages du mod et cochez ce que vous voulez harnacher en plus, décochez ce que vous ne voulez pas - tous les animaux de votre partie y sont listés, les plus gros d'abord, avec un champ de recherche. Être éligible ne fait qu'afficher les interrupteurs de tâche : c'est toujours vous qui activez le travail de chaque bête.
+- Auteurs de mods d'animaux : si votre espèce est une bête de somme, elle fonctionne déjà et vous n'avez rien à faire. Sinon marquez-la une fois et vos joueurs n'auront jamais à toucher aux réglages - déposez ceci dans votre dossier Patches, où MayRequire le fait disparaître si ce mod est absent, donc sans risque à expédier :
+    &lt;Operation Class="PatchOperationAddModExtension" MayRequire="royaltea.animalsatwork.plowing"&gt;
+      &lt;xpath&gt;Defs/ThingDef[defName="VotreAnimal"]&lt;/xpath&gt;
+      &lt;value&gt;&lt;li Class="AnimalsAtWork.Plowing.ModExtension_BeteDeTrait" /&gt;&lt;/value&gt;
+    &lt;/Operation&gt;
 - Un colon affecté à la Manipulation d'animaux apporte le harnais et l'attelage voulu, équipe l'animal, puis le mène à la zone de travail à la corde. Quand il n'y a plus rien à faire, un colon le ramène à son enclos.
 - Avec le module Chiens de berger installé, c'est un chien dressé au troupeau qui mène. Le colon harnache toujours l'animal, puis le chien l'emmène à la zone de travail et le ramène à l'enclos une fois le travail fini. Le harnachement demande des mains : il reste l'affaire des colons.
 - Pendant qu'un animal travaille, il n'est pas traité comme du bétail échappé : aucun colon ne vient le ramener, aucune alerte d'enclos ne se déclenche, et il ne part pas en vadrouille de lui-même.

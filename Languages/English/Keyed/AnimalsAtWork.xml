@@ -24,4 +24,9 @@
   <AAW_GerundEquiper>harnessing</AAW_GerundEquiper>
   <AAW_GerundMener>leading out to work</AAW_GerundMener>
   <AAW_GerundRamener>leading back to the pen</AAW_GerundRamener>
+  <!-- Réglages : espèces de trait ajoutées par le joueur -->
+  <AAW_ReglageEspeces>Which species can be harnessed. Pack animals are already ticked, which covers most modded beasts without you doing anything; tick anything else you want harnessed, or untick what you do not. Ticking a species only makes the task switches appear on it — you still turn each animal's work on yourself.\n\nSorted by body size, largest first. Type to filter.</AAW_ReglageEspeces>
+  <AAW_EspeceIntegree>{0}  (body size {1}) — built in</AAW_EspeceIntegree>
+  <AAW_EspeceBat>{0}  (body size {1}) — pack animal</AAW_EspeceBat>
+  <AAW_EspeceLibre>{0}  (body size {1})</AAW_EspeceLibre>
 </LanguageData>

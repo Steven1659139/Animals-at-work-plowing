@@ -24,4 +24,9 @@
   <AAW_GerundEquiper>harnacher</AAW_GerundEquiper>
   <AAW_GerundMener>mener au travail</AAW_GerundMener>
   <AAW_GerundRamener>ramener à l'enclos</AAW_GerundRamener>
+  <!-- Réglages : espèces de trait ajoutées par le joueur -->
+  <AAW_ReglageEspeces>Quelles espèces peuvent être harnachées. Les bêtes de somme sont déjà cochées, ce qui couvre l'essentiel des bêtes moddées sans que vous ayez rien à faire ; cochez ce que vous voulez harnacher en plus, décochez ce que vous ne voulez pas. Cocher une espèce ne fait qu'afficher les interrupteurs de tâche sur elle — c'est toujours vous qui activez le travail de chaque bête.\n\nTriées par gabarit, les plus grosses d'abord. Tapez pour filtrer.</AAW_ReglageEspeces>
+  <AAW_EspeceIntegree>{0}  (gabarit {1}) — d'origine</AAW_EspeceIntegree>
+  <AAW_EspeceBat>{0}  (gabarit {1}) — bête de somme</AAW_EspeceBat>
+  <AAW_EspeceLibre>{0}  (gabarit {1})</AAW_EspeceLibre>
 </LanguageData>

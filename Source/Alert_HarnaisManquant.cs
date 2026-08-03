@@ -44,7 +44,7 @@ namespace AnimalsAtWork.Plowing
                 {
                     // Seules les bêtes que le joueur a marquées (opt-in) comptent :
                     // un colon voudra les équiper mais aucun harnais n'est là.
-                    if (animal.def.GetModExtension<ModExtension_BeteDeTrait>() == null
+                    if (!BeteDeTrait.Est(animal.def)
                         || !composante.EstBeteDeTrait(animal)
                         || EquipementUtility.Porte(animal, AAW_DefOf.AAW_HarnaisDeTrait) != null)
                     {

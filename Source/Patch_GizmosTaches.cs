@@ -26,7 +26,7 @@ namespace AnimalsAtWork.Plowing
             }
             if (!__instance.Spawned
                 || __instance.Faction != Faction.OfPlayer
-                || __instance.def.GetModExtension<ModExtension_BeteDeTrait>() == null)
+                || !BeteDeTrait.Est(__instance.def))
             {
                 yield break;
             }

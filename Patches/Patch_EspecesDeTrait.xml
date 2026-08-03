@@ -2,9 +2,13 @@
 <Patch>
 
   <!-- Marque les bêtes de trait vanilla. Aucun dressage n'est requis ni
-       modifié : seules les espèces portant ce marqueur iront d'elles-mêmes
-       s'atteler au harnais, à la charrue ou à la charrette (JobGiver_Labourer
-       et JobGiver_Charretier vérifient l'extension). -->
+       modifié ; c'est BeteDeTrait.Est() qui tranche, et cette extension n'est
+       qu'une de ses couches.
+       La vache et l'âne sont les deux seules qui aient réellement besoin de
+       cette liste : les autres sont des bêtes de somme (packAnimal) et
+       seraient éligibles sans elle. On les garde tout de même, pour que le
+       comportement vanilla ne dépende pas d'un drapeau qu'un autre mod
+       pourrait retirer. -->
   <Operation Class="PatchOperationAddModExtension">
     <xpath>Defs/ThingDef[defName="Horse" or defName="Donkey" or defName="Cow" or defName="Muffalo" or defName="Bison" or defName="Yak" or defName="Dromedary" or defName="Elephant"]</xpath>
     <value>

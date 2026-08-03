@@ -49,7 +49,7 @@ namespace AnimalsAtWork.Plowing
                 {
                     continue;
                 }
-                if (bete.def.GetModExtension<ModExtension_BeteDeTrait>() == null)
+                if (!BeteDeTrait.Est(bete.def))
                 {
                     continue;
                 }

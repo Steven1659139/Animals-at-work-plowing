@@ -3,9 +3,10 @@ using System;
 namespace AnimalsAtWork.Plowing
 {
     // Les trois travaux qu'une bête de trait peut prendre. Le joueur les
-    // autorise ou les coupe une par une (interrupteurs sur la bête).
-    // MapComponent_Labour ne retient que celles qui sont coupées : l'absence
-    // vaut « tout permis ». Combinables, d'où [Flags].
+    // active une par une (interrupteurs sur la bête). MapComponent_Labour ne
+    // retient que celles qui sont activées : l'absence vaut « ne travaille
+    // pas », et une bête sans aucune tâche n'est pas une bête de trait.
+    // Combinables, d'où [Flags].
     [Flags]
     public enum TacheTrait
     {

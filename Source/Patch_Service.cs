@@ -25,7 +25,7 @@ namespace AnimalsAtWork.Plowing
         {
             if (!__result
                 || !__instance.Spawned
-                || __instance.def.GetModExtension<ModExtension_BeteDeTrait>() == null)
+                || !BeteDeTrait.Est(__instance.def))
             {
                 return;
             }
@@ -53,7 +53,7 @@ namespace AnimalsAtWork.Plowing
         {
             if (__result
                 || !__instance.Spawned
-                || __instance.def.GetModExtension<ModExtension_BeteDeTrait>() == null)
+                || !BeteDeTrait.Est(__instance.def))
             {
                 return;
             }
@@ -86,7 +86,7 @@ namespace AnimalsAtWork.Plowing
                 || !p.Spawned
                 || !(food is Plant plant)
                 || !plant.sown
-                || p.def.GetModExtension<ModExtension_BeteDeTrait>() == null)
+                || !BeteDeTrait.Est(p.def))
             {
                 return;
             }
