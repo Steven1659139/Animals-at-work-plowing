@@ -5,13 +5,14 @@
   <ThingDef ParentName="ResourceBase">
     <defName>AAW_Charrette</defName>
     <label>draft cart</label>
-    <description>A two-wheeled wooden cart. Harnessed draft beasts hitch themselves to it, then load several stacks at once (up to 300 kg, riding in plain sight on the bed) and deliver the whole round in one trip. It also grants an extra hundred kilograms in caravans, and wears out after roughly a hundred loaded stacks. One implement per beast: cart, plow or snow scraper.</description>
+    <description>A two-wheeled wooden cart. Harnessed draft beasts hitch themselves to it, then load several stacks at once (up to 300 kg, riding in plain sight on the bed) and deliver the whole round in one trip. It also grants an extra hundred kilograms in caravans, and wears out after roughly four hundred loaded stacks. One implement per beast: cart, plow or snow scraper.</description>
     <graphicData>
       <texPath>Things/Item/AAW_Charrette</texPath>
       <graphicClass>Graphic_Single</graphicClass>
       <drawSize>1.2</drawSize>
     </graphicData>
     <stackLimit>5</stackLimit>
+    <!-- Bois seul : une charrette d'acier détonnerait. Elle tient ~400 piles. -->
     <stuffCategories>
       <li>Woody</li>
     </stuffCategories>

@@ -13,8 +13,7 @@ namespace AnimalsAtWork.Plowing
         // Durée pour un gabarit bovin (bodySize 2.4) : l'âne peine, l'éléphant
         // expédie. La courbe des gabarits vit dans BeteDeTrait.FacteurDuree.
         private const int DureeLabourBaseTicks = 400;
-        private const int CasesParCharrue = 50;    // usure du soc : une charrue neuve = 50 cases
-        private const int UsuresParHarnais = 200;  // le harnais fatigue aussi, bien plus lentement
+        private const int CasesParCharrue = 200;   // usure du soc : une charrue de bois = 200 cases
 
         public override bool TryMakePreToilReservations(bool errorOnFailed)
         {
@@ -44,7 +43,7 @@ namespace AnimalsAtWork.Plowing
                 // Le sillon use la charrue, et un peu le harnais ; brisés, la
                 // bête ira s'équiper à neuf.
                 EquipementUtility.User(pawn, AAW_DefOf.AAW_Charrue, CasesParCharrue, "AAW_CharrueRompue");
-                EquipementUtility.User(pawn, AAW_DefOf.AAW_HarnaisDeTrait, UsuresParHarnais, "AAW_HarnaisRompu");
+                EquipementUtility.User(pawn, AAW_DefOf.AAW_HarnaisDeTrait, EquipementUtility.UsagesParHarnais, "AAW_HarnaisRompu");
             });
         }
     }

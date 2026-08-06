@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -11,6 +12,17 @@ namespace AnimalsAtWork.Plowing
     public static class EquipementUtility
     {
         public const float CapaciteCharrette = 300f; // kg de cargaison par tournée
+
+        // Le harnais sert aux trois tâches : sa vie se compte en ouvrages toutes
+        // tâches confondues, d'où sa place ici plutôt que dans chaque JobDriver,
+        // qui en tenaient chacun leur copie. Valeur pour du cuir ordinaire ; les
+        // cuirs plus résistants durent d'autant plus.
+        //
+        // Les durées de vie visent une saison de champ par exemplaire : le jeu
+        // de base n'use rien à l'usage (ni arme qui frappe, ni vêtement porté),
+        // et une pièce qui casse tous les deux jours n'a pas d'équivalent
+        // vanilla. Elle doit rester un événement, pas une corvée d'atelier.
+        public const int UsagesParHarnais = 1200;
 
         // L'objet de ce type que la bête porte sur elle, s'il y en a un.
         public static Thing Porte(Pawn pawn, ThingDef def)
@@ -155,7 +167,8 @@ namespace AnimalsAtWork.Plowing
         }
 
         // L'équipement porté s'use ; détruit, la bête ira s'en procurer un neuf.
-        // vieUtile : nombre d'usages qu'un exemplaire neuf encaisse.
+        // vieUtile : nombre d'usages qu'encaisse un exemplaire fait du matériau
+        // ordinaire (bois pour les attelages, cuir simple pour le harnais).
         public static void User(Pawn pawn, ThingDef def, int vieUtile, string cleMessage)
         {
             Thing porte = Porte(pawn, def);
@@ -163,13 +176,45 @@ namespace AnimalsAtWork.Plowing
             {
                 return;
             }
-            porte.HitPoints -= Mathf.Max(1, porte.MaxHitPoints / vieUtile);
+            // Arrondi aléatoire : l'usure d'un usage tombe rarement sur un
+            // nombre entier de points de vie, et une pièce n'en perd que des
+            // entiers. Sur la vie de l'outil, la moyenne tombe juste.
+            porte.HitPoints -= GenMath.RoundRandom(UsureParUsage(def, vieUtile));
             if (porte.HitPoints <= 0)
             {
                 porte.Destroy();
                 Messages.Message(cleMessage.Translate(pawn.LabelShortCap),
                     pawn, MessageTypeDefOf.NegativeEvent);
             }
+        }
+
+        // Points de vie perdus à chaque usage. La valeur est absolue : elle ne
+        // dépend que de la déf, jamais du matériau de l'exemplaire — c'est ce
+        // qui fait qu'un soc d'acier dure plus longtemps qu'un soc de bois.
+        //
+        // L'usure valait auparavant porte.MaxHitPoints / vieUtile. Or les points
+        // de vie portent déjà le facteur du matériau : il se simplifiait, et un
+        // soc de plasteel s'usait exactement au même rythme qu'un soc de bois.
+        // La division entière achevait le tableau (100 / 200 = 0, relevé à 1),
+        // si bien qu'aucune durée annoncée n'était celle qu'on obtenait.
+        //
+        // On rapporte donc la durée au matériau ordinaire — le bois, le cuir
+        // simple : la durée annoncée reste celle de l'exemplaire que tout le
+        // monde fabrique, et tout ce qui est plus solide dure davantage.
+        private static float UsureParUsage(ThingDef def, int vieUtile)
+        {
+            return def.BaseMaxHitPoints * FacteurOrdinaire(def) / vieUtile;
+        }
+
+        private static float FacteurOrdinaire(ThingDef def)
+        {
+            ThingDef ordinaire = def == AAW_DefOf.AAW_HarnaisDeTrait
+                ? AAW_DefOf.Leather_Plain
+                : ThingDefOf.WoodLog;
+            List<StatModifier> facteurs = ordinaire?.stuffProps?.statFactors;
+            return facteurs == null
+                ? 1f
+                : facteurs.GetStatFactorFromList(StatDefOf.MaxHitPoints);
         }
     }
 }

@@ -5,7 +5,7 @@
   <ThingDef ParentName="ResourceBase">
     <defName>AAW_HarnaisDeTrait</defName>
     <label>draft harness</label>
-    <description>An assembly of straps, laces and buckles cut from leather, the foundation of all draft work. True draft species (horses, donkeys, cattle, muffalo, bison, yaks, dromedaries and elephants) harness themselves whenever a plow, cart or snow scraper awaits. It frays slowly with every plowed cell and loaded stack, lasting about two hundred jobs.</description>
+    <description>An assembly of straps, laces and buckles cut from leather, the foundation of all draft work. True draft species (horses, donkeys, cattle, muffalo, bison, yaks, dromedaries and elephants) harness themselves whenever a plow, cart or snow scraper awaits. It frays slowly with every plowed cell, cleared cell and loaded stack, lasting well over a thousand jobs in plain leather — half again as long in a heavy hide, twice as long in thrumbofur.</description>
     <graphicData>
       <texPath>Things/Item/AAW_HarnaisDeTrait</texPath>
       <graphicClass>Graphic_Single</graphicClass>

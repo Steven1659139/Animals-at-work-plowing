@@ -5,7 +5,7 @@
   <ThingDef ParentName="ResourceBase">
     <defName>AAW_Grattoir</defName>
     <label>snow scraper</label>
-    <description>A broad wooden blade on a stout beam, ready to be hitched. A harnessed draft beast drags it across your snow-clearing area and scrapes the cells bare: winter work for the same beasts whose plows sit idle in frozen ground. The blade wears down and gives out after about a hundred cleared cells. One implement per beast: plow, cart or scraper.</description>
+    <description>A broad blade on a stout beam, ready to be hitched. A harnessed draft beast drags it across your snow-clearing area and scrapes the cells bare: winter work for the same beasts whose plows sit idle in frozen ground. The blade wears down and gives out after about four hundred cleared cells in wood, half again as many in steel, and four times as many in plasteel. One implement per beast: plow, cart or scraper.</description>
     <graphicData>
       <texPath>Things/Item/AAW_Grattoir</texPath>
       <graphicClass>Graphic_Single</graphicClass>
@@ -13,6 +13,7 @@
     <stackLimit>5</stackLimit>
     <stuffCategories>
       <li>Woody</li>
+      <li>Metallic</li>
     </stuffCategories>
     <costStuffCount>60</costStuffCount>
     <statBases>

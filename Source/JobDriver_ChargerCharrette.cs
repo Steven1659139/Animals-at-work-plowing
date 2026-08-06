@@ -12,8 +12,7 @@ namespace AnimalsAtWork.Plowing
     public class JobDriver_ChargerCharrette : JobDriver
     {
         private const int DureeChargementTicks = 60;
-        private const int PilesParCharrette = 100; // usure : ~100 piles hissées
-        private const int UsuresParHarnais = 200;  // le harnais fatigue aussi, plus lentement
+        private const int PilesParCharrette = 400; // usure : ~400 piles hissées
 
         public override bool TryMakePreToilReservations(bool errorOnFailed)
         {
@@ -60,7 +59,7 @@ namespace AnimalsAtWork.Plowing
                 }
                 // Chaque pile hissée use la charrette, et un peu le harnais.
                 EquipementUtility.User(pawn, AAW_DefOf.AAW_Charrette, PilesParCharrette, "AAW_CharretteRompue");
-                EquipementUtility.User(pawn, AAW_DefOf.AAW_HarnaisDeTrait, UsuresParHarnais, "AAW_HarnaisRompu");
+                EquipementUtility.User(pawn, AAW_DefOf.AAW_HarnaisDeTrait, EquipementUtility.UsagesParHarnais, "AAW_HarnaisRompu");
             });
 
             yield return Toils_Jump.JumpIf(extraire, () => !job.targetQueueA.NullOrEmpty());

@@ -12,8 +12,7 @@ namespace AnimalsAtWork.Plowing
         // Durée pour un gabarit bovin (bodySize 2.4), plus légère que le
         // labour : on racle, on ne retourne pas la terre.
         private const int DureeRaclageBaseTicks = 250;
-        private const int CasesParGrattoir = 100;  // usure de la lame : un grattoir neuf = 100 cases
-        private const int UsuresParHarnais = 200;  // le harnais fatigue aussi, bien plus lentement
+        private const int CasesParGrattoir = 400;  // usure de la lame : un grattoir de bois = 400 cases
 
         public override bool TryMakePreToilReservations(bool errorOnFailed)
         {
@@ -40,7 +39,7 @@ namespace AnimalsAtWork.Plowing
                 // Le raclage use la lame, et un peu le harnais ; brisés, la
                 // bête ira s'équiper à neuf.
                 EquipementUtility.User(pawn, AAW_DefOf.AAW_Grattoir, CasesParGrattoir, "AAW_GrattoirRompu");
-                EquipementUtility.User(pawn, AAW_DefOf.AAW_HarnaisDeTrait, UsuresParHarnais, "AAW_HarnaisRompu");
+                EquipementUtility.User(pawn, AAW_DefOf.AAW_HarnaisDeTrait, EquipementUtility.UsagesParHarnais, "AAW_HarnaisRompu");
             });
         }
     }

@@ -23,8 +23,11 @@ namespace AnimalsAtWork.Plowing
         public static ResearchProjectDef AAW_Harnachement;
         public static ResearchProjectDef AAW_Charretterie;
 
-        // Déf vanilla non exposée par TerrainAffordanceDefOf
+        // Défs vanilla non exposées par les DefOf du jeu
         public static TerrainAffordanceDef GrowSoil;
+        // Cuir ordinaire : matériau de référence du harnais, celui dont la
+        // durée de vie est annoncée (voir EquipementUtility.UsureParUsage).
+        public static ThingDef Leather_Plain;
 
         static AAW_DefOf()
         {

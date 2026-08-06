@@ -5,7 +5,7 @@
   <ThingDef ParentName="ResourceBase">
     <defName>AAW_Charrue</defName>
     <label>draft plow</label>
-    <description>A wooden beam, share and handles, ready to be hitched. A harnessed draft beast drags it across growing zones to turn the earth; the share wears down in the furrow and gives out after about fifty plowed cells. One implement per beast: plow, cart or snow scraper.</description>
+    <description>A beam, share and handles, ready to be hitched. A harnessed draft beast drags it across growing zones to turn the earth; the share wears down in the furrow and gives out after some two hundred plowed cells in wood. Build it out of a tougher material and it lasts in proportion: about three hundred cells in steel, over eight hundred in plasteel. One implement per beast: plow, cart or snow scraper.</description>
     <graphicData>
       <texPath>Things/Item/AAW_Charrue</texPath>
       <graphicClass>Graphic_Single</graphicClass>
@@ -13,6 +13,7 @@
     <stackLimit>5</stackLimit>
     <stuffCategories>
       <li>Woody</li>
+      <li>Metallic</li>
     </stuffCategories>
     <costStuffCount>75</costStuffCount>
     <statBases>
