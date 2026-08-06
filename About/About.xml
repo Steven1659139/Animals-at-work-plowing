@@ -21,29 +21,22 @@
 
 PUTTING AN ANIMAL TO WORK
 
-- You choose which animals work by turning on a task on the animal itself: Plowing, Cart hauling or Snow clearing. No animal does draft work until you turn one on, and each toggle only appears once its research is unlocked.
-- The eligible species are horses, donkeys, cattle, muffalo, bison, yaks, dromedaries and elephants. None of them needs training, because draft work depends on the equipment rather than on what the animal can be taught.
-- Animals from animal mods work out of the box: any species the game considers a pack animal is eligible, which covers most modded beasts of burden with nothing to install and nothing to write. Beyond that, open the mod settings and tick anything else you want harnessed, or untick what you do not - every animal in your game is listed there, largest first, with a search box. Being eligible only makes the task switches appear; you still turn each animal's work on yourself.
-- Animal mod authors: if your species is a pack animal, it already works and there is nothing to do. Otherwise mark it once and your players never have to touch the settings - drop this in your Patches folder, where MayRequire makes it vanish when this mod is absent, so it is safe to ship unconditionally:
-    &lt;Operation Class="PatchOperationAddModExtension" MayRequire="royaltea.animalsatwork.plowing"&gt;
-      &lt;xpath&gt;Defs/ThingDef[defName="YourAnimal"]&lt;/xpath&gt;
-      &lt;value&gt;&lt;li Class="AnimalsAtWork.Plowing.ModExtension_BeteDeTrait" /&gt;&lt;/value&gt;
-    &lt;/Operation&gt;
-- A colonist assigned to Animal handling brings the harness and the right implement, equips the animal, then leads it to the work area on a rope. Once there is nothing left to do, a colonist leads it back to its pen.
-- With the Herding Dogs module installed, a dog trained in herding does the leading instead. The colonist still harnesses the animal, then the dog takes it out to the work area and brings it back to the pen when the work is done. Harnessing needs hands, so it stays with the colonists.
-- While an animal is working, it is not treated as loose livestock: no handler comes to bring it back, no pen alert is raised, and it will not wander off on its own.
-- A working animal will not graze your sown crops, and feeds from a trough or from wild plants instead. If one reaches starvation with nothing else to eat, a colonist leads it home to feed.
+- You choose which animals work by turning on a task on the animal itself: Plowing, Cart hauling or Snow clearing. Nothing happens until you do, and each toggle appears once its research is unlocked. No training needed: draft work depends on the equipment, not on what the animal can be taught.
+- Horses, donkeys, cattle, muffalo, bison, yaks, dromedaries and elephants are ready out of the box, and so is any pack animal from an animal mod. Anything else can be ticked in the mod settings, where every animal in your game is listed with a search box.
+- A colonist assigned to Animal handling brings the harness and the right implement, equips the animal and leads it out on a rope, then brings it home when there is nothing left to do. With the Herding Dogs module installed, a dog does the leading instead.
+- A working animal is not treated as loose livestock: no handler comes for it, no pen alert, no wandering off. It leaves your sown crops alone and feeds from a trough or from wild plants.
 
 EQUIPMENT
 
-- The draft harness is made of leather and is required for every draft task. Its condition is shown on the animal's inspect panel, and an alert appears when work is waiting and no harness is available.
-- The plow turns the soil of a growing zone and raises its fertility by 30%. It is never used on frozen ground, and each growing zone has its own toggle deciding whether it may be plowed there. Larger animals plow faster, and the soil returns to its original state after one season. Leave at least three cells between a growing zone and any fence: against a fence, or enclosed inside an animal pen, the zone can leave the colonist leading the animal going back and forth through the gate.
-- The draft cart carries several stacks at once and delivers them in a single trip. It takes up to 300 kg, or as much as the animal can carry without being overloaded, whichever is less. It also adds 100 kg of carrying capacity in caravans.
-- The snow scraper clears the snow-clearing area without a colonist having to shovel it. A colonist swaps the plow for the scraper when the ground freezes, and swaps it back once the snow is gone.
-- An animal carries only one implement at a time, either the plow, the cart or the scraper, and its equipment falls to the ground when it dies.
-- The tack rack stores harnesses, plows, carts and scrapers at three items per cell, and its contents do not deteriorate.
+- Draft harness. Leather, required for every draft task. Its condition shows on the animal's inspect panel, and an alert warns when work is waiting and no harness is available.
+- Plow. Turns the soil of a growing zone and raises its fertility by 30% for one season. Never used on frozen ground, and each growing zone has its own toggle. Larger animals plow faster.
+- Draft cart. Carries several stacks in a single trip, up to 300 kg or as much as the animal can take without being overloaded, and adds 100 kg of carrying capacity in caravans.
+- Snow scraper. Clears the snow-clearing area without a colonist shovelling. A colonist swaps the plow for it when the ground freezes, and swaps back once the snow is gone.
+- An animal carries one implement at a time, and the tack rack stores the lot at three items per cell without deterioration.
 
-Requires Harmony. Each Animals at Work module works on its own. English and French are both included.
+Leave at least three cells between a growing zone and any fence: hard against a fence, or enclosed inside an animal pen, the zone can leave the colonist leading the animal going back and forth through the gate.
+
+Requires Harmony. Each Animals at Work module works on its own. English and French are both included. Animal mod authors: see the end of this description.
 
 Also in the series: Herding Dogs, Handy Monkeys.
 
@@ -53,29 +46,33 @@ Les animaux tirent charrues, charrettes et grattoirs à neige. C'est le premier 
 
 METTRE UN ANIMAL AU TRAVAIL
 
-- Vous choisissez quels animaux travaillent en activant une tâche sur l'animal lui-même : Labour, Charrette ou Déneigement. Aucun animal ne fait de travail de trait tant que vous n'en avez pas activé une, et chaque interrupteur n'apparaît qu'une fois sa recherche débloquée.
-- Les espèces éligibles sont les chevaux, les ânes, les bovins, les muffalos, les bisons, les yaks, les dromadaires et les éléphants. Aucun n'a besoin d'être dressé, car le travail de trait dépend de l'équipement et non de ce que l'animal peut apprendre.
-- Les animaux des mods fonctionnent d'emblée : toute espèce que le jeu considère comme bête de somme est éligible, ce qui couvre l'essentiel des bêtes de trait moddées sans rien à installer ni rien à écrire. Au-delà, ouvrez les réglages du mod et cochez ce que vous voulez harnacher en plus, décochez ce que vous ne voulez pas - tous les animaux de votre partie y sont listés, les plus gros d'abord, avec un champ de recherche. Être éligible ne fait qu'afficher les interrupteurs de tâche : c'est toujours vous qui activez le travail de chaque bête.
-- Auteurs de mods d'animaux : si votre espèce est une bête de somme, elle fonctionne déjà et vous n'avez rien à faire. Sinon marquez-la une fois et vos joueurs n'auront jamais à toucher aux réglages - déposez ceci dans votre dossier Patches, où MayRequire le fait disparaître si ce mod est absent, donc sans risque à expédier :
-    &lt;Operation Class="PatchOperationAddModExtension" MayRequire="royaltea.animalsatwork.plowing"&gt;
-      &lt;xpath&gt;Defs/ThingDef[defName="VotreAnimal"]&lt;/xpath&gt;
-      &lt;value&gt;&lt;li Class="AnimalsAtWork.Plowing.ModExtension_BeteDeTrait" /&gt;&lt;/value&gt;
-    &lt;/Operation&gt;
-- Un colon affecté à la Manipulation d'animaux apporte le harnais et l'attelage voulu, équipe l'animal, puis le mène à la zone de travail à la corde. Quand il n'y a plus rien à faire, un colon le ramène à son enclos.
-- Avec le module Chiens de berger installé, c'est un chien dressé au troupeau qui mène. Le colon harnache toujours l'animal, puis le chien l'emmène à la zone de travail et le ramène à l'enclos une fois le travail fini. Le harnachement demande des mains : il reste l'affaire des colons.
-- Pendant qu'un animal travaille, il n'est pas traité comme du bétail échappé : aucun colon ne vient le ramener, aucune alerte d'enclos ne se déclenche, et il ne part pas en vadrouille de lui-même.
-- Un animal au travail ne broute pas vos cultures semées : il mange à l'auge ou des plantes sauvages. Si l'un d'eux atteint la famine sans rien d'autre à manger, un colon le ramène se nourrir.
+- Vous choisissez quels animaux travaillent en activant une tâche sur l'animal lui-même : Labour, Charrette ou Déneigement. Rien ne se passe tant que vous ne l'avez pas fait, et chaque interrupteur apparaît une fois sa recherche débloquée. Aucun dressage : le travail de trait dépend de l'équipement, non de ce que l'animal peut apprendre.
+- Chevaux, ânes, bovins, muffalos, bisons, yaks, dromadaires et éléphants sont prêts d'emblée, ainsi que toute bête de somme venue d'un mod d'animaux. Le reste se coche dans les réglages du mod, où tous les animaux de votre partie sont listés avec un champ de recherche.
+- Un colon affecté à la Manipulation d'animaux apporte le harnais et l'attelage voulu, équipe l'animal et le mène au travail à la corde, puis le ramène quand il n'y a plus rien à faire. Avec le module Chiens de berger installé, c'est un chien qui mène.
+- Un animal au travail n'est pas traité comme du bétail échappé : aucun colon ne vient le ramener, aucune alerte d'enclos, aucune vadrouille. Il ne broute pas vos cultures semées et mange à l'auge ou des plantes sauvages.
 
 ÉQUIPEMENT
 
-- Le harnais de trait est en cuir et il est nécessaire à toutes les tâches de trait. Son état se lit sur le panneau d'inspection de l'animal, et une alerte prévient quand du travail attend et qu'aucun harnais n'est disponible.
-- La charrue retourne le sol d'une zone de culture et lui donne 30 % de fertilité en plus. Elle n'est jamais utilisée en sol gelé, et chaque zone de culture a son propre interrupteur qui décide si elle peut y être labourée. Les gros animaux labourent plus vite, et le sol revient à son état d'origine après une saison. Laissez au moins trois cases entre une zone de culture et une clôture : collée à une clôture, ou enfermée dans un enclos à bétail, la zone peut faire tourner en rond dans le portail le colon qui mène l'animal.
-- La charrette de trait emporte plusieurs piles à la fois et les livre en un seul voyage. Elle prend jusqu'à 300 kg, ou autant que l'animal peut porter sans être surchargé, le plus petit des deux. Elle ajoute aussi 100 kg de capacité de transport en caravane.
-- Le grattoir à neige déneige la zone prévue sans qu'un colon ait à pelleter. Un colon échange la charrue contre le grattoir quand le sol gèle, et fait l'échange inverse une fois la neige partie.
-- Un animal ne porte qu'un attelage à la fois, charrue, charrette ou grattoir, et son équipement tombe au sol à sa mort.
-- Le râtelier d'attelage range harnais, charrues, charrettes et grattoirs à raison de trois pièces par case, et son contenu ne se détériore pas.
+- Harnais de trait. En cuir, nécessaire à toutes les tâches. Son état se lit sur le panneau d'inspection de l'animal, et une alerte prévient quand du travail attend sans harnais disponible.
+- Charrue. Retourne le sol d'une zone de culture et lui donne 30 % de fertilité en plus pendant une saison. Jamais utilisée en sol gelé, et chaque zone a son propre interrupteur. Les gros animaux labourent plus vite.
+- Charrette de trait. Emporte plusieurs piles en un seul voyage, jusqu'à 300 kg ou autant que l'animal peut porter sans être surchargé, et ajoute 100 kg de capacité en caravane.
+- Grattoir à neige. Déneige la zone prévue sans qu'un colon ait à pelleter. Un colon échange la charrue contre le grattoir quand le sol gèle, et inversement une fois la neige partie.
+- Un animal ne porte qu'un attelage à la fois, et le râtelier range le tout à raison de trois pièces par case, sans détérioration.
 
-Nécessite Harmony. Chaque module Animals at Work fonctionne seul. L'anglais et le français sont tous deux inclus.
+Laissez au moins trois cases entre une zone de culture et une clôture : collée à une clôture, ou enfermée dans un enclos à bétail, la zone peut faire tourner en rond dans le portail le colon qui mène l'animal.
 
-Autres modules : chiens de berger, singes artisans.</description>
+Nécessite Harmony. Chaque module Animals at Work fonctionne seul. L'anglais et le français sont tous deux inclus. Auteurs de mods d'animaux : voyez la section en anglais en fin de description.
+
+Autres modules : chiens de berger, singes artisans.
+
+───────── For animal mod authors ─────────
+
+If your species is a pack animal, it already works and there is nothing to do. Otherwise mark it once and your players never have to touch the settings. Drop this in your Patches folder; MayRequire makes the whole operation vanish when this mod is absent, so it is safe to ship unconditionally:
+
+&lt;Operation Class="PatchOperationAddModExtension" MayRequire="royaltea.animalsatwork.plowing"&gt;
+  &lt;xpath&gt;Defs/ThingDef[defName="YourAnimal"]&lt;/xpath&gt;
+  &lt;value&gt;&lt;li Class="AnimalsAtWork.Plowing.ModExtension_BeteDeTrait" /&gt;&lt;/value&gt;
+&lt;/Operation&gt;
+
+No training and no research gating on your side: a marked species can be harnessed as soon as the player has researched the equipment. Players can still untick it in the settings if they would rather not harness it.</description>
 </ModMetaData>
