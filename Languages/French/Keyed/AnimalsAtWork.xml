@@ -25,8 +25,17 @@
   <AAW_GerundMener>mener au travail</AAW_GerundMener>
   <AAW_GerundRamener>ramener à l'enclos</AAW_GerundRamener>
   <!-- Réglages : espèces de trait ajoutées par le joueur -->
-  <AAW_ReglageEspeces>Quelles espèces peuvent être harnachées. Les bêtes de somme sont déjà cochées, ce qui couvre l'essentiel des bêtes moddées sans que vous ayez rien à faire ; cochez ce que vous voulez harnacher en plus, décochez ce que vous ne voulez pas. Cocher une espèce ne fait qu'afficher les interrupteurs de tâche sur elle — c'est toujours vous qui activez le travail de chaque bête.\n\nTriées par gabarit, les plus grosses d'abord. Tapez pour filtrer.</AAW_ReglageEspeces>
+  <AAW_ReglageEspeces>Quelles espèces peuvent être harnachées. Les bêtes de somme sont déjà cochées, ce qui couvre l'essentiel des bêtes moddées sans que vous ayez rien à faire. Cocher une espèce ne fait qu'afficher les interrupteurs de tâche sur elle — c'est toujours vous qui activez le travail de chaque bête.</AAW_ReglageEspeces>
+  <AAW_ReglageRecherche>Chercher une espèce…</AAW_ReglageRecherche>
+  <AAW_ReglageHarnachablesSeules>Cochées seulement</AAW_ReglageHarnachablesSeules>
+  <AAW_ReglageCompte>{0} espèces harnachables · {1} affichées, les plus grosses d'abord</AAW_ReglageCompte>
+  <AAW_ReglageReinit>Tout remettre au défaut</AAW_ReglageReinit>
+  <AAW_ReglageReinitDesc>Abandonne vos modifications : les bêtes de somme et les espèces livrées avec le mod redeviennent cochées, tout le reste décoché.</AAW_ReglageReinitDesc>
   <AAW_EspeceIntegree>{0}  (gabarit {1}) — d'origine</AAW_EspeceIntegree>
   <AAW_EspeceBat>{0}  (gabarit {1}) — bête de somme</AAW_EspeceBat>
   <AAW_EspeceLibre>{0}  (gabarit {1})</AAW_EspeceLibre>
+  <AAW_EspeceTipIntegree>Cochée d'office : le mod livre {0} comme espèce de trait.</AAW_EspeceTipIntegree>
+  <AAW_EspeceTipBat>Cochée d'office : {0} est une bête de somme, donc réputée assez forte pour tirer.</AAW_EspeceTipBat>
+  <AAW_EspeceTipLibre>Décochée d'office. Cochez-la et les interrupteurs de tâche apparaîtront sur chacun de vos {0}.</AAW_EspeceTipLibre>
+  <AAW_EspeceTipModifiee>Vous avez modifié celle-ci. « Tout remettre au défaut » la remet en place.</AAW_EspeceTipModifiee>
 </LanguageData>
