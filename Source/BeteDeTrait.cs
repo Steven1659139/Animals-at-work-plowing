@@ -1,3 +1,4 @@
+using UnityEngine;
 using Verse;
 
 namespace AnimalsAtWork.Plowing
@@ -54,6 +55,30 @@ namespace AnimalsAtWork.Plowing
         public static bool ParBat(ThingDef def)
         {
             return def?.race != null && def.race.packAnimal;
+        }
+
+        // Rendement au travail, partagé par le labour et le déneigement : une
+        // bête plus grosse tire plus vite. Facteur multiplicateur de la durée
+        // d'une case, 1 pour le gabarit de référence.
+        private const float GabaritReference = 2.4f; // vache, cheval, muffalo, bison
+        private const float FacteurPlafond = 0.6f;   // atteint par l'éléphant (4.0)
+        private const float GabaritAlpaga = 1.0f;    // plus petite bête de bât vanilla
+        private const float FacteurAlpaga = 1.8f;    // ce qu'elle a toujours valu
+        // Un poulet (0.3) est déjà à ce maximum. Plus bas, on ne distingue plus :
+        // une case interrompue en chemin est reprise de zéro, donc l'allonger
+        // sans fin ne punirait plus, elle empêcherait simplement d'aboutir.
+        private const float FacteurMax = 6f;
+
+        public static float FacteurDuree(Pawn bete)
+        {
+            float gabarit = bete.BodySize;
+            if (gabarit >= GabaritAlpaga)
+            {
+                return Mathf.Clamp(GabaritReference / gabarit, FacteurPlafond, FacteurAlpaga);
+            }
+            // Sous l'alpaga, le palier disparaît : rien ne justifiait qu'un
+            // écureuil laboure à sa vitesse. La courbe repart de son facteur.
+            return Mathf.Clamp(FacteurAlpaga / gabarit, FacteurAlpaga, FacteurMax);
         }
     }
 }

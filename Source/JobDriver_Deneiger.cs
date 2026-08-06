@@ -12,7 +12,6 @@ namespace AnimalsAtWork.Plowing
         // Durée pour un gabarit bovin (bodySize 2.4), plus légère que le
         // labour : on racle, on ne retourne pas la terre.
         private const int DureeRaclageBaseTicks = 250;
-        private const float GabaritReference = 2.4f;
         private const int CasesParGrattoir = 100;  // usure de la lame : un grattoir neuf = 100 cases
         private const int UsuresParHarnais = 200;  // le harnais fatigue aussi, bien plus lentement
 
@@ -25,8 +24,7 @@ namespace AnimalsAtWork.Plowing
         {
             yield return Toils_Goto.GotoCell(TargetIndex.A, PathEndMode.OnCell);
 
-            int duree = Mathf.RoundToInt(
-                DureeRaclageBaseTicks * Mathf.Clamp(GabaritReference / pawn.BodySize, 0.6f, 1.8f));
+            int duree = Mathf.RoundToInt(DureeRaclageBaseTicks * BeteDeTrait.FacteurDuree(pawn));
             Toil raclage = Toils_General.Wait(duree);
             raclage.WithProgressBarToilDelay(TargetIndex.A);
             // Éclats de neige du déneigement vanilla et bruit de balayage.

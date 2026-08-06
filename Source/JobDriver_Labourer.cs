@@ -10,9 +10,9 @@ namespace AnimalsAtWork.Plowing
     // puis convertir le terrain en sol labouré.
     public class JobDriver_Labourer : JobDriver
     {
-        // Durée pour un gabarit bovin (bodySize 2.4) : l'âne peine, l'éléphant expédie.
+        // Durée pour un gabarit bovin (bodySize 2.4) : l'âne peine, l'éléphant
+        // expédie. La courbe des gabarits vit dans BeteDeTrait.FacteurDuree.
         private const int DureeLabourBaseTicks = 400;
-        private const float GabaritReference = 2.4f;
         private const int CasesParCharrue = 50;    // usure du soc : une charrue neuve = 50 cases
         private const int UsuresParHarnais = 200;  // le harnais fatigue aussi, bien plus lentement
 
@@ -25,8 +25,7 @@ namespace AnimalsAtWork.Plowing
         {
             yield return Toils_Goto.GotoCell(TargetIndex.A, PathEndMode.OnCell);
 
-            int duree = Mathf.RoundToInt(
-                DureeLabourBaseTicks * Mathf.Clamp(GabaritReference / pawn.BodySize, 0.6f, 1.8f));
+            int duree = Mathf.RoundToInt(DureeLabourBaseTicks * BeteDeTrait.FacteurDuree(pawn));
             Toil labour = Toils_General.Wait(duree);
             labour.WithProgressBarToilDelay(TargetIndex.A);
             // Terre grattée et souffle de la bête, façon semailles vanilla.
