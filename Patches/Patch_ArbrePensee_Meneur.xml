@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Patch>
+
+  <!-- Le chien de berger qui mène les bêtes de trait au champ et les ramène.
+       Ce nœud est inséré ici, et non par le module Herding Dogs qui possède
+       pourtant le dressage, pour une raison de robustesse : c'est notre
+       assembly qui contient JobGiver_Meneur, et MayRequire ne vérifie que la
+       présence du mod, jamais celle de la classe. Quand Herding Dogs annonçait
+       ce nœud alors que la version installée de Plowing ne connaissait pas
+       encore la classe, le type restait introuvable, l'arbre de pensée vanilla
+       « Animal » était rejeté en entier, et plus un seul animal de la partie ne
+       fonctionnait. Le nœud et la classe voyagent désormais ensemble : une
+       version de Plowing sans la classe n'a pas le patch non plus.
+
+       Même ancrage que les trois autres patchs du mod : juste après le bloc
+       Haul, donc hors de sa condition de Manipulation. MayRequire fait
+       disparaître le bloc entier si Herding Dogs est absent, et avec lui la
+       référence à son dressage AAW_Troupeau, qui ne serait alors pas résolue. -->
+  <Operation Class="PatchOperationInsert">
+    <xpath>Defs/ThinkTreeDef[defName="Animal"]//li[@Class="ThinkNode_ChancePerHour_Constant"][.//trainable="Haul"]</xpath>
+    <order>Append</order>
+    <value>
+      <li Class="ThinkNode_ConditionalTrainableCompleted" MayRequire="royaltea.animalsatwork.herding">
+        <trainable>AAW_Troupeau</trainable>
+        <subNodes>
+          <li Class="ThinkNode_Tagger">
+            <tagToGive>TrainedAnimalBehavior</tagToGive>
+            <subNodes>
+              <li Class="AnimalsAtWork.Plowing.JobGiver_Meneur" />
+            </subNodes>
+          </li>
+        </subNodes>
+      </li>
+    </value>
+  </Operation>
+
+</Patch>

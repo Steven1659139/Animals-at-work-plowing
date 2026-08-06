@@ -11,10 +11,13 @@ namespace AnimalsAtWork.Plowing
     // mains, le colon reste nécessaire pour ça. Le partage est donc : le colon
     // équipe la bête dans l'enclos, le chien fait l'aller-retour jusqu'au champ.
     //
-    // Ce nœud n'est jamais atteint sans le module Herding Dogs : c'est lui qui
-    // l'insère dans l'arbre de pensée, sous sa condition de dressage
-    // (Patches/Patch_ArbrePensee_Troupeau.xml, opération conditionnée à la
-    // présence de Plowing). Sans lui, la classe ne sert simplement à rien.
+    // Ce nœud n'est jamais atteint sans le module Herding Dogs : il est inséré
+    // dans l'arbre de pensée sous la condition de son dressage AAW_Troupeau, et
+    // MayRequire l'efface si le module est absent. C'est bien nous qui posons ce
+    // patch (Patches/Patch_ArbrePensee_Meneur.xml) et non Herding Dogs, alors
+    // que le dressage lui appartient : la classe doit voyager avec le nœud qui
+    // la nomme, sans quoi une version dépareillée des deux mods fait rejeter
+    // l'arbre « Animal » vanilla en entier. Voir le commentaire du patch.
     public class JobGiver_Meneur : ThinkNode_JobGiver
     {
         protected override Job TryGiveJob(Pawn chien)
