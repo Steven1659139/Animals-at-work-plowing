@@ -10,11 +10,18 @@ namespace AnimalsAtWork.Plowing
     // (animaux de la colonie seulement) et ne dessine que la carte visible.
     public class MapComponent_Charrettes : MapComponent
     {
-        private const float TailleCharrette = 1.35f;
-        private const float TailleCharrue = 1.0f;
-        private const float TailleGrattoir = 1.0f;
-        private const float TailleCargo = 0.5f;
+        // Tailles pour le gabarit bovin ; tout le reste s'en déduit. Une pièce
+        // qui fait la moitié de la bête se lit de loin, le tiers ne se lit pas.
+        private const float TailleCharrette = 1.9f;
+        private const float TailleCharrue = 1.4f;
+        private const float TailleGrattoir = 1.4f;
         private const int CargosVisibles = 3;
+
+        // Disposition des piles, en fraction de la charrette : posées sur le
+        // plateau, elles la suivent quand elle change de taille.
+        private const float CargoTaille = 0.37f;
+        private const float CargoPas = 0.22f;
+        private const float CargoDepart = -0.26f;
 
         // La pièce sort du sprite de la bête : demi-longueur de la bête plus
         // demi-longueur de la pièce. Un écart fixe mis à l'échelle ne suffit
@@ -32,7 +39,10 @@ namespace AnimalsAtWork.Plowing
         // texture qu'on accorde à une autre texture, et les deux ne vont pas
         // du tout de pair (l'alpaga se dessine aussi grand que le cheval).
         private const float GabaritReference = 2.6f; // bovin adulte : les tailles ci-dessus
-        private const float FacteurMin = 0.6f;  // le poulet garde une charrue lisible
+        // Le plancher se règle en taille dessinée, pas en proportion : il vaut
+        // ce qu'il faut pour que la charrue du poulet reste lisible (~0,6 case),
+        // et se redescend donc quand les tailles ci-dessus grandissent.
+        private const float FacteurMin = 0.45f;
         private const float FacteurMax = 1.5f;  // le thrumbo n'en tire pas une de deux cases
 
         public MapComponent_Charrettes(Map map) : base(map)
@@ -77,8 +87,7 @@ namespace AnimalsAtWork.Plowing
             bool devant = false)
         {
             float gabarit = TailleDessinee(bete);
-            float facteur = Facteur(gabarit);
-            taille *= facteur;
+            taille *= Facteur(gabarit);
             Rot4 rot = bete.Rotation;
             // Les textures d'attelage sont dessinées timon vers le haut, lame
             // vers le bas : tirées, le timon pointe déjà vers la bête. Poussée,
@@ -118,12 +127,11 @@ namespace AnimalsAtWork.Plowing
                     continue;
                 }
                 // Piles réparties le long du plateau, de l'arrière vers l'avant.
-                // Elles sont posées dessus : elles suivent la charrette.
                 Vector3 posCargo = pos + orientation
-                    * new Vector3(0f, 0f, (dessines * 0.30f - 0.35f) * facteur);
+                    * new Vector3(0f, 0f, (dessines * CargoPas + CargoDepart) * taille);
                 posCargo.y = pos.y + 0.02f; // au-dessus du plateau
                 Graphics.DrawMesh(MeshPool.plane10,
-                    Matrix4x4.TRS(posCargo, orientation, Vector3.one * (TailleCargo * facteur)),
+                    Matrix4x4.TRS(posCargo, orientation, Vector3.one * (CargoTaille * taille)),
                     materiau, 0);
                 dessines++;
             }
