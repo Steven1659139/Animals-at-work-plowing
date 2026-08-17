@@ -13,7 +13,17 @@ namespace AnimalsAtWork.Plowing
         private const float TailleCharrette = 1.35f;
         private const float TailleCharrue = 1.0f;
         private const float TailleCargo = 0.5f;
+        private const float Recul = 0.95f; // distance derrière le centre de la bête
         private const int CargosVisibles = 3;
+
+        // L'attelage suit le gabarit de la bête qui le tire : la charrue d'un
+        // âne n'a pas à faire la taille de celle d'un éléphant. On se règle sur
+        // la taille dessinée de la bête, pas sur son bodySize — c'est une
+        // texture qu'on accorde à une autre texture, et les deux ne vont pas
+        // du tout de pair (l'alpaga se dessine aussi grand que le cheval).
+        private const float GabaritReference = 2.6f; // bovin adulte : les tailles ci-dessus
+        private const float FacteurMin = 0.6f;  // le poulet garde une charrue lisible
+        private const float FacteurMax = 1.5f;  // le thrumbo n'en tire pas une de deux cases
 
         public MapComponent_Charrettes(Map map) : base(map)
         {
@@ -44,9 +54,14 @@ namespace AnimalsAtWork.Plowing
 
         private static void Dessiner(Pawn bete, Thing attelage, float taille, bool avecCargo)
         {
+            float facteur = Facteur(bete);
+            taille *= facteur;
             Rot4 rot = bete.Rotation;
             Quaternion orientation = Quaternion.AngleAxis(rot.AsAngle, Vector3.up);
-            Vector3 pos = bete.DrawPos - rot.FacingCell.ToVector3() * 0.95f;
+            // Le recul suit le gabarit lui aussi : sans ça, l'attelage d'une
+            // grosse bête lui rentrerait dans le corps et celui d'une petite
+            // traînerait une case derrière elle, détaché.
+            Vector3 pos = bete.DrawPos - rot.FacingCell.ToVector3() * (Recul * facteur);
             pos.y = AltitudeLayer.Pawn.AltitudeFor() - 0.03f; // juste sous la bête
             Graphics.DrawMesh(MeshPool.plane10,
                 Matrix4x4.TRS(pos, orientation, new Vector3(taille, 1f, taille)),
@@ -76,13 +91,28 @@ namespace AnimalsAtWork.Plowing
                     continue;
                 }
                 // Piles réparties le long du plateau, de l'arrière vers l'avant.
-                Vector3 posCargo = pos + orientation * new Vector3(0f, 0f, dessines * 0.30f - 0.35f);
+                // Elles sont posées dessus : elles suivent la charrette.
+                Vector3 posCargo = pos + orientation
+                    * new Vector3(0f, 0f, (dessines * 0.30f - 0.35f) * facteur);
                 posCargo.y = pos.y + 0.02f; // au-dessus du plateau
                 Graphics.DrawMesh(MeshPool.plane10,
-                    Matrix4x4.TRS(posCargo, orientation, Vector3.one * TailleCargo),
+                    Matrix4x4.TRS(posCargo, orientation, Vector3.one * (TailleCargo * facteur)),
                     materiau, 0);
                 dessines++;
             }
+        }
+
+        // Rapport entre la bête telle qu'elle est dessinée et le gabarit bovin.
+        // La taille vient de l'étape de vie en cours : un poulain tire une
+        // charrue de poulain, et elle grandit avec lui.
+        private static float Facteur(Pawn bete)
+        {
+            GraphicData corps = bete.ageTracker?.CurKindLifeStage?.bodyGraphicData;
+            if (corps == null)
+            {
+                return 1f;
+            }
+            return Mathf.Clamp(corps.drawSize.x / GabaritReference, FacteurMin, FacteurMax);
         }
     }
 }
