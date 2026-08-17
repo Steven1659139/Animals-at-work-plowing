@@ -121,17 +121,29 @@ namespace AnimalsAtWork.Plowing
                 // contient), et Thing.Graphic renvoie alors BaseContent.BadGraphic,
                 // c'est-à-dire le carré magenta barré de rouge. On saute ces
                 // pièces-là sans consommer une des trois places visibles.
-                Material materiau = cargo.Graphic?.MatSingle;
+                //
+                // MatSingleFor et non MatSingle : sur un Graphic_Random — les
+                // rochers, la ferraille — MatSingle retire une variante au
+                // hasard à CHAQUE appel. Appelé une fois par frame, le caillou
+                // changeait de forme soixante fois par seconde et gigotait sur
+                // le plateau. MatSingleFor fixe la variante sur l'identifiant
+                // de la pièce, celle-là même que le jeu lui donne au sol.
+                Material materiau = cargo.Graphic?.MatSingleFor(cargo);
                 if (materiau.NullOrBad())
                 {
                     continue;
                 }
                 // Piles réparties le long du plateau, de l'arrière vers l'avant.
+                // L'orientation ne sert qu'à les répartir : le chargement, lui,
+                // reste d'aplomb. Une pile de rochers qui pivote d'un quart de
+                // tour parce que la bête tourne à l'est ne ressemble à rien —
+                // et le jeu ne fait jamais tourner un objet posé.
                 Vector3 posCargo = pos + orientation
                     * new Vector3(0f, 0f, (dessines * CargoPas + CargoDepart) * taille);
                 posCargo.y = pos.y + 0.02f; // au-dessus du plateau
                 Graphics.DrawMesh(MeshPool.plane10,
-                    Matrix4x4.TRS(posCargo, orientation, Vector3.one * (CargoTaille * taille)),
+                    Matrix4x4.TRS(posCargo, Quaternion.identity,
+                        Vector3.one * (CargoTaille * taille)),
                     materiau, 0);
                 dessines++;
             }
