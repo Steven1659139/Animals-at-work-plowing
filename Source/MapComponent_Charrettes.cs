@@ -4,14 +4,15 @@ using Verse;
 namespace AnimalsAtWork.Plowing
 {
     // Dessine l'attelage derrière chaque bête équipée, orienté avec elle :
-    // la charrette avec jusqu'à trois piles de cargaison visibles sur le
-    // plateau, ou la charrue. MapComponentUpdate tourne à chaque frame : la
-    // boucle reste courte (animaux de la colonie seulement) et ne dessine
-    // que la carte visible.
+    // la charrue, le grattoir, ou la charrette avec jusqu'à trois piles de
+    // cargaison visibles sur le plateau. MapComponentUpdate tourne à chaque
+    // frame : la boucle reste courte (animaux de la colonie seulement) et ne
+    // dessine que la carte visible.
     public class MapComponent_Charrettes : MapComponent
     {
         private const float TailleCharrette = 1.35f;
         private const float TailleCharrue = 1.0f;
+        private const float TailleGrattoir = 1.0f;
         private const float TailleCargo = 0.5f;
         private const float Recul = 0.95f; // distance derrière le centre de la bête
         private const int CargosVisibles = 3;
@@ -38,18 +39,25 @@ namespace AnimalsAtWork.Plowing
             var animaux = map.mapPawns.SpawnedColonyAnimals;
             for (int i = 0; i < animaux.Count; i++)
             {
-                Thing charrette = EquipementUtility.Porte(animaux[i], AAW_DefOf.AAW_Charrette);
-                if (charrette != null)
+                // Une seule recherche par bête : les trois attelages s'excluent,
+                // et cette boucle tourne à chaque frame.
+                Thing attelage = EquipementUtility.AttelagePorte(animaux[i]);
+                if (attelage == null)
                 {
-                    Dessiner(animaux[i], charrette, TailleCharrette, avecCargo: true);
                     continue;
                 }
-                Thing charrue = EquipementUtility.Porte(animaux[i], AAW_DefOf.AAW_Charrue);
-                if (charrue != null)
-                {
-                    Dessiner(animaux[i], charrue, TailleCharrue, avecCargo: false);
-                }
+                bool charrette = attelage.def == AAW_DefOf.AAW_Charrette;
+                Dessiner(animaux[i], attelage, Taille(attelage.def), avecCargo: charrette);
             }
+        }
+
+        private static float Taille(ThingDef def)
+        {
+            if (def == AAW_DefOf.AAW_Charrette)
+            {
+                return TailleCharrette;
+            }
+            return def == AAW_DefOf.AAW_Charrue ? TailleCharrue : TailleGrattoir;
         }
 
         private static void Dessiner(Pawn bete, Thing attelage, float taille, bool avecCargo)
