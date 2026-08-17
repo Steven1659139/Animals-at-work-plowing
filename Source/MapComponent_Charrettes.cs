@@ -3,18 +3,18 @@ using Verse;
 
 namespace AnimalsAtWork.Plowing
 {
-    // Dessine l'attelage derrière chaque bête équipée, orienté avec elle :
-    // la charrue, le grattoir, ou la charrette avec jusqu'à trois piles de
-    // cargaison visibles sur le plateau. MapComponentUpdate tourne à chaque
-    // frame : la boucle reste courte (animaux de la colonie seulement) et ne
-    // dessine que la carte visible.
+    // Dessine sa pièce à chaque bête équipée, orientée avec elle : la charrue
+    // ou la charrette derrière, celle-ci avec jusqu'à trois piles de cargaison
+    // visibles sur le plateau, et le grattoir devant, qui se pousse.
+    // MapComponentUpdate tourne à chaque frame : la boucle reste courte
+    // (animaux de la colonie seulement) et ne dessine que la carte visible.
     public class MapComponent_Charrettes : MapComponent
     {
         private const float TailleCharrette = 1.35f;
         private const float TailleCharrue = 1.0f;
         private const float TailleGrattoir = 1.0f;
         private const float TailleCargo = 0.5f;
-        private const float Recul = 0.95f; // distance derrière le centre de la bête
+        private const float Ecart = 0.95f; // distance entre le centre de la bête et sa pièce
         private const int CargosVisibles = 3;
 
         // L'attelage suit le gabarit de la bête qui le tire : la charrue d'un
@@ -47,7 +47,11 @@ namespace AnimalsAtWork.Plowing
                     continue;
                 }
                 bool charrette = attelage.def == AAW_DefOf.AAW_Charrette;
-                Dessiner(animaux[i], attelage, Taille(attelage.def), avecCargo: charrette);
+                // Le grattoir se pousse, il ne se tire pas : il passe devant la
+                // bête, lame en avant, là où charrue et charrette suivent.
+                bool devant = attelage.def == AAW_DefOf.AAW_Grattoir;
+                Dessiner(animaux[i], attelage, Taille(attelage.def),
+                    avecCargo: charrette, devant: devant);
             }
         }
 
@@ -60,16 +64,23 @@ namespace AnimalsAtWork.Plowing
             return def == AAW_DefOf.AAW_Charrue ? TailleCharrue : TailleGrattoir;
         }
 
-        private static void Dessiner(Pawn bete, Thing attelage, float taille, bool avecCargo)
+        private static void Dessiner(Pawn bete, Thing attelage, float taille, bool avecCargo,
+            bool devant = false)
         {
             float facteur = Facteur(bete);
             taille *= facteur;
             Rot4 rot = bete.Rotation;
-            Quaternion orientation = Quaternion.AngleAxis(rot.AsAngle, Vector3.up);
-            // Le recul suit le gabarit lui aussi : sans ça, l'attelage d'une
+            // Les textures d'attelage sont dessinées timon vers le haut, lame
+            // vers le bas : tirées, le timon pointe déjà vers la bête. Poussée,
+            // la pièce fait demi-tour pour lui présenter son timon et mettre sa
+            // lame en tête.
+            Quaternion orientation =
+                Quaternion.AngleAxis(rot.AsAngle + (devant ? 180f : 0f), Vector3.up);
+            // L'écart suit le gabarit lui aussi : sans ça, l'attelage d'une
             // grosse bête lui rentrerait dans le corps et celui d'une petite
             // traînerait une case derrière elle, détaché.
-            Vector3 pos = bete.DrawPos - rot.FacingCell.ToVector3() * (Recul * facteur);
+            Vector3 pos = bete.DrawPos
+                + rot.FacingCell.ToVector3() * (Ecart * facteur * (devant ? 1f : -1f));
             pos.y = AltitudeLayer.Pawn.AltitudeFor() - 0.03f; // juste sous la bête
             Graphics.DrawMesh(MeshPool.plane10,
                 Matrix4x4.TRS(pos, orientation, new Vector3(taille, 1f, taille)),
