@@ -66,12 +66,18 @@ namespace AnimalsAtWork.Plowing
             MapComponent_Labour c = bete.Map.GetComponent<MapComponent_Labour>();
             Thing attelage = EquipementUtility.AttelagePorte(bete);
             TacheTrait tache = ServiceTrait.TacheAServir(bete, c);
+            float gabarit = MapComponent_Charrettes.TailleDessinee(bete);
             return "[AAW dev] "
                 + $"service:{c.EstEnService(bete)} "
                 + $"tâche:{tache} "
                 + $"jobBête:{bete.CurJob?.def.defName ?? "-"}\n"
                 + $"harnais:{EquipementUtility.Porte(bete, AAW_DefOf.AAW_HarnaisDeTrait) != null} "
                 + $"attelage:{attelage?.def.defName ?? "-"}\n"
+                // Taille de l'attelage dessiné : « facteur:1,00 » sur un
+                // éléphant dirait que la lecture du gabarit échoue, et non que
+                // la pièce est cachée sous le sprite.
+                + $"gabarit:{gabarit:F2} "
+                + $"facteur:{MapComponent_Charrettes.Facteur(gabarit):F2}\n"
                 // Une pièce absente de la carte fait échouer l'étape « équiper »
                 // en silence, et donc disparaître le clic droit : on les compte
                 // toutes les quatre.

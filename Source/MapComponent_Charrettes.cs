@@ -14,8 +14,17 @@ namespace AnimalsAtWork.Plowing
         private const float TailleCharrue = 1.0f;
         private const float TailleGrattoir = 1.0f;
         private const float TailleCargo = 0.5f;
-        private const float Ecart = 0.95f; // distance entre le centre de la bête et sa pièce
         private const int CargosVisibles = 3;
+
+        // La pièce sort du sprite de la bête : demi-longueur de la bête plus
+        // demi-longueur de la pièce. Un écart fixe mis à l'échelle ne suffit
+        // pas — dessinée SOUS la bête, une pièce dont le centre tombe dans le
+        // sprite est une pièce enterrée, et plus la bête est grosse mieux elle
+        // l'enterre. C'est ce qui la faisait disparaître de profil, où le corps
+        // remplit toute la largeur, et qui masquait l'agrandissement.
+        // Serrage : les deux textures ont de la marge transparente, on les
+        // rapproche d'autant pour que l'attelage reste au cul de la bête.
+        private const float Serrage = 0.85f;
 
         // L'attelage suit le gabarit de la bête qui le tire : la charrue d'un
         // âne n'a pas à faire la taille de celle d'un éléphant. On se règle sur
@@ -67,7 +76,8 @@ namespace AnimalsAtWork.Plowing
         private static void Dessiner(Pawn bete, Thing attelage, float taille, bool avecCargo,
             bool devant = false)
         {
-            float facteur = Facteur(bete);
+            float gabarit = TailleDessinee(bete);
+            float facteur = Facteur(gabarit);
             taille *= facteur;
             Rot4 rot = bete.Rotation;
             // Les textures d'attelage sont dessinées timon vers le haut, lame
@@ -76,11 +86,9 @@ namespace AnimalsAtWork.Plowing
             // lame en tête.
             Quaternion orientation =
                 Quaternion.AngleAxis(rot.AsAngle + (devant ? 180f : 0f), Vector3.up);
-            // L'écart suit le gabarit lui aussi : sans ça, l'attelage d'une
-            // grosse bête lui rentrerait dans le corps et celui d'une petite
-            // traînerait une case derrière elle, détaché.
+            float ecart = (gabarit + taille) * 0.5f * Serrage;
             Vector3 pos = bete.DrawPos
-                + rot.FacingCell.ToVector3() * (Ecart * facteur * (devant ? 1f : -1f));
+                + rot.FacingCell.ToVector3() * (ecart * (devant ? 1f : -1f));
             pos.y = AltitudeLayer.Pawn.AltitudeFor() - 0.03f; // juste sous la bête
             Graphics.DrawMesh(MeshPool.plane10,
                 Matrix4x4.TRS(pos, orientation, new Vector3(taille, 1f, taille)),
@@ -121,17 +129,19 @@ namespace AnimalsAtWork.Plowing
             }
         }
 
-        // Rapport entre la bête telle qu'elle est dessinée et le gabarit bovin.
-        // La taille vient de l'étape de vie en cours : un poulain tire une
-        // charrue de poulain, et elle grandit avec lui.
-        private static float Facteur(Pawn bete)
+        // Longueur de la bête telle qu'elle est dessinée, en cases. Elle vient
+        // de l'étape de vie en cours : un poulain tire une charrue de poulain,
+        // et elle grandit avec lui. Le gabarit bovin par défaut, faute de mieux.
+        public static float TailleDessinee(Pawn bete)
         {
             GraphicData corps = bete.ageTracker?.CurKindLifeStage?.bodyGraphicData;
-            if (corps == null)
-            {
-                return 1f;
-            }
-            return Mathf.Clamp(corps.drawSize.x / GabaritReference, FacteurMin, FacteurMax);
+            return corps == null ? GabaritReference : corps.drawSize.x;
+        }
+
+        // Rapport entre cette longueur et celle du gabarit bovin.
+        public static float Facteur(float gabarit)
+        {
+            return Mathf.Clamp(gabarit / GabaritReference, FacteurMin, FacteurMax);
         }
     }
 }
