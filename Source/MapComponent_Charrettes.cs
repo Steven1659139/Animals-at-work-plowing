@@ -12,9 +12,9 @@ namespace AnimalsAtWork.Plowing
     {
         // Tailles pour le gabarit bovin ; tout le reste s'en déduit. Une pièce
         // qui fait la moitié de la bête se lit de loin, le tiers ne se lit pas.
-        private const float TailleCharrette = 1.9f;
-        private const float TailleCharrue = 1.4f;
-        private const float TailleGrattoir = 1.4f;
+        private const float TailleCharrette = 2.3f;
+        private const float TailleCharrue = 1.7f;
+        private const float TailleGrattoir = 1.7f;
         private const int CargosVisibles = 3;
 
         // Disposition des piles, en fraction de la charrette : posées sur le
@@ -42,7 +42,7 @@ namespace AnimalsAtWork.Plowing
         // Le plancher se règle en taille dessinée, pas en proportion : il vaut
         // ce qu'il faut pour que la charrue du poulet reste lisible (~0,6 case),
         // et se redescend donc quand les tailles ci-dessus grandissent.
-        private const float FacteurMin = 0.45f;
+        private const float FacteurMin = 0.35f;
         private const float FacteurMax = 1.5f;  // le thrumbo n'en tire pas une de deux cases
 
         public MapComponent_Charrettes(Map map) : base(map)
