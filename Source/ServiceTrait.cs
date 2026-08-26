@@ -254,22 +254,33 @@ namespace AnimalsAtWork.Plowing
         // trouvait aucune tournée, et on la ramenait — en boucle.
         public static bool TravailCharretteEnAttente(Map map, Pawn bete)
         {
+            return ComptePiles(map, bete) >= PilesMinCharrette;
+        }
+
+        // Les piles qui comptent, plafonné au seuil : sert au test ci-dessus et
+        // au diagnostic dév, qui a besoin du nombre et pas seulement du oui/non.
+        public static int ComptePiles(Map map, Pawn bete)
+        {
             int n = 0;
             foreach (Thing t in map.listerHaulables.ThingsPotentiallyNeedingHauling())
             {
-                // Filtres bon marché d'abord : la recherche de rangement ne
-                // tourne que pour les piles qui ont passé le reste.
-                if (EquipementUtility.EstEquipement(t.def) || t.IsForbidden(bete)
-                    || !bete.CanReserve(t))
+                // Pas de CanReserve ici : une pile qu'un colon vient de réserver
+                // reste du travail qui attend, et il s'en réserve sans cesse. Le
+                // test y perdait son sens — le seuil n'était plus jamais atteint
+                // dans une colonie active, et les bêtes ne sortaient plus du
+                // tout. C'est au charretier de trancher, une fois la bête au
+                // champ et pile par pile (PeutEtreCharriee).
+                if (EquipementUtility.EstEquipement(t.def) || t.IsForbidden(bete))
                 {
                     continue;
                 }
+                // Coûteux : en dernier, et on s'arrête au seuil.
                 if (JobGiver_Charretier.ADestination(map, t) && ++n >= PilesMinCharrette)
                 {
-                    return true;
+                    break;
                 }
             }
-            return false;
+            return n;
         }
 
         // Le trajet que fera l'attelage colon + bête au bout de la corde. Ni

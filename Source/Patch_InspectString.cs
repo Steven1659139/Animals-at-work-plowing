@@ -78,6 +78,12 @@ namespace AnimalsAtWork.Plowing
                 // la pièce est cachée sous le sprite.
                 + $"gabarit:{gabarit:F2} "
                 + $"facteur:{MapComponent_Charrettes.Facteur(gabarit):F2}\n"
+                // Pourquoi la bête ne sort pas pour la charrette. « piles:0/2 »
+                // avec des tas partout dit que rien n'a de stock où aller ;
+                // « répit » dit qu'elle vient de déverser ou de rentrer.
+                + $"piles:{ServiceTrait.ComptePiles(bete.Map, bete)}/2 "
+                + $"répitRetour:{c.EnRepitDeRetour(bete)} "
+                + $"répitDéversement:{c.EnRepitDeDeversement(bete)}\n"
                 // Une pièce absente de la carte fait échouer l'étape « équiper »
                 // en silence, et donc disparaître le clic droit : on les compte
                 // toutes les quatre.
