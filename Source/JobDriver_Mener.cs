@@ -99,6 +99,9 @@ namespace AnimalsAtWork.Plowing
             if (job.def == AAW_DefOf.AAW_RamenerAEnclos)
             {
                 composante.FinService(ropee);
+                // Elle reste attelée : rien ne l'empêcherait de repartir à la
+                // seconde où du travail réapparaît. On note l'heure du retour.
+                composante.NoterRetour(ropee);
                 // Ramenée parce qu'elle n'est plus une bête de trait : lui
                 // retirer l'équipement, qui sera rangé au râtelier.
                 if (!composante.EstBeteDeTrait(ropee))

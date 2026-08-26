@@ -188,7 +188,29 @@ namespace AnimalsAtWork.Plowing
         // vendu, dressage perdu) est purgée. État transitoire, jamais sauvegardé.
         private const int TtlScanMeneur = 60000;
         private readonly Dictionary<int, int> dernierScanMeneur = new Dictionary<int, int>();
+        // Répit après un retour à l'enclos : ce laps de temps sans qu'un meneur
+        // ne ressorte cette bête. Voir ServiceTrait.JobDeService — sans lui, une
+        // bête qui garde son attelage repart dès que le travail de charrette
+        // repasse son seuil, ce qui arrive sans cesse. Une heure de jeu.
+        // État transitoire, jamais sauvegardé : au pire, une bête ressort une
+        // fois tout de suite après le chargement d'une partie.
+        private const int RepitRetour = 2500;
+        private readonly Dictionary<int, int> retoursEnclos = new Dictionary<int, int>();
         private static readonly List<int> aPurger = new List<int>();
+
+        // Cette bête vient d'être ramenée à l'enclos par un meneur.
+        public void NoterRetour(Pawn bete)
+        {
+            retoursEnclos[bete.thingIDNumber] = Find.TickManager.TicksGame;
+        }
+
+        public bool EnRepitDeRetour(Pawn bete)
+        {
+            int tick = Find.TickManager.TicksGame;
+            // dernier <= tick : garde contre une horloge revenue en arrière.
+            return retoursEnclos.TryGetValue(bete.thingIDNumber, out int dernier)
+                && dernier <= tick && tick - dernier < RepitRetour;
+        }
 
         // Renvoie true (et note le tick) si ce meneur peut relancer son scan,
         // false sinon — le JobGiver rend alors la main au reste de l'arbre.
@@ -206,22 +228,28 @@ namespace AnimalsAtWork.Plowing
             return true;
         }
 
-        // Sans ça le dictionnaire enflerait sur toute la partie, au fil des
-        // meneurs croisés.
-        private void PurgerScansMeneur(int tick)
+        // Sans ça les dictionnaires enfleraient sur toute la partie, au fil des
+        // meneurs et des bêtes croisés.
+        private void PurgerRegistres(int tick)
+        {
+            PurgerRegistre(dernierScanMeneur, tick, TtlScanMeneur);
+            PurgerRegistre(retoursEnclos, tick, RepitRetour);
+        }
+
+        private static void PurgerRegistre(Dictionary<int, int> registre, int tick, int ttl)
         {
             aPurger.Clear();
-            foreach (KeyValuePair<int, int> entree in dernierScanMeneur)
+            foreach (KeyValuePair<int, int> entree in registre)
             {
                 // Périmée, ou horloge revenue en arrière (rechargement).
-                if (tick < entree.Value || tick - entree.Value >= TtlScanMeneur)
+                if (tick < entree.Value || tick - entree.Value >= ttl)
                 {
                     aPurger.Add(entree.Key);
                 }
             }
             for (int i = 0; i < aPurger.Count; i++)
             {
-                dernierScanMeneur.Remove(aPurger[i]);
+                registre.Remove(aPurger[i]);
             }
             aPurger.Clear();
         }
@@ -233,7 +261,7 @@ namespace AnimalsAtWork.Plowing
                 return;
             }
             int maintenant = Find.TickManager.TicksGame;
-            PurgerScansMeneur(maintenant);
+            PurgerRegistres(maintenant);
             for (int i = cases.Count - 1; i >= 0; i--)
             {
                 if (maintenant < expirations[i])

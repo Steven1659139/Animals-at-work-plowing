@@ -61,7 +61,15 @@ namespace AnimalsAtWork.Plowing
             // Équipée mais pas encore au travail : la mener au champ.
             if (!enService)
             {
-                return JobMener(meneur, bete, tache);
+                // Sauf si elle vient de rentrer. Une bête reste attelée entre
+                // deux tournées (seul un colon la déséquipe, et seulement quand
+                // elle cesse d'être bête de trait), donc rien ne la retient de
+                // repartir à la seconde où du travail réapparaît. Le travail de
+                // charrette, lui, va et vient au rythme des piles à ranger : le
+                // seuil se franchit dans les deux sens sans arrêt, et le meneur
+                // fait la navette entre l'enclos et le champ. Ce répit met un
+                // plancher à la fréquence des sorties.
+                return composante.EnRepitDeRetour(bete) ? null : JobMener(meneur, bete, tache);
             }
             // En service mais hors de portée de tout travail : elle a été lâchée
             // au mauvais endroit, ou le chemin s'est fermé depuis (portail muré,
