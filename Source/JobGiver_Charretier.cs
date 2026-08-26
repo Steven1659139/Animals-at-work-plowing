@@ -53,6 +53,15 @@ namespace AnimalsAtWork.Plowing
                 return JobMaker.MakeJob(AAW_DefOf.AAW_ViderCharrette);
             }
 
+            // Elle vient de déverser faute de rangement : on ne relance pas une
+            // tournée tout de suite. Les piles déversées sont à ses pieds, donc
+            // en tête du tri par proximité — elle les reprendrait à l'instant
+            // pour les redéverser, en usant sa charrette à chaque passage.
+            if (composante.EnRepitDeDeversement(pawn))
+            {
+                return null;
+            }
+
             // Charretage coupé (interrupteur), recherche non faite, ou bête pas
             // (encore) équipée : pas de nouvelle tournée. La cargaison à bord est
             // déjà partie (bloc ci-dessus).

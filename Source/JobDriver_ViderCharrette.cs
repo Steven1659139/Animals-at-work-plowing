@@ -39,6 +39,10 @@ namespace AnimalsAtWork.Plowing
                     // Plus une seule pile ne trouve de rangement : on déverse
                     // sur place plutôt que de promener la cargaison sans fin.
                     ToutDeverser();
+                    // Et on pose un répit, sans quoi la tournée suivante
+                    // reprendrait ce qu'on vient de poser — c'est ce qui faisait
+                    // tourner la bête en boucle jusqu'à détruire sa charrette.
+                    Map.GetComponent<MapComponent_Labour>()?.NoterDeversement(pawn);
                     EndJobWith(JobCondition.Succeeded);
                 }
             };
@@ -96,6 +100,18 @@ namespace AnimalsAtWork.Plowing
         private void ToutDeverser()
         {
             ThingOwner contenu = pawn.inventory.innerContainer;
+            // Un déversement veut dire qu'une pile est entrée dans la charrette
+            // alors qu'elle ne pouvait plus en sortir : le ramassage et la
+            // livraison n'ont pas répondu pareil sur la même pile. On trace
+            // laquelle, faute de quoi la cause reste invisible en jeu. Le répit
+            // qui suit borne la trace à une par heure et par bête.
+            if (Prefs.DevMode)
+            {
+                Thing premier = EquipementUtility.PremierCargo(pawn);
+                Log.Warning($"[AAW] {pawn.LabelShort} déverse en {pawn.Position} : "
+                    + $"aucun rangement pour {contenu.Count} pile(s), "
+                    + $"dont {premier?.LabelCap ?? "-"}.");
+            }
             for (int i = contenu.Count - 1; i >= 0; i--)
             {
                 Thing t = contenu[i];

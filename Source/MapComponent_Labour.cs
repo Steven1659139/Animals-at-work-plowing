@@ -196,6 +196,15 @@ namespace AnimalsAtWork.Plowing
         // fois tout de suite après le chargement d'une partie.
         private const int RepitRetour = 2500;
         private readonly Dictionary<int, int> retoursEnclos = new Dictionary<int, int>();
+        // Répit après un déversement : ce laps de temps sans nouvelle tournée
+        // pour cette bête. Une charrette qui n'a rien trouvé où livrer vide son
+        // chargement par terre ; sans ce répit, la tournée suivante reprend
+        // aussitôt les mêmes piles — elles sont à distance nulle, donc en tête
+        // du tri par proximité — pour les redéverser, et ainsi de suite. La
+        // boucle use la charrette à chaque pile hissée et finit par la détruire.
+        // Voir JobGiver_Charretier. Même durée et même nature transitoire.
+        private const int RepitDeversement = 2500;
+        private readonly Dictionary<int, int> deversements = new Dictionary<int, int>();
         private static readonly List<int> aPurger = new List<int>();
 
         // Cette bête vient d'être ramenée à l'enclos par un meneur.
@@ -206,10 +215,26 @@ namespace AnimalsAtWork.Plowing
 
         public bool EnRepitDeRetour(Pawn bete)
         {
+            return EnRepit(retoursEnclos, bete, RepitRetour);
+        }
+
+        // Cette bête vient de vider sa charrette faute de rangement.
+        public void NoterDeversement(Pawn bete)
+        {
+            deversements[bete.thingIDNumber] = Find.TickManager.TicksGame;
+        }
+
+        public bool EnRepitDeDeversement(Pawn bete)
+        {
+            return EnRepit(deversements, bete, RepitDeversement);
+        }
+
+        private static bool EnRepit(Dictionary<int, int> registre, Pawn bete, int repit)
+        {
             int tick = Find.TickManager.TicksGame;
             // dernier <= tick : garde contre une horloge revenue en arrière.
-            return retoursEnclos.TryGetValue(bete.thingIDNumber, out int dernier)
-                && dernier <= tick && tick - dernier < RepitRetour;
+            return registre.TryGetValue(bete.thingIDNumber, out int dernier)
+                && dernier <= tick && tick - dernier < repit;
         }
 
         // Renvoie true (et note le tick) si ce meneur peut relancer son scan,
@@ -234,6 +259,7 @@ namespace AnimalsAtWork.Plowing
         {
             PurgerRegistre(dernierScanMeneur, tick, TtlScanMeneur);
             PurgerRegistre(retoursEnclos, tick, RepitRetour);
+            PurgerRegistre(deversements, tick, RepitDeversement);
         }
 
         private static void PurgerRegistre(Dictionary<int, int> registre, int tick, int ttl)
