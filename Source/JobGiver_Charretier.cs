@@ -67,6 +67,35 @@ namespace AnimalsAtWork.Plowing
             return TourneeDeChargement(pawn, map);
         }
 
+        // Cette pile a-t-elle un stock où aller ? C'est le test qui manquait au
+        // meneur : une pile posée là où rien ne l'accepte n'est pas du travail
+        // en attente, aucune tournée ne la prendra jamais.
+        //
+        // Sans porteur (carrier null), délibérément : la question ne dépend ni
+        // de qui emporte la pile ni d'où il se trouve. Vanilla gère ce cas
+        // partout — IsGoodStoreCell saute alors l'accessibilité et se rabat sur
+        // la réservation par faction — et c'est ce qui permet de la poser depuis
+        // l'enclos, avant même d'avoir sorti la bête. Passer la bête ici serait
+        // un piège : bloquée par les clôtures, elle n'atteint rien du dehors.
+        //
+        // Coûteux : à n'appeler qu'après les filtres bon marché.
+        public static bool ADestination(Map carte, Thing pile)
+        {
+            return StoreUtility.TryFindBestBetterStoreCellFor(pile, null, carte,
+                StoreUtility.CurrentStoragePriorityOf(pile), Faction.OfPlayer,
+                out _, needAccurateResult: false);
+        }
+
+        // Une pile que cette bête peut emporter de là où elle est : la question
+        // du meneur, plus l'accessibilité et la capacité de ramassage. Ne vaut
+        // qu'une fois la bête au champ — d'où l'enclos, elle répond toujours non.
+        public static bool PeutEtreCharriee(Pawn bete, Map carte, Thing pile)
+        {
+            return bete.CanReserve(pile)
+                && HaulAIUtility.PawnCanAutomaticallyHaulFast(bete, pile, false)
+                && ADestination(carte, pile);
+        }
+
         private static Job TourneeDeChargement(Pawn pawn, Map map)
         {
             // D'abord la tournée resserrée, qui est celle qu'on veut. Si elle ne
@@ -137,10 +166,7 @@ namespace AnimalsAtWork.Plowing
                         break;
                     }
                     candidats.RemoveAt(0);
-                    if (!pawn.CanReserve(t)
-                        || !HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, t, false)
-                        || !StoreUtility.TryFindBestBetterStoreCellFor(t, pawn, map,
-                            StoreUtility.CurrentStoragePriorityOf(t), pawn.Faction, out _))
+                    if (!PeutEtreCharriee(pawn, map, t))
                     {
                         continue;
                     }

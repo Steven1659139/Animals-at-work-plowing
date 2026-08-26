@@ -231,13 +231,32 @@ namespace AnimalsAtWork.Plowing
             }
         }
 
-        // Au moins deux piles à charrier quelque part (hors équipement de trait) ?
+        // Au moins deux piles qui vaudront le déplacement ?
+        //
+        // Ce test décide de sortir la bête de l'enclos, et il se pose donc
+        // depuis l'enclos : il ne retient que ce qui ne dépend pas de l'endroit
+        // où elle est. Surtout pas son accessibilité — une bête est bloquée par
+        // les clôtures (Pawn.FenceBlocked), donc rien du dehors ne lui est
+        // accessible tant qu'un meneur ne l'a pas fait franchir le portail, et
+        // lui poser la question du charretier reviendrait à ne jamais la sortir.
+        //
+        // Ce qu'il retient du charretier, c'est le point décisif : la pile
+        // a-t-elle un stock où aller. Sans lui, des gravats que rien n'accepte
+        // comptaient comme du travail en attente, on sortait la bête, elle ne
+        // trouvait aucune tournée, et on la ramenait — en boucle.
         public static bool TravailCharretteEnAttente(Map map, Pawn bete)
         {
             int n = 0;
             foreach (Thing t in map.listerHaulables.ThingsPotentiallyNeedingHauling())
             {
-                if (!EquipementUtility.EstEquipement(t.def) && !t.IsForbidden(bete) && ++n >= PilesMinCharrette)
+                // Filtres bon marché d'abord : la recherche de rangement ne
+                // tourne que pour les piles qui ont passé le reste.
+                if (EquipementUtility.EstEquipement(t.def) || t.IsForbidden(bete)
+                    || !bete.CanReserve(t))
+                {
+                    continue;
+                }
+                if (JobGiver_Charretier.ADestination(map, t) && ++n >= PilesMinCharrette)
                 {
                     return true;
                 }
