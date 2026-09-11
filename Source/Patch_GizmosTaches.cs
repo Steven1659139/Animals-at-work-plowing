@@ -31,7 +31,7 @@ namespace AnimalsAtWork.Plowing
                 yield break;
             }
             Pawn bete = __instance;
-            MapComponent_Labour composante = bete.Map.GetComponent<MapComponent_Labour>();
+            MapComponent_Labour composante = MapComponent_Labour.De(bete.Map);
             // Labour et déneigement dépendent du harnachement ; la charrette a sa
             // propre recherche. On n'affiche un interrupteur que si sa tâche est
             // seulement possible.

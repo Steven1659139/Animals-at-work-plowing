@@ -73,8 +73,8 @@ namespace AnimalsAtWork.Plowing
             return null;
         }
 
-        // La bête pose son attelage au sol : la saison de cet outil est finie,
-        // elle se rend disponible pour un autre. Les colons rangeront la pièce.
+        // Pose au sol l'une des pièces que la bête porte, si elle la porte ;
+        // un colon la rangera au râtelier.
         public static void DeposerAttelage(Pawn pawn, ThingDef def)
         {
             Thing porte = Porte(pawn, def);
@@ -87,7 +87,7 @@ namespace AnimalsAtWork.Plowing
 
         // La cargaison vit dans la charrette : quand la charrette s'en va, elle
         // s'en va aussi. Sans ça, une bête dé-marquée gardait son chargement
-        // prisonnier de son inventaire pour toujours — et vanilla lui dessinait
+        // prisonnier de son inventaire pour toujours, et vanilla lui dessinait
         // des sacoches sur le dos tant qu'il restait quoi que ce soit dedans
         // (PawnRenderNodeWorker_AnimalPack teste innerContainer.Count > 0).
         public static void DeposerCargaison(Pawn pawn)
@@ -106,7 +106,7 @@ namespace AnimalsAtWork.Plowing
             }
         }
 
-        // Retire tout ce que la bête porte — cargaison, attelage et harnais — au
+        // Retire tout ce que la bête porte (cargaison, attelage et harnais) au
         // sol : les colons rangeront l'équipement au râtelier et le chargement en
         // stock. Sert quand une bête cesse d'être bête de trait alors qu'elle
         // était encore équipée.
@@ -139,7 +139,7 @@ namespace AnimalsAtWork.Plowing
 
         // Ce que la bête peut encore charger, au plus petit des deux plafonds :
         // la place restante dans la charrette, et ce qu'elle peut porter sans
-        // être surchargée. Les deux comptent — un âne plafonne vers 305 kg
+        // être surchargée. Les deux comptent : un âne plafonne vers 305 kg
         // (bonus de charrette compris), soit moins que les 300 kg de cargaison
         // une fois le harnais et la charrette déduits. Sans le second plafond,
         // elle repartirait au ralenti sous le poids.
@@ -166,7 +166,8 @@ namespace AnimalsAtWork.Plowing
             return total;
         }
 
-        // L'équipement porté s'use ; détruit, la bête ira s'en procurer un neuf.
+        // L'équipement porté s'use ; détruit, un colon en apportera un neuf à
+        // la bête (ServiceTrait.PieceManquante).
         // vieUtile : nombre d'usages qu'encaisse un exemplaire fait du matériau
         // ordinaire (bois pour les attelages, cuir simple pour le harnais).
         public static void User(Pawn pawn, ThingDef def, int vieUtile, string cleMessage)
@@ -189,18 +190,14 @@ namespace AnimalsAtWork.Plowing
         }
 
         // Points de vie perdus à chaque usage. La valeur est absolue : elle ne
-        // dépend que de la déf, jamais du matériau de l'exemplaire — c'est ce
-        // qui fait qu'un soc d'acier dure plus longtemps qu'un soc de bois.
-        //
-        // L'usure valait auparavant porte.MaxHitPoints / vieUtile. Or les points
-        // de vie portent déjà le facteur du matériau : il se simplifiait, et un
-        // soc de plasteel s'usait exactement au même rythme qu'un soc de bois.
-        // La division entière achevait le tableau (100 / 200 = 0, relevé à 1),
-        // si bien qu'aucune durée annoncée n'était celle qu'on obtenait.
-        //
-        // On rapporte donc la durée au matériau ordinaire — le bois, le cuir
-        // simple : la durée annoncée reste celle de l'exemplaire que tout le
-        // monde fabrique, et tout ce qui est plus solide dure davantage.
+        // dépend que de la déf, jamais du matériau de l'exemplaire, et c'est ce
+        // qui fait qu'un soc d'acier dure plus longtemps qu'un soc de bois. Les
+        // points de vie portent déjà le facteur du matériau : rapporter l'usure
+        // au maximum de l'exemplaire l'annulerait, et un soc de plasteel
+        // s'userait au même rythme qu'un soc de bois. On rapporte donc la durée
+        // au matériau ordinaire (le bois, le cuir simple) : la durée annoncée
+        // est celle de l'exemplaire que tout le monde fabrique, et tout ce qui
+        // est plus solide dure davantage.
         private static float UsureParUsage(ThingDef def, int vieUtile)
         {
             return def.BaseMaxHitPoints * FacteurOrdinaire(def) / vieUtile;

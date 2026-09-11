@@ -25,14 +25,14 @@
   <AAW_GerundMener>leading out to work</AAW_GerundMener>
   <AAW_GerundRamener>leading back to the pen</AAW_GerundRamener>
   <!-- Réglages : espèces de trait ajoutées par le joueur -->
-  <AAW_ReglageEspeces>Which species can be harnessed. Pack animals are ticked already, which covers most modded beasts without you doing anything. Ticking a species only makes the task switches appear on it — you still turn each animal's work on yourself.</AAW_ReglageEspeces>
+  <AAW_ReglageEspeces>Which species can be harnessed. Pack animals are ticked already, which covers most modded beasts without you doing anything. Ticking a species only makes the task switches appear on it: you still turn each animal's work on yourself.</AAW_ReglageEspeces>
   <AAW_ReglageRecherche>Search a species…</AAW_ReglageRecherche>
   <AAW_ReglageHarnachablesSeules>Ticked only</AAW_ReglageHarnachablesSeules>
   <AAW_ReglageCompte>{0} species harnessable · {1} shown, largest first</AAW_ReglageCompte>
   <AAW_ReglageReinit>Reset to defaults</AAW_ReglageReinit>
   <AAW_ReglageReinitDesc>Drops your changes: pack animals and the species this mod ships with go back to ticked, everything else back to unticked.</AAW_ReglageReinitDesc>
-  <AAW_EspeceIntegree>{0}  (body size {1}) — built in</AAW_EspeceIntegree>
-  <AAW_EspeceBat>{0}  (body size {1}) — pack animal</AAW_EspeceBat>
+  <AAW_EspeceIntegree>{0}  (body size {1}, built in)</AAW_EspeceIntegree>
+  <AAW_EspeceBat>{0}  (body size {1}, pack animal)</AAW_EspeceBat>
   <AAW_EspeceLibre>{0}  (body size {1})</AAW_EspeceLibre>
   <AAW_EspeceTipIntegree>Ticked by default: this mod ships {0} as a draft species.</AAW_EspeceTipIntegree>
   <AAW_EspeceTipBat>Ticked by default: {0} is a pack animal, so it is taken to be strong enough to pull.</AAW_EspeceTipBat>

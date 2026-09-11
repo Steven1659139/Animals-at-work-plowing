@@ -5,7 +5,7 @@
   <ThingDef ParentName="ResourceBase">
     <defName>AAW_Charrette</defName>
     <label>draft cart</label>
-    <description>A two-wheeled wooden cart. Harnessed draft beasts hitch themselves to it, then load several stacks at once (up to 300 kg, riding in plain sight on the bed) and deliver the whole round in one trip. It also grants an extra hundred kilograms in caravans, and wears out after roughly four hundred loaded stacks. One implement per beast: cart, plow or snow scraper.</description>
+    <description>A two-wheeled wooden cart. A handler hitches it to a harnessed draft beast, which then loads several stacks at once (up to 300 kg, riding in plain sight on the bed) and delivers the whole round in one trip. It also grants an extra hundred kilograms in caravans, and wears out after roughly four hundred loaded stacks. One implement per beast: cart, plow or snow scraper.</description>
     <graphicData>
       <texPath>Things/Item/AAW_Charrette</texPath>
       <graphicClass>Graphic_Single</graphicClass>
@@ -31,8 +31,13 @@
       <workSkill>Crafting</workSkill>
       <unfinishedThingDef>UnfinishedComponent</unfinishedThingDef>
       <researchPrerequisite>AAW_Charretterie</researchPrerequisite>
+      <!-- Le coin d'artisanat reste pour la partie qui débute, mais une pièce
+           d'attelage se fait aussi bien à la forge, comme les armes néolithiques
+           vanilla (arc, épieu, massue, bois et métal mêlés). -->
       <recipeUsers>
         <li>CraftingSpot</li>
+        <li>FueledSmithy</li>
+        <li>ElectricSmithy</li>
       </recipeUsers>
       <displayPriority>151</displayPriority>
     </recipeMaker>

@@ -5,10 +5,11 @@ using Verse;
 
 namespace AnimalsAtWork.Plowing
 {
-    // Alerte quand du travail de trait attend (charrue ou charrette carriée
-    // ou disponible sur la carte) mais que des bêtes de trait n'ont ni
-    // harnais sur le dos ni harnais à aller chercher. Instanciée
-    // automatiquement par AlertsReadout, comme toute sous-classe d'Alert.
+    // Alerte quand des bêtes marquées par le joueur attendent un harnais
+    // qu'aucun colon ne peut leur apporter : plus un seul harnais disponible
+    // sur la carte, alors qu'un attelage est déjà porté ou attend au sol.
+    // Instanciée automatiquement par AlertsReadout, comme toute sous-classe
+    // d'Alert.
     public class Alert_HarnaisManquant : Alert
     {
         private readonly List<GlobalTargetInfo> coupables = new List<GlobalTargetInfo>();
@@ -36,7 +37,7 @@ namespace AnimalsAtWork.Plowing
                 {
                     continue;
                 }
-                MapComponent_Labour composante = map.GetComponent<MapComponent_Labour>();
+                MapComponent_Labour composante = MapComponent_Labour.De(map);
                 bool attelageEnAttente = Disponible(map, AAW_DefOf.AAW_Charrue)
                     || Disponible(map, AAW_DefOf.AAW_Charrette)
                     || Disponible(map, AAW_DefOf.AAW_Grattoir);

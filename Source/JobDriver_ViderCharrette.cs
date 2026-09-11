@@ -39,10 +39,10 @@ namespace AnimalsAtWork.Plowing
                     // Plus une seule pile ne trouve de rangement : on déverse
                     // sur place plutôt que de promener la cargaison sans fin.
                     ToutDeverser();
-                    // Et on pose un répit, sans quoi la tournée suivante
-                    // reprendrait ce qu'on vient de poser — c'est ce qui faisait
-                    // tourner la bête en boucle jusqu'à détruire sa charrette.
-                    Map.GetComponent<MapComponent_Labour>()?.NoterDeversement(pawn);
+                    // Et on pose un répit : sans lui, la tournée suivante
+                    // reprendrait ce qu'on vient de poser, et la bête
+                    // tournerait en boucle jusqu'à détruire sa charrette.
+                    MapComponent_Labour.De(Map)?.NoterDeversement(pawn);
                     EndJobWith(JobCondition.Succeeded);
                 }
             };
@@ -50,6 +50,13 @@ namespace AnimalsAtWork.Plowing
             yield return chercher;
 
             yield return Toils_Goto.GotoCell(TargetIndex.A, PathEndMode.OnCell);
+
+            // La case a pu se remplir pendant le trajet (un colon y a rangé
+            // autre chose) : on repart chercher un rangement plutôt que de
+            // poser la pile à côté, hors stock, où la tournée suivante la
+            // reprendrait.
+            yield return Toils_Jump.JumpIf(chercher, () => job.targetB.Thing != null
+                && !job.targetA.Cell.IsValidStorageFor(Map, job.targetB.Thing));
 
             yield return Toils_General.Do(delegate
             {

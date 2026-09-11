@@ -9,7 +9,7 @@
   <ThingDef ParentName="FurnitureBase">
     <defName>AAW_Ratelier</defName>
     <label>tack rack</label>
-    <description>A sturdy rack for draft gear: harnesses hang from pegs; plows, carts and snow scrapers lean against the frame. Holds up to three pieces per cell, keeps them from deteriorating, and draft beasts help themselves whenever work awaits.</description>
+    <description>A sturdy rack for draft gear: harnesses hang from pegs; plows, carts and snow scrapers lean against the frame. Holds up to three pieces per cell, keeps them from deteriorating, and handlers fetch the gear from it whenever a beast is to be equipped.</description>
     <thingClass>Building_Storage</thingClass>
     <graphicData>
       <texPath>Things/Building/AAW_Ratelier</texPath>

@@ -1,46 +1,32 @@
-using System.Collections.Generic;
-using UnityEngine;
 using Verse;
-using Verse.AI;
 
 namespace AnimalsAtWork.Plowing
 {
-    // Séquence du déneigement : aller sur la case, racler (barre de
-    // progression), puis mettre l'épaisseur de neige à zéro.
-    public class JobDriver_Deneiger : JobDriver
+    // Déneigement d'une case : le temps écoulé, l'épaisseur de neige tombe à
+    // zéro.
+    public class JobDriver_Deneiger : JobDriver_TravailDeCase
     {
-        // Durée pour un gabarit bovin (bodySize 2.4), plus légère que le
-        // labour : on racle, on ne retourne pas la terre.
-        private const int DureeRaclageBaseTicks = 250;
-        private const int CasesParGrattoir = 400;  // usure de la lame : un grattoir de bois = 400 cases
+        // Plus léger que le labour : on racle, on ne retourne pas la terre.
+        protected override int DureeBaseTicks => 250;
 
-        public override bool TryMakePreToilReservations(bool errorOnFailed)
+        // Éclats de neige du déneigement vanilla et bruit de balayage.
+        protected override string Effet => "ClearSnow";
+        protected override string Son => "Interact_CleanFilth";
+
+        // Usure de la lame : un grattoir de bois tient 400 cases.
+        protected override ThingDef Outil => AAW_DefOf.AAW_Grattoir;
+        protected override int CasesParOutil => 400;
+        protected override string CleOutilRompu => "AAW_GrattoirRompu";
+
+        // Abandonne si la case s'est dégagée entre-temps (fonte, autre bête).
+        protected override bool CelluleValide(MapComponent_Labour composante)
         {
-            return pawn.Reserve(job.targetA, job, 1, -1, null, errorOnFailed);
+            return JobGiver_Deneigeur.CelluleEnneigee(Cellule, pawn.Map);
         }
 
-        protected override IEnumerable<Toil> MakeNewToils()
+        protected override void Travailler(MapComponent_Labour composante)
         {
-            yield return Toils_Goto.GotoCell(TargetIndex.A, PathEndMode.OnCell);
-
-            int duree = Mathf.RoundToInt(DureeRaclageBaseTicks * BeteDeTrait.FacteurDuree(pawn));
-            Toil raclage = Toils_General.Wait(duree);
-            raclage.WithProgressBarToilDelay(TargetIndex.A);
-            // Éclats de neige du déneigement vanilla et bruit de balayage.
-            Ambiance.Habiller(raclage, TargetIndex.A, "ClearSnow", "Interact_CleanFilth");
-            // Abandonne si la case s'est dégagée entre-temps (fonte, autre bête...)
-            raclage.FailOn(() => !JobGiver_Deneigeur.CelluleEnneigee(job.targetA.Cell, pawn.Map));
-            yield return raclage;
-
-            yield return Toils_General.Do(delegate
-            {
-                pawn.Map.snowGrid.SetDepth(job.targetA.Cell, 0f);
-
-                // Le raclage use la lame, et un peu le harnais ; brisés, la
-                // bête ira s'équiper à neuf.
-                EquipementUtility.User(pawn, AAW_DefOf.AAW_Grattoir, CasesParGrattoir, "AAW_GrattoirRompu");
-                EquipementUtility.User(pawn, AAW_DefOf.AAW_HarnaisDeTrait, EquipementUtility.UsagesParHarnais, "AAW_HarnaisRompu");
-            });
+            pawn.Map.snowGrid.SetDepth(Cellule, 0f);
         }
     }
 }

@@ -8,7 +8,7 @@ namespace AnimalsAtWork.Plowing
     // grattoir) jusqu'à la bête de trait et la lui pose sur le dos : la pièce
     // rejoint l'inventaire de la bête (onglet Équipement). Si la bête portait
     // déjà un autre attelage (changement de saison), le colon le retire d'abord
-    // pour le laisser au sol — un autre colon le rangera au râtelier.
+    // pour le laisser au sol, et un autre colon le rangera au râtelier.
     //   targetA = la bête    targetB = la pile d'équipement au sol
     public class JobDriver_ColonEquiper : JobDriver
     {
@@ -54,6 +54,12 @@ namespace AnimalsAtWork.Plowing
                     Thing ancien = EquipementUtility.AttelagePorte(bete);
                     if (ancien != null && ancien.def != piece.def)
                     {
+                        // La cargaison vit dans la charrette : elle descend avec
+                        // elle, sinon elle voyagerait invisible sous la charrue.
+                        if (ancien.def == AAW_DefOf.AAW_Charrette)
+                        {
+                            EquipementUtility.DeposerCargaison(bete);
+                        }
                         bete.inventory.innerContainer.TryDrop(
                             ancien, bete.Position, bete.Map, ThingPlaceMode.Near, out _);
                     }

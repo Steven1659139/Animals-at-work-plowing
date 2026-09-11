@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Defs>
 
-  <!-- Onglet dédié : évite tout conflit de position avec l'arbre principal
-       et accueillera les recherches des phases suivantes (charrette, labour). -->
+  <!-- Onglet dédié : évite tout conflit de position avec l'arbre principal. -->
   <ResearchTabDef>
     <defName>AAW_Recherches</defName>
     <label>animals at work</label>

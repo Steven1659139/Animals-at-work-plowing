@@ -1,4 +1,3 @@
-using RimWorld;
 using Verse;
 using Verse.AI;
 
@@ -17,32 +16,10 @@ namespace AnimalsAtWork.Plowing
 
         protected override Job TryGiveJob(Pawn pawn)
         {
-            Map map = pawn.Map;
-            if (map == null || pawn.Faction != Faction.OfPlayer)
-            {
-                return null;
-            }
-            if (!BeteDeTrait.Est(pawn.def))
-            {
-                return null;
-            }
-            if (!AAW_DefOf.AAW_Harnachement.IsFinished)
-            {
-                return null;
-            }
-
-            MapComponent_Labour composante = map.GetComponent<MapComponent_Labour>();
             // La bête ne racle qu'une fois menée sur zone par un colon (en
-            // service) et déjà équipée du harnais et du grattoir : elle ne
-            // s'attelle ni ne sort de l'enclos seule.
-            if (!composante.EstEnService(pawn)
-                || !composante.TacheAutorisee(pawn, TacheTrait.Deneigement)
-                || EquipementUtility.Porte(pawn, AAW_DefOf.AAW_HarnaisDeTrait) == null
-                || EquipementUtility.Porte(pawn, AAW_DefOf.AAW_Grattoir) == null)
-            {
-                return null;
-            }
-            if (!composante.TravailDeneigementEnAttente())
+            // service) et déjà équipée du harnais et du grattoir.
+            if (!ServiceTrait.PreteAuTravail(pawn, TacheTrait.Deneigement, out MapComponent_Labour composante)
+                || !composante.TravailDeneigementEnAttente())
             {
                 return null;
             }
@@ -77,10 +54,7 @@ namespace AnimalsAtWork.Plowing
                 {
                     continue;
                 }
-                bool accessible = meneur == null
-                    ? bete.CanReserveAndReach(cellule, PathEndMode.OnCell, Danger.Some)
-                    : ServiceTrait.MeneurPeutYMener(meneur, bete, cellule);
-                if (accessible)
+                if (ServiceTrait.Accessible(bete, meneur, cellule))
                 {
                     meilleure = cellule;
                     meilleureDist = dist;

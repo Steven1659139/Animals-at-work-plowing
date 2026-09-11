@@ -12,15 +12,14 @@ namespace AnimalsAtWork.Plowing
     //      exceptions vanilla de Patch_EspecesDeTrait.xml) ;
     //   4. bête de somme au sens vanilla  → oui.
     //
-    // La quatrième couche est celle qui fait le gros du travail sans que
-    // personne n'ait rien à faire. packAnimal est le drapeau vanilla « bête qui
-    // porte des charges » : il couvre cheval, muffalo, bison, yak, dromadaire,
-    // éléphant et mastodonte, et un mod qui ajoute une grosse bête utile la
-    // marque presque toujours pour qu'elle serve en caravane. Il n'attrape en
-    // revanche ni mécanoïde, ni entité d'Anomaly, ni thrumbo, ni prédateur —
-    // là où un simple seuil de gabarit aurait collé des interrupteurs de labour
-    // sur des horreurs. La vache et l'âne n'étant pas des bêtes de somme, ils
-    // restent marqués par l'extension.
+    // La quatrième couche fait le gros du travail sans que personne n'ait rien
+    // à faire : packAnimal est le drapeau vanilla « bête qui porte des
+    // charges ». Il couvre cheval, muffalo, bison, yak, dromadaire, éléphant et
+    // mastodonte, et un mod qui ajoute une grosse bête utile la marque presque
+    // toujours pour qu'elle serve en caravane. Il n'attrape en revanche ni
+    // mécanoïde, ni entité d'Anomaly, ni thrumbo, ni prédateur, ce qu'un simple
+    // seuil de gabarit ferait. La vache et l'âne n'étant pas des bêtes de
+    // somme, ils restent marqués par l'extension.
     //
     // Le risque d'être large est faible : l'éligibilité ne fait qu'afficher les
     // interrupteurs sur la bête. MapComponent_Labour reste en opt-in strict,

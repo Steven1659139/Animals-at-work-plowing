@@ -14,8 +14,8 @@
     <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
     <!-- Sans ça, le SDK écrit le SHA du commit courant dans
          AssemblyInformationalVersion : la DLL versionnée dans Assemblies/
-         changeait alors à chaque commit, à sources identiques, et aucun rebuild
-         ne pouvait reproduire celle qui est publiée. -->
+         changerait à chaque commit, à sources identiques, et aucun rebuild
+         ne pourrait reproduire celle qui est publiée. -->
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
 
@@ -25,10 +25,9 @@
   <ItemGroup>
     <!-- Assemblies de référence du jeu (compile-only, rien n'est copié) -->
     <PackageReference Include="Krafs.Rimworld.Ref" Version="1.6.4871" />
-    <!-- Fournie à l'exécution par le mod Harmony (brrainz.harmony) : on ne l'embarque pas -->
-    <PackageReference Include="Lib.Harmony" Version="2.4.2">
-      <ExcludeAssets>runtime</ExcludeAssets>
-    </PackageReference>
+    <!-- Fournie à l'exécution par le mod Harmony (brrainz.harmony), déclaré en
+         dépendance dans About.xml : on compile contre, on ne l'embarque pas. -->
+    <PackageReference Include="Lib.Harmony" Version="2.4.2" ExcludeAssets="runtime" />
     <!-- Assemblies de référence .NET Framework, nécessaires pour compiler net472 sur macOS -->
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
   </ItemGroup>

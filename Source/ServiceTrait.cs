@@ -16,6 +16,50 @@ namespace AnimalsAtWork.Plowing
     {
         private const int PilesMinCharrette = 2; // même seuil que JobGiver_Charretier
 
+        // Filtres communs aux cerveaux des bêtes (JobGiver_Labourer, Deneigeur,
+        // Charretier) : la bête est à la colonie, son espèce est de trait, et un
+        // colon l'a menée dehors (en service). Elle ne s'attelle ni ne sort de
+        // l'enclos seule. Renseigne la composante de sa carte au passage.
+        public static bool EnServiceALaColonie(Pawn bete, out MapComponent_Labour composante)
+        {
+            composante = null;
+            Map map = bete.Map;
+            if (map == null || bete.Faction != Faction.OfPlayer || !BeteDeTrait.Est(bete.def))
+            {
+                return false;
+            }
+            composante = MapComponent_Labour.De(map);
+            return composante.EstEnService(bete);
+        }
+
+        // La bête peut-elle faire cette tâche, là, tout de suite : tâche activée
+        // par le joueur, recherche faite, harnais et attelage de la tâche sur le
+        // dos.
+        public static bool Equipee(Pawn bete, TacheTrait tache, MapComponent_Labour composante)
+        {
+            return composante.TacheAutorisee(bete, tache)
+                && RechercheFaite(tache)
+                && EquipementUtility.Porte(bete, AAW_DefOf.AAW_HarnaisDeTrait) != null
+                && EquipementUtility.Porte(bete, ImplementPour(tache)) != null;
+        }
+
+        // Les deux à la fois : ce que le labour et le déneigement demandent
+        // avant de chercher une case.
+        public static bool PreteAuTravail(Pawn bete, TacheTrait tache, out MapComponent_Labour composante)
+        {
+            return EnServiceALaColonie(bete, out composante) && Equipee(bete, tache, composante);
+        }
+
+        // La recherche qui débloque la tâche : le harnachement pour la charrue
+        // et le grattoir, la charretterie pour la charrette.
+        public static bool RechercheFaite(TacheTrait tache)
+        {
+            ResearchProjectDef recherche = tache == TacheTrait.Charrette
+                ? AAW_DefOf.AAW_Charretterie
+                : AAW_DefOf.AAW_Harnachement;
+            return recherche.IsFinished;
+        }
+
         // Ce que le meneur doit faire de cette bête à l'instant, ou null s'il n'y
         // a rien à en faire. Appelé une fois la bête filtrée (bête de trait ou
         // encore en service, ni menée, ni en crise, et réservable).
@@ -27,12 +71,10 @@ namespace AnimalsAtWork.Plowing
             bool enService = composante.EstEnService(bete);
 
             // Garde-fou famine : le service ne se coupe normalement que faute de
-            // travail, mais une bête au champ ne broute pas les récoltes — si
+            // travail, mais une bête au champ ne broute pas les récoltes : si
             // elle en vient à la famine réelle (rien d'autre à manger à portée),
             // on la ramène exceptionnellement à l'enclos pour qu'elle mange.
-            if (enService
-                && bete.needs?.food != null
-                && bete.needs.food.CurCategory >= HungerCategory.Starving)
+            if (enService && Affamee(bete))
             {
                 return JobRamener(meneur, bete);
             }
@@ -126,30 +168,78 @@ namespace AnimalsAtWork.Plowing
         // Voir Patch_Service, qui en fait un Roamer à false.
         public static bool DispenseeDEnclos(Pawn bete, MapComponent_Labour composante)
         {
+            // La famine lève toutes les dispenses : la bête redevient du bétail
+            // ordinaire, que les colons ramènent et que rien de notre fait ne
+            // retient plus. Le meneur la ramène déjà de son côté, mais faute
+            // d'enclos convenable il n'a parfois rien à proposer, et la bête
+            // restait alors sous notre régime, à jeun, jusqu'à la mort.
+            if (Affamee(bete))
+            {
+                return false;
+            }
             return composante.EstEnService(bete)
                 || (composante.EstBeteDeTrait(bete) && Harnachee(bete));
         }
 
-        // La bête est-elle à l'intérieur d'un enclos clos ? Test par régions,
-        // comme JobDriver_Mener : AnimalPenUtility.GetCurrentPenOf s'ouvre sur
-        // « if (!animal.Roamer) return null », et c'est justement ce que le patch
-        // de service met à false.
+        // Les deux questions que posent les patches de service (Patch_Service),
+        // avec toutes les gardes : la bête est sur une carte, son espèce est de
+        // trait, et la carte a sa composante. Faux dès qu'une garde manque.
+        public static bool EstDispensee(Pawn bete)
+        {
+            MapComponent_Labour composante = ComposanteSiDeTrait(bete);
+            return composante != null && DispenseeDEnclos(bete, composante);
+        }
+
+        public static bool EstEnService(Pawn bete)
+        {
+            MapComponent_Labour composante = ComposanteSiDeTrait(bete);
+            return composante != null && composante.EstEnService(bete);
+        }
+
+        private static MapComponent_Labour ComposanteSiDeTrait(Pawn bete)
+        {
+            if (bete == null || !bete.Spawned || !BeteDeTrait.Est(bete.def))
+            {
+                return null;
+            }
+            return MapComponent_Labour.De(bete.Map);
+        }
+
+        // Famine réelle : le dernier cran, celui où la bête commence à s'abîmer.
+        public static bool Affamee(Pawn bete)
+        {
+            return bete.needs?.food != null
+                && bete.needs.food.CurCategory >= HungerCategory.Starving;
+        }
+
+        // La bête est-elle à l'intérieur d'un enclos clos ?
         private static bool DansUnEnclos(Pawn bete)
         {
-            Region region = bete.GetRegion();
+            return EnclosContenant(bete.Map, bete.GetRegion()) != null;
+        }
+
+        // Le marqueur du premier enclos clos qui contient cette région, ou null
+        // si elle est à l'air libre. Test par régions plutôt que par
+        // AnimalPenUtility.GetCurrentPenOf : celui-ci s'ouvre sur
+        // « if (!animal.Roamer) return null », et c'est justement ce que le
+        // patch de service met à false. Sert aussi à JobDriver_Mener pour
+        // savoir si la bête et sa destination sont du même côté des clôtures.
+        public static CompAnimalPenMarker EnclosContenant(Map map, Region region)
+        {
             if (region == null)
             {
-                return false;
+                return null;
             }
-            foreach (Building batiment in bete.Map.listerBuildings.allBuildingsAnimalPenMarkers)
+            foreach (Building batiment in map.listerBuildings.allBuildingsAnimalPenMarkers)
             {
-                PenMarkerState etat = batiment.TryGetComp<CompAnimalPenMarker>().PenState;
+                CompAnimalPenMarker marqueur = batiment.TryGetComp<CompAnimalPenMarker>();
+                PenMarkerState etat = marqueur.PenState;
                 if (etat.Enclosed && etat.ContainsConnectedRegion(region))
                 {
-                    return true;
+                    return marqueur;
                 }
             }
-            return false;
+            return null;
         }
 
         private static Job JobEquiper(Pawn meneur, Pawn bete, ThingDef def, bool forced)
@@ -206,19 +296,19 @@ namespace AnimalsAtWork.Plowing
             {
                 return TacheTrait.Charrette;
             }
-            if (AAW_DefOf.AAW_Harnachement.IsFinished
+            if (RechercheFaite(TacheTrait.Labour)
                 && composante.TacheAutorisee(bete, TacheTrait.Labour)
                 && composante.TravailLabourEnAttente())
             {
                 return TacheTrait.Labour;
             }
-            if (AAW_DefOf.AAW_Harnachement.IsFinished
+            if (RechercheFaite(TacheTrait.Deneigement)
                 && composante.TacheAutorisee(bete, TacheTrait.Deneigement)
                 && composante.TravailDeneigementEnAttente())
             {
                 return TacheTrait.Deneigement;
             }
-            if (AAW_DefOf.AAW_Charretterie.IsFinished
+            if (RechercheFaite(TacheTrait.Charrette)
                 && composante.TacheAutorisee(bete, TacheTrait.Charrette)
                 && TravailCharretteEnAttente(bete.Map, bete))
             {
@@ -243,15 +333,15 @@ namespace AnimalsAtWork.Plowing
         //
         // Ce test décide de sortir la bête de l'enclos, et il se pose donc
         // depuis l'enclos : il ne retient que ce qui ne dépend pas de l'endroit
-        // où elle est. Surtout pas son accessibilité — une bête est bloquée par
+        // où elle est. Surtout pas son accessibilité : une bête est bloquée par
         // les clôtures (Pawn.FenceBlocked), donc rien du dehors ne lui est
         // accessible tant qu'un meneur ne l'a pas fait franchir le portail, et
         // lui poser la question du charretier reviendrait à ne jamais la sortir.
         //
         // Ce qu'il retient du charretier, c'est le point décisif : la pile
-        // a-t-elle un stock où aller. Sans lui, des gravats que rien n'accepte
-        // comptaient comme du travail en attente, on sortait la bête, elle ne
-        // trouvait aucune tournée, et on la ramenait — en boucle.
+        // a-t-elle un stock où aller. Sans ce test, des gravats que rien
+        // n'accepte compteraient comme du travail en attente, et la bête ferait
+        // la navette entre l'enclos et un champ sans tournée.
         public static bool TravailCharretteEnAttente(Map map, Pawn bete)
         {
             return ComptePiles(map, bete) >= PilesMinCharrette;
@@ -265,10 +355,9 @@ namespace AnimalsAtWork.Plowing
             foreach (Thing t in map.listerHaulables.ThingsPotentiallyNeedingHauling())
             {
                 // Pas de CanReserve ici : une pile qu'un colon vient de réserver
-                // reste du travail qui attend, et il s'en réserve sans cesse. Le
-                // test y perdait son sens — le seuil n'était plus jamais atteint
-                // dans une colonie active, et les bêtes ne sortaient plus du
-                // tout. C'est au charretier de trancher, une fois la bête au
+                // reste du travail qui attend, et dans une colonie active il
+                // s'en réserve sans cesse, si bien que le seuil ne serait jamais
+                // atteint. C'est au charretier de trancher, une fois la bête au
                 // champ et pile par pile (PeutEtreCharriee).
                 if (EquipementUtility.EstEquipement(t.def) || t.IsForbidden(bete))
                 {
@@ -286,7 +375,7 @@ namespace AnimalsAtWork.Plowing
         // Le trajet que fera l'attelage colon + bête au bout de la corde. Ni
         // l'accès du colon seul (il saute les clôtures, la bête non), ni celui de
         // la bête seule (menée, elle franchit les portes que le colon ouvre pour
-        // elle — Building_Door consulte roping.RopedByPawn) : c'est l'hybride que
+        // elle : Building_Door consulte roping.RopedByPawn). C'est l'hybride que
         // vanilla utilise pour ses enclos (AnimalPenUtility.CheckUseAndReach).
         // Départ depuis la bête, paramètres de trajet du colon, clôtures selon la
         // bête.
@@ -297,10 +386,20 @@ namespace AnimalsAtWork.Plowing
                 TraverseParms.For(meneur, Danger.Some).WithFenceblockedOf(bete));
         }
 
+        // La case est-elle joignable pour ce travail ? Seule (meneur null), la
+        // bête doit pouvoir y aller et la réserver ; menée, c'est l'attelage
+        // colon + bête au bout de la corde qui compte.
+        public static bool Accessible(Pawn bete, Pawn meneur, IntVec3 cellule)
+        {
+            return meneur == null
+                ? bete.CanReserveAndReach(cellule, PathEndMode.OnCell, Danger.Some)
+                : MeneurPeutYMener(meneur, bete, cellule);
+        }
+
         // La bête peut-elle rejoindre le travail toute seule, de là où elle est ?
         // Elle est son propre meneur : on mesure donc ses seules capacités, sans
         // les portes qu'un colon lui ouvrirait. Faux pour une bête en service
-        // lâchée au mauvais endroit — dans son enclos, par exemple — qui resterait
+        // lâchée au mauvais endroit (dans son enclos, par exemple), qui resterait
         // sinon éternellement « au travail » sans pouvoir travailler.
         public static bool PeutTravaillerSeule(Pawn bete, TacheTrait tache)
         {

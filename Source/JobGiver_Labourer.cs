@@ -17,37 +17,15 @@ namespace AnimalsAtWork.Plowing
 
         protected override Job TryGiveJob(Pawn pawn)
         {
-            Map map = pawn.Map;
-            if (map == null || pawn.Faction != Faction.OfPlayer)
-            {
-                return null;
-            }
-            if (!BeteDeTrait.Est(pawn.def))
-            {
-                return null;
-            }
-            if (!AAW_DefOf.AAW_Harnachement.IsFinished)
-            {
-                return null;
-            }
-
-            MapComponent_Labour composante = map.GetComponent<MapComponent_Labour>();
             // La bête ne laboure qu'une fois menée au champ par un colon (en
-            // service) et déjà équipée du harnais et de la charrue : elle ne
-            // s'attelle ni ne sort de l'enclos seule.
-            if (!composante.EstEnService(pawn)
-                || !composante.TacheAutorisee(pawn, TacheTrait.Labour)
-                || EquipementUtility.Porte(pawn, AAW_DefOf.AAW_HarnaisDeTrait) == null
-                || EquipementUtility.Porte(pawn, AAW_DefOf.AAW_Charrue) == null)
-            {
-                return null;
-            }
-            if (!composante.TravailLabourEnAttente())
+            // service) et déjà équipée du harnais et de la charrue.
+            if (!ServiceTrait.PreteAuTravail(pawn, TacheTrait.Labour, out MapComponent_Labour composante)
+                || !composante.TravailLabourEnAttente())
             {
                 return null;
             }
 
-            IntVec3 cible = ChoisirCase(pawn, map, composante);
+            IntVec3 cible = ChoisirCase(pawn, pawn.Map, composante);
             if (!cible.IsValid)
             {
                 return null;
@@ -103,8 +81,9 @@ namespace AnimalsAtWork.Plowing
         }
 
         // La case se laboure-t-elle, dans une zone de culture où le labour est
-        // autorisé ? (Suivi de sillon, case par case.)
-        private static bool Labourable(IntVec3 cellule, Map map, MapComponent_Labour composante)
+        // autorisé ? Sert au suivi de sillon, case par case, et au JobDriver
+        // pour abandonner une case qui ne s'y prête plus en cours d'ouvrage.
+        public static bool Labourable(IntVec3 cellule, Map map, MapComponent_Labour composante)
         {
             return cellule.InBounds(map)
                 && cellule.GetZone(map) is Zone_Growing zoneCulture
@@ -142,7 +121,7 @@ namespace AnimalsAtWork.Plowing
         public static IntVec3 CaseLabourableLaPlusProche(Pawn bete, Pawn meneur = null)
         {
             Map map = bete.Map;
-            MapComponent_Labour composante = map.GetComponent<MapComponent_Labour>();
+            MapComponent_Labour composante = MapComponent_Labour.De(map);
             IntVec3 meilleure = IntVec3.Invalid;
             float meilleureDist = float.MaxValue;
             foreach (Zone zone in map.zoneManager.AllZones)
@@ -158,10 +137,7 @@ namespace AnimalsAtWork.Plowing
                     {
                         continue;
                     }
-                    bool accessible = meneur == null
-                        ? bete.CanReserveAndReach(cellule, PathEndMode.OnCell, Danger.Some)
-                        : ServiceTrait.MeneurPeutYMener(meneur, bete, cellule);
-                    if (accessible)
+                    if (ServiceTrait.Accessible(bete, meneur, cellule))
                     {
                         meilleure = cellule;
                         meilleureDist = dist;

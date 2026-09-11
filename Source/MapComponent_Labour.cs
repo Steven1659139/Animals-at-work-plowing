@@ -36,6 +36,27 @@ namespace AnimalsAtWork.Plowing
         {
         }
 
+        // Map.GetComponent parcourt la liste des composants de la carte, et les
+        // patches de service le demandent à chaque lecture de Pawn.Roamer ou
+        // Pawn.FenceBlocked. Les lectures venant par rafales sur une même
+        // carte, une seule entrée mémorisée suffit.
+        private static Map derniereCarte;
+        private static MapComponent_Labour derniereComposante;
+
+        public static MapComponent_Labour De(Map map)
+        {
+            if (map == null)
+            {
+                return null;
+            }
+            if (map != derniereCarte)
+            {
+                derniereCarte = map;
+                derniereComposante = map.GetComponent<MapComponent_Labour>();
+            }
+            return derniereComposante;
+        }
+
         public bool LabourAutorise(Zone zone)
         {
             return !zonesSansLabour.Contains(zone.ID);
@@ -189,7 +210,7 @@ namespace AnimalsAtWork.Plowing
         private const int TtlScanMeneur = 60000;
         private readonly Dictionary<int, int> dernierScanMeneur = new Dictionary<int, int>();
         // Répit après un retour à l'enclos : ce laps de temps sans qu'un meneur
-        // ne ressorte cette bête. Voir ServiceTrait.JobDeService — sans lui, une
+        // ne ressorte cette bête. Voir ServiceTrait.JobDeService : sans lui, une
         // bête qui garde son attelage repart dès que le travail de charrette
         // repasse son seuil, ce qui arrive sans cesse. Une heure de jeu.
         // État transitoire, jamais sauvegardé : au pire, une bête ressort une
@@ -199,9 +220,9 @@ namespace AnimalsAtWork.Plowing
         // Répit après un déversement : ce laps de temps sans nouvelle tournée
         // pour cette bête. Une charrette qui n'a rien trouvé où livrer vide son
         // chargement par terre ; sans ce répit, la tournée suivante reprend
-        // aussitôt les mêmes piles — elles sont à distance nulle, donc en tête
-        // du tri par proximité — pour les redéverser, et ainsi de suite. La
-        // boucle use la charrette à chaque pile hissée et finit par la détruire.
+        // aussitôt les mêmes piles (à distance nulle, donc les premières
+        // trouvées) pour les redéverser, et ainsi de suite. La boucle use la
+        // charrette à chaque pile hissée et finit par la détruire.
         // Voir JobGiver_Charretier. Même durée et même nature transitoire.
         private const int RepitDeversement = 2500;
         private readonly Dictionary<int, int> deversements = new Dictionary<int, int>();
@@ -238,7 +259,7 @@ namespace AnimalsAtWork.Plowing
         }
 
         // Renvoie true (et note le tick) si ce meneur peut relancer son scan,
-        // false sinon — le JobGiver rend alors la main au reste de l'arbre.
+        // false sinon : le JobGiver rend alors la main au reste de l'arbre.
         public bool PeutScannerMeneur(Pawn meneur)
         {
             int tick = Find.TickManager.TicksGame;
@@ -307,6 +328,12 @@ namespace AnimalsAtWork.Plowing
             }
         }
 
+        // Destroyed couvre aussi Discarded (le pion retiré du jeu pour de bon).
+        private static bool Sauvegardable(Pawn bete)
+        {
+            return bete != null && !bete.Destroyed;
+        }
+
         public override void ExposeData()
         {
             base.ExposeData();
@@ -316,21 +343,26 @@ namespace AnimalsAtWork.Plowing
             Scribe_Collections.Look(ref zonesSansLabour, "AAW_zonesSansLabour", LookMode.Value);
             // Le dictionnaire des tâches activées se sauvegarde en deux listes
             // parallèles (comme cases/expirations) : rebâtir à la main écarte
-            // proprement les clés pointant vers une bête disparue (null).
+            // proprement les clés pointant vers une bête disparue. Une bête
+            // détruite (cadavre disparu, vendue puis purgée des pions du monde)
+            // ne s'écrit pas : sa référence ne se résoudrait plus au chargement
+            // et le jeu s'en plaindrait dans le log.
             if (Scribe.mode == LoadSaveMode.Saving)
             {
                 betesScribe = new List<Pawn>();
                 tachesScribe = new List<TacheTrait>();
                 foreach (KeyValuePair<Pawn, TacheTrait> paire in tachesActivees)
                 {
-                    betesScribe.Add(paire.Key);
-                    tachesScribe.Add(paire.Value);
+                    if (Sauvegardable(paire.Key))
+                    {
+                        betesScribe.Add(paire.Key);
+                        tachesScribe.Add(paire.Value);
+                    }
                 }
-                // Même précaution pour les bêtes en service disparues (null).
                 betesServiceScribe = new List<Pawn>();
                 foreach (Pawn bete in betesEnService)
                 {
-                    if (bete != null)
+                    if (Sauvegardable(bete))
                     {
                         betesServiceScribe.Add(bete);
                     }

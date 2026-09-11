@@ -6,17 +6,17 @@ using Verse.AI;
 
 namespace AnimalsAtWork.Plowing
 {
-    // Cerveau de la bête charretière. Aucun dressage : elle enfile un harnais,
-    // s'attelle à une charrette en stock, puis alterne tournées de chargement
-    // (plusieurs piles d'un coup, jusqu'à la capacité de la charrette) et
-    // livraisons aux stocks. En dessous de deux piles à ramasser, elle reste
-    // tranquille.
+    // Cerveau de la bête charretière, dans l'arbre de pensée. Ne produit un job
+    // que si elle est en service (menée dehors par un colon) et déjà attelée à
+    // sa charrette. Elle alterne tournées de chargement (plusieurs piles d'un
+    // coup, jusqu'à la capacité de la charrette) et livraisons aux stocks. En
+    // dessous de deux piles à ramasser, elle reste tranquille.
     public class JobGiver_Charretier : ThinkNode_JobGiver
     {
         // Garde-fou sur la longueur d'une tournée, pas la vraie limite : c'est la
         // masse qui doit décider quand la charrette est pleine. Un plafond bas
         // faisait rentrer les charrettes à moitié vides dès que la cargaison ne
-        // s'empilait pas — huit gravats de 20 kg ne font que 160 kg.
+        // s'empilait pas : huit gravats de 20 kg ne font que 160 kg.
         private const int PilesMax = 25;
         private const int PilesMin = 2;
         // Rayon d'enchaînement : la première pile prise, les suivantes se
@@ -28,20 +28,9 @@ namespace AnimalsAtWork.Plowing
 
         protected override Job TryGiveJob(Pawn pawn)
         {
-            Map map = pawn.Map;
-            if (map == null || pawn.Faction != Faction.OfPlayer)
-            {
-                return null;
-            }
-            if (!BeteDeTrait.Est(pawn.def))
-            {
-                return null;
-            }
-
-            MapComponent_Labour composante = map.GetComponent<MapComponent_Labour>();
             // La bête ne charrie qu'une fois menée dehors par un colon (en
-            // service) : elle ne s'attelle ni ne sort de l'enclos seule.
-            if (!composante.EstEnService(pawn))
+            // service).
+            if (!ServiceTrait.EnServiceALaColonie(pawn, out MapComponent_Labour composante))
             {
                 return null;
             }
@@ -55,8 +44,8 @@ namespace AnimalsAtWork.Plowing
 
             // Elle vient de déverser faute de rangement : on ne relance pas une
             // tournée tout de suite. Les piles déversées sont à ses pieds, donc
-            // en tête du tri par proximité — elle les reprendrait à l'instant
-            // pour les redéverser, en usant sa charrette à chaque passage.
+            // les premières trouvées : elle les reprendrait à l'instant pour
+            // les redéverser, en usant sa charrette à chaque passage.
             if (composante.EnRepitDeDeversement(pawn))
             {
                 return null;
@@ -65,15 +54,12 @@ namespace AnimalsAtWork.Plowing
             // Charretage coupé (interrupteur), recherche non faite, ou bête pas
             // (encore) équipée : pas de nouvelle tournée. La cargaison à bord est
             // déjà partie (bloc ci-dessus).
-            if (!composante.TacheAutorisee(pawn, TacheTrait.Charrette)
-                || !AAW_DefOf.AAW_Charretterie.IsFinished
-                || EquipementUtility.Porte(pawn, AAW_DefOf.AAW_HarnaisDeTrait) == null
-                || EquipementUtility.Porte(pawn, AAW_DefOf.AAW_Charrette) == null)
+            if (!ServiceTrait.Equipee(pawn, TacheTrait.Charrette, composante))
             {
                 return null;
             }
 
-            return TourneeDeChargement(pawn, map);
+            return TourneeDeChargement(pawn, pawn.Map);
         }
 
         // Cette pile a-t-elle un stock où aller ? C'est le test qui manquait au
@@ -82,8 +68,8 @@ namespace AnimalsAtWork.Plowing
         //
         // Sans porteur (carrier null), délibérément : la question ne dépend ni
         // de qui emporte la pile ni d'où il se trouve. Vanilla gère ce cas
-        // partout — IsGoodStoreCell saute alors l'accessibilité et se rabat sur
-        // la réservation par faction — et c'est ce qui permet de la poser depuis
+        // partout (IsGoodStoreCell saute alors l'accessibilité et se rabat sur
+        // la réservation par faction), et c'est ce qui permet de la poser depuis
         // l'enclos, avant même d'avoir sorti la bête. Passer la bête ici serait
         // un piège : bloquée par les clôtures, elle n'atteint rien du dehors.
         //
@@ -97,7 +83,7 @@ namespace AnimalsAtWork.Plowing
 
         // Une pile que cette bête peut emporter de là où elle est : la question
         // du meneur, plus l'accessibilité et la capacité de ramassage. Ne vaut
-        // qu'une fois la bête au champ — d'où l'enclos, elle répond toujours non.
+        // qu'une fois la bête au champ : depuis l'enclos, elle répond toujours non.
         public static bool PeutEtreCharriee(Pawn bete, Map carte, Thing pile)
         {
             return bete.CanReserve(pile)
@@ -155,26 +141,24 @@ namespace AnimalsAtWork.Plowing
 
             while (cibles.Count < PilesMax && candidats.Count > 0)
             {
-                // Une passe = un tri par distance au point courant, puis on
-                // descend la liste jusqu'à la première pile valide. Les tests
-                // coûteux ne tournent donc que sur les plus proches, et jamais
-                // deux fois sur la même : une pile recalée sort de la liste.
-                IntVec3 origine = depuis;
-                candidats.Sort((a, b) => a.Position.DistanceToSquared(origine)
-                    .CompareTo(b.Position.DistanceToSquared(origine)));
-
+                // Une passe = la pile la plus proche du point courant, testée à
+                // fond ; recalée, elle sort de la liste et on passe à la
+                // suivante. Seule la tête d'un tri servirait : un balayage du
+                // minimum suffit, sans allocation, et une pile recalée n'est
+                // jamais retestée.
                 Thing retenue = null;
                 int quantite = 0;
                 float masseRetenue = 0f;
                 while (candidats.Count > 0)
                 {
-                    Thing t = candidats[0];
-                    // Liste triée : la première hors rayon met fin à la passe.
-                    if (t.Position.DistanceToSquared(origine) > rayonCarre)
+                    int proche = PlusProche(candidats, depuis);
+                    Thing t = candidats[proche];
+                    // La plus proche hors rayon : la passe est finie.
+                    if (t.Position.DistanceToSquared(depuis) > rayonCarre)
                     {
                         break;
                     }
-                    candidats.RemoveAt(0);
+                    Retirer(candidats, proche);
                     if (!PeutEtreCharriee(pawn, map, t))
                     {
                         continue;
@@ -212,6 +196,31 @@ namespace AnimalsAtWork.Plowing
             job.targetQueueA = cibles;
             job.countQueue = quantites;
             return job;
+        }
+
+        private static int PlusProche(List<Thing> piles, IntVec3 depuis)
+        {
+            int meilleur = 0;
+            float meilleureDist = float.MaxValue;
+            for (int i = 0; i < piles.Count; i++)
+            {
+                float dist = piles[i].Position.DistanceToSquared(depuis);
+                if (dist < meilleureDist)
+                {
+                    meilleureDist = dist;
+                    meilleur = i;
+                }
+            }
+            return meilleur;
+        }
+
+        // L'ordre de la liste n'a pas d'importance : le dernier prend la place
+        // du retiré, ce qui évite de décaler tout ce qui suit.
+        private static void Retirer(List<Thing> piles, int index)
+        {
+            int dernier = piles.Count - 1;
+            piles[index] = piles[dernier];
+            piles.RemoveAt(dernier);
         }
     }
 }

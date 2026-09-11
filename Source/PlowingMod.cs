@@ -139,7 +139,7 @@ namespace AnimalsAtWork.Plowing
             FiltrerListe();
 
             // Ligne de bilan : combien d'espèces cochées, et de quoi tout remettre
-            // au défaut — un joueur qui s'est perdu dans ses coches n'a sinon aucun
+            // au défaut : un joueur qui s'est perdu dans ses coches n'a sinon aucun
             // moyen de retrouver l'état de départ.
             Rect ligneBilan = new Rect(inRect.x, y, inRect.width, 28f);
             Rect bouton = new Rect(ligneBilan.xMax - 160f, ligneBilan.y, 160f, ligneBilan.height);
@@ -188,7 +188,7 @@ namespace AnimalsAtWork.Plowing
 
         // La base de défs n'est pas prête à la construction du mod : on dresse la
         // liste au premier affichage de la fenêtre. L'ordre est figé une fois pour
-        // toutes — un tri qui suivrait l'éligibilité ferait sauter les lignes sous
+        // toutes : un tri qui suivrait l'éligibilité ferait sauter les lignes sous
         // le curseur à chaque clic.
         private void ConstruireListe()
         {
@@ -200,7 +200,7 @@ namespace AnimalsAtWork.Plowing
                 // category, et pas seulement race : le jeu engendre une def de
                 // cadavre par espèce, qui partage le RaceProperties de la bête
                 // vivante (jusqu'à son packAnimal). Sans ce filtre, la liste
-                // affichait « Elephant corpse — pack animal » sous chaque animal.
+                // donnerait « Elephant corpse » comme bête de somme.
                 .Where(d => d.category == ThingCategory.Pawn && d.race != null && d.race.Animal)
                 .OrderByDescending(d => d.race.baseBodySize)
                 .ThenBy(d => d.label)
@@ -208,10 +208,11 @@ namespace AnimalsAtWork.Plowing
             PurgerCadavres();
         }
 
-        // Les défs de cadavre étant listées jusqu'ici, elles étaient cochables :
-        // on efface ces choix-là, qui n'ont jamais rien pu faire. Une def qu'on ne
-        // trouve pas est laissée en place — c'est le cas normal d'un mod
-        // temporairement désactivé, et tout le réglage tient à ne pas l'oublier.
+        // Une def de cadavre cochée n'a jamais rien pu faire : on efface ces
+        // choix-là (les réglages d'anciennes versions peuvent en contenir). Une
+        // def qu'on ne trouve pas est laissée en place : c'est le cas normal
+        // d'un mod temporairement désactivé, et tout le réglage tient à ne pas
+        // l'oublier.
         private static void PurgerCadavres()
         {
             int efface = reglages.especesAjoutees.RemoveAll(EstCadavre)
@@ -291,7 +292,7 @@ namespace AnimalsAtWork.Plowing
             {
                 origine = "AAW_EspeceTipLibre".Translate(espece.LabelCap);
             }
-            if (PlowingMod.EspeceAjoutee(espece) || PlowingMod.EspeceRetiree(espece))
+            if (EspeceAjoutee(espece) || EspeceRetiree(espece))
             {
                 origine += "\n\n" + "AAW_EspeceTipModifiee".Translate();
             }

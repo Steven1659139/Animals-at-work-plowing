@@ -5,9 +5,9 @@
        apprivoisés, au même ancrage que l'attelage et le labour : juste après la
        branche Haul. Voir Patch_ArbrePensee_Labour.xml pour la raison de cet
        ancrage (la branche Forage dépend d'Odyssey et n'existe pas sans
-       l'extension). Aucune condition de dressage : le JobGiver ne s'active que
-       pour les espèces de trait (ModExtension_BeteDeTrait) en service et
-       équipées d'un harnais et d'un grattoir. -->
+       l'extension). Aucune condition de dressage : le JobGiver ne répond que
+       pour une bête de trait (BeteDeTrait.Est) qu'un colon a menée sur zone
+       (en service) et équipée d'un harnais et d'un grattoir. -->
   <Operation Class="PatchOperationInsert">
     <xpath>Defs/ThinkTreeDef[defName="Animal"]//li[@Class="ThinkNode_ChancePerHour_Constant"][.//trainable="Haul"]</xpath>
     <order>Append</order>

@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using HarmonyLib;
 using RimWorld;
-using UnityEngine;
 using Verse;
 
 namespace AnimalsAtWork.Plowing
@@ -22,7 +21,7 @@ namespace AnimalsAtWork.Plowing
             {
                 yield break;
             }
-            MapComponent_Labour composante = __instance.Map.GetComponent<MapComponent_Labour>();
+            MapComponent_Labour composante = MapComponent_Labour.De(__instance.Map);
             yield return new Command_Toggle
             {
                 defaultLabel = "AAW_AutoriserLabour".Translate(),
@@ -32,15 +31,5 @@ namespace AnimalsAtWork.Plowing
                 toggleAction = () => composante.BasculerLabour(__instance),
             };
         }
-    }
-
-    // Les textures doivent être chargées sur le thread principal, au démarrage.
-    [StaticConstructorOnStartup]
-    public static class TexturesPlowing
-    {
-        public static readonly Texture2D IconeLabour = ContentFinder<Texture2D>.Get("UI/Icons/Trainables/Haul");
-        public static readonly Texture2D IconeCharrue = ContentFinder<Texture2D>.Get("Things/Item/AAW_Charrue");
-        public static readonly Texture2D IconeCharrette = ContentFinder<Texture2D>.Get("Things/Item/AAW_Charrette");
-        public static readonly Texture2D IconeGrattoir = ContentFinder<Texture2D>.Get("Things/Item/AAW_Grattoir");
     }
 }

@@ -11,11 +11,10 @@ namespace AnimalsAtWork.Plowing
     //   targetA = la bête    targetB = la case destination
     //
     // Hérite du pilote de roping vanilla, et non de JobDriver directement :
-    // Pawn_RopeTracker.RopingTick() rompt toutes les cordes du colon à chaque
-    // tick dès que son pilote n'est pas un JobDriver_RopeToDestination
-    // (IsStillDoingRopingJob). Un pilote maison faisait donc lâcher la corde au
-    // tick suivant l'encordage, échouer le job, et le WorkGiver le réémettait
-    // aussitôt : le colon bouclait indéfiniment sur le son d'encordage.
+    // Pawn_RopeTracker.RopingTick() rompt toutes les cordes du colon dès que
+    // son pilote n'est pas un JobDriver_RopeToDestination
+    // (IsStillDoingRopingJob), et le job échouerait au tick suivant
+    // l'encordage, pour être réémis aussitôt par le WorkGiver.
     // La classe de base fournit tout le trajet (aller encorder, mener au rythme
     // de la bête, lâcher à l'arrivée) ; il ne reste qu'à dire quand la bête est
     // arrivée et ce qu'on fait d'elle à ce moment-là.
@@ -29,7 +28,7 @@ namespace AnimalsAtWork.Plowing
 
         protected override bool HasRopeeArrived(Pawn ropee, bool roperWaitingAtDest)
         {
-            // Retour : c'est la BÊTE qui doit être dans l'enclos, pas le colon —
+            // Retour : c'est la BÊTE qui doit être dans l'enclos, pas le colon :
             // il arrive sur sa case avant elle, et la lâcher à ce moment-là la
             // laisserait devant le portail. Même test que JobDriver_RopeToPen, via
             // le marqueur d'enclos plutôt que AnimalPenUtility.GetCurrentPenOf :
@@ -73,29 +72,17 @@ namespace AnimalsAtWork.Plowing
             {
                 return true;
             }
-            Region regionBete = ropee.Position.GetRegion(map);
-            foreach (Building batiment in map.listerBuildings.allBuildingsAnimalPenMarkers)
-            {
-                PenMarkerState etat = batiment.TryGetComp<CompAnimalPenMarker>().PenState;
-                if (!etat.Enclosed)
-                {
-                    continue;
-                }
-                bool cibleDedans = etat.ContainsConnectedRegion(regionCible);
-                bool beteDedans = regionBete != null && etat.ContainsConnectedRegion(regionBete);
-                if (cibleDedans != beteDedans)
-                {
-                    return false; // l'une dedans, l'autre dehors : pas encore.
-                }
-            }
-            return true;
+            // Même enclos, ou aucun des deux : l'une dedans et l'autre dehors,
+            // ce n'est pas encore le moment de lâcher.
+            return ServiceTrait.EnclosContenant(map, regionCible)
+                == ServiceTrait.EnclosContenant(map, ropee.Position.GetRegion(map));
         }
 
         // La corde vient d'être lâchée par la classe de base : on bascule l'état
         // de service, ce qui rend la bête autonome au champ ou la rend à l'enclos.
         protected override void ProcessArrivedRopee(Pawn ropee)
         {
-            MapComponent_Labour composante = pawn.Map.GetComponent<MapComponent_Labour>();
+            MapComponent_Labour composante = MapComponent_Labour.De(pawn.Map);
             if (job.def == AAW_DefOf.AAW_RamenerAEnclos)
             {
                 composante.FinService(ropee);
@@ -115,7 +102,7 @@ namespace AnimalsAtWork.Plowing
             }
             // Juste avant de nous appeler, la classe de base coupe le job
             // « suivre le meneur » de la bête, et EndCurrentJob lui en fait
-            // aussitôt chercher un autre — alors que l'état de service n'était
+            // aussitôt chercher un autre, alors que l'état de service n'était
             // pas encore posé. Nos JobGiver refusaient donc, la bête partait
             // vagabonder, et ne revenait travailler qu'une fois sa promenade
             // finie. On la refait décider maintenant que son état est à jour.

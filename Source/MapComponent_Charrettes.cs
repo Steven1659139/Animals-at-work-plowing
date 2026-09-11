@@ -1,3 +1,4 @@
+using RimWorld.Planet;
 using UnityEngine;
 using Verse;
 
@@ -24,18 +25,17 @@ namespace AnimalsAtWork.Plowing
         private const float CargoDepart = -0.26f;
 
         // La pièce sort du sprite de la bête : demi-longueur de la bête plus
-        // demi-longueur de la pièce. Un écart fixe mis à l'échelle ne suffit
-        // pas — dessinée SOUS la bête, une pièce dont le centre tombe dans le
-        // sprite est une pièce enterrée, et plus la bête est grosse mieux elle
-        // l'enterre. C'est ce qui la faisait disparaître de profil, où le corps
-        // remplit toute la largeur, et qui masquait l'agrandissement.
-        // Serrage : les deux textures ont de la marge transparente, on les
-        // rapproche d'autant pour que l'attelage reste au cul de la bête.
+        // demi-longueur de la pièce, moins un serrage. Dessinée sous la bête,
+        // une pièce dont le centre tombe dans le sprite est une pièce enterrée,
+        // et d'autant plus que la bête est grosse : l'écart doit suivre les
+        // deux tailles, pas seulement l'échelle. Le serrage compense la marge
+        // transparente des deux textures, pour que l'attelage reste au cul de
+        // la bête.
         private const float Serrage = 0.85f;
 
         // L'attelage suit le gabarit de la bête qui le tire : la charrue d'un
         // âne n'a pas à faire la taille de celle d'un éléphant. On se règle sur
-        // la taille dessinée de la bête, pas sur son bodySize — c'est une
+        // la taille dessinée de la bête, pas sur son bodySize : c'est une
         // texture qu'on accorde à une autre texture, et les deux ne vont pas
         // du tout de pair (l'alpaga se dessine aussi grand que le cheval).
         private const float GabaritReference = 2.6f; // bovin adulte : les tailles ci-dessus
@@ -51,7 +51,13 @@ namespace AnimalsAtWork.Plowing
 
         public override void MapComponentUpdate()
         {
-            if (map != Find.CurrentMap)
+            // Même condition que le rendu vanilla (Map.MapUpdate) : DrawingMap,
+            // et non WorldRendered. Ouvrir la planète n'arrête pas
+            // MapComponentUpdate, seulement le dessin de la carte, et sans ce
+            // test nos DrawMesh passeraient dans la caméra du monde. Quant au
+            // monde, il se dessine aussi en fond de carte (vaisseau-gravité,
+            // orbite), et là la carte, elle, se dessine bel et bien.
+            if (!WorldRendererUtility.DrawingMap || map != Find.CurrentMap)
             {
                 return;
             }
@@ -122,8 +128,8 @@ namespace AnimalsAtWork.Plowing
                 // c'est-à-dire le carré magenta barré de rouge. On saute ces
                 // pièces-là sans consommer une des trois places visibles.
                 //
-                // MatSingleFor et non MatSingle : sur un Graphic_Random — les
-                // rochers, la ferraille — MatSingle retire une variante au
+                // MatSingleFor et non MatSingle : sur un Graphic_Random (les
+                // rochers, la ferraille), MatSingle retire une variante au
                 // hasard à CHAQUE appel. Appelé une fois par frame, le caillou
                 // changeait de forme soixante fois par seconde et gigotait sur
                 // le plateau. MatSingleFor fixe la variante sur l'identifiant
@@ -136,8 +142,8 @@ namespace AnimalsAtWork.Plowing
                 // Piles réparties le long du plateau, de l'arrière vers l'avant.
                 // L'orientation ne sert qu'à les répartir : le chargement, lui,
                 // reste d'aplomb. Une pile de rochers qui pivote d'un quart de
-                // tour parce que la bête tourne à l'est ne ressemble à rien —
-                // et le jeu ne fait jamais tourner un objet posé.
+                // tour parce que la bête tourne à l'est ne ressemble à rien, et
+                // le jeu ne fait jamais tourner un objet posé.
                 Vector3 posCargo = pos + orientation
                     * new Vector3(0f, 0f, (dessines * CargoPas + CargoDepart) * taille);
                 posCargo.y = pos.y + 0.02f; // au-dessus du plateau

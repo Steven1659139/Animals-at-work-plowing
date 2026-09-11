@@ -39,7 +39,7 @@ namespace AnimalsAtWork.Plowing
 
         public override IEnumerable<Thing> PotentialWorkThingsGlobal(Pawn pawn)
         {
-            MapComponent_Labour composante = pawn.Map.GetComponent<MapComponent_Labour>();
+            MapComponent_Labour composante = MapComponent_Labour.De(pawn.Map);
             foreach (Pawn bete in pawn.Map.mapPawns.SpawnedPawnsInFaction(pawn.Faction))
             {
                 // Les bêtes marquées (à équiper/mener) et celles encore en
@@ -52,12 +52,45 @@ namespace AnimalsAtWork.Plowing
             }
         }
 
+        // JobGiver_Work demande HasJobOnThing pour retenir la bête, puis
+        // JobOnThing pour obtenir le job, au même tick : la décision
+        // (parcours des zones avec atteignabilité, recherche de rangement par
+        // pile) tournait donc deux fois par bête retenue. On garde le dernier
+        // job calculé le temps de ce second appel. Le worker est partagé par
+        // tous les colons, d'où le meneur dans la clé.
+        private Pawn dernierMeneur;
+        private Pawn derniereBete;
+        private bool derniereForce;
+        private int dernierTick = -1;
+        private Job dernierJob;
+
         public override bool HasJobOnThing(Pawn pawn, Thing t, bool forced = false)
         {
-            return JobOnThing(pawn, t, forced) != null;
+            Job job = Decider(pawn, t, forced);
+            dernierMeneur = pawn;
+            derniereBete = t as Pawn;
+            derniereForce = forced;
+            dernierTick = Find.TickManager.TicksGame;
+            dernierJob = job;
+            return job != null;
         }
 
         public override Job JobOnThing(Pawn pawn, Thing t, bool forced = false)
+        {
+            if (dernierJob != null
+                && dernierMeneur == pawn
+                && derniereBete == t
+                && derniereForce == forced
+                && dernierTick == Find.TickManager.TicksGame)
+            {
+                Job job = dernierJob;
+                dernierJob = null;
+                return job;
+            }
+            return Decider(pawn, t, forced);
+        }
+
+        private static Job Decider(Pawn pawn, Thing t, bool forced)
         {
             if (!(t is Pawn bete) || bete == pawn)
             {
@@ -67,7 +100,7 @@ namespace AnimalsAtWork.Plowing
             {
                 return null;
             }
-            MapComponent_Labour composante = pawn.Map.GetComponent<MapComponent_Labour>();
+            MapComponent_Labour composante = MapComponent_Labour.De(pawn.Map);
             // Ni marquée, ni en service : rien à faire avec elle.
             if (!composante.EstBeteDeTrait(bete) && !composante.EstEnService(bete))
             {

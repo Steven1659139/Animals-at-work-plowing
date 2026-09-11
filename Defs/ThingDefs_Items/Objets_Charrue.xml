@@ -30,8 +30,13 @@
       <workSkill>Crafting</workSkill>
       <unfinishedThingDef>UnfinishedComponent</unfinishedThingDef>
       <researchPrerequisite>AAW_Harnachement</researchPrerequisite>
+      <!-- Le coin d'artisanat reste pour la partie qui débute, mais une pièce
+           d'attelage se fait aussi bien à la forge, comme les armes néolithiques
+           vanilla (arc, épieu, massue, bois et métal mêlés). -->
       <recipeUsers>
         <li>CraftingSpot</li>
+        <li>FueledSmithy</li>
+        <li>ElectricSmithy</li>
       </recipeUsers>
       <displayPriority>152</displayPriority>
     </recipeMaker>

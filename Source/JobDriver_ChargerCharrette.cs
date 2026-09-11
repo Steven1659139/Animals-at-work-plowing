@@ -29,12 +29,19 @@ namespace AnimalsAtWork.Plowing
                 .FailOnDespawnedNullOrForbidden(TargetIndex.A);
 
             Toil hisser = Toils_General.Wait(DureeChargementTicks);
+            hisser.FailOnDespawnedNullOrForbidden(TargetIndex.A);
             hisser.WithProgressBarToilDelay(TargetIndex.A);
             yield return hisser;
 
             yield return Toils_General.Do(delegate
             {
                 Thing pile = job.targetA.Thing;
+                // Une pile détruite pendant le hissage (feu, explosion) n'a plus
+                // rien à donner : sans ce test, SplitOff en tirerait une copie.
+                if (pile == null || !pile.Spawned)
+                {
+                    return;
+                }
                 // Re-borne au cas où la situation a changé depuis la file :
                 // pile entamée par un colon, cargaison déjà à bord, etc.
                 int n = Mathf.Min(pile.stackCount, job.count > 0 ? job.count : pile.stackCount);

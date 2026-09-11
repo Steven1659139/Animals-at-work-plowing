@@ -9,8 +9,9 @@
        équipées sans jamais travailler. Le bloc Haul, lui, est du jeu de base.
        L'ordre des trois patchs entre eux est sans importance : une bête ne
        porte qu'un attelage à la fois, donc un seul JobGiver peut répondre.
-       Aucune condition de dressage : le JobGiver ne s'active que pour les
-       espèces de trait (ModExtension_BeteDeTrait) en service et équipées d'un
+       Aucune condition de dressage : le JobGiver ne répond que pour une bête
+       de trait (BeteDeTrait.Est : bête de somme, extension de def ou réglage
+       du joueur) qu'un colon a menée au champ (en service) et équipée d'un
        harnais et d'une charrue. -->
   <Operation Class="PatchOperationInsert">
     <xpath>Defs/ThinkTreeDef[defName="Animal"]//li[@Class="ThinkNode_ChancePerHour_Constant"][.//trainable="Haul"]</xpath>

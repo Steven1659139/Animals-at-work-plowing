@@ -7,7 +7,7 @@ namespace AnimalsAtWork.Plowing
 {
     // Passerelle avec le module Herding Dogs : un chien dressé au troupeau mène
     // les bêtes de trait à leur travail et les ramène à l'enclos, à la place du
-    // colon. Il ne harnache pas — apporter le harnais et le boucler demande des
+    // colon. Il ne harnache pas : apporter le harnais et le boucler demande des
     // mains, le colon reste nécessaire pour ça. Le partage est donc : le colon
     // équipe la bête dans l'enclos, le chien fait l'aller-retour jusqu'au champ.
     //
@@ -28,7 +28,7 @@ namespace AnimalsAtWork.Plowing
                 return null;
             }
 
-            MapComponent_Labour composante = map.GetComponent<MapComponent_Labour>();
+            MapComponent_Labour composante = MapComponent_Labour.De(map);
             // Un éléphant peut être dressé au troupeau et attelé à une charrue :
             // en service, il travaille, il ne mène pas les autres.
             if (composante.EstEnService(chien))

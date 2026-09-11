@@ -1,50 +1,37 @@
-using System.Collections.Generic;
-using RimWorld;
-using UnityEngine;
 using Verse;
-using Verse.AI;
 
 namespace AnimalsAtWork.Plowing
 {
-    // Séquence du labour : aller sur la case, travailler (barre de progression),
-    // puis convertir le terrain en sol labouré.
-    public class JobDriver_Labourer : JobDriver
+    // Labour d'une case : le temps écoulé, le terrain devient du sol labouré
+    // et la composante note la case pour la rendre à son terrain d'origine en
+    // fin de saison.
+    public class JobDriver_Labourer : JobDriver_TravailDeCase
     {
-        // Durée pour un gabarit bovin (bodySize 2.4) : l'âne peine, l'éléphant
-        // expédie. La courbe des gabarits vit dans BeteDeTrait.FacteurDuree.
-        private const int DureeLabourBaseTicks = 400;
-        private const int CasesParCharrue = 200;   // usure du soc : une charrue de bois = 200 cases
+        // L'âne peine, l'éléphant expédie.
+        protected override int DureeBaseTicks => 400;
 
-        public override bool TryMakePreToilReservations(bool errorOnFailed)
+        // Terre grattée et souffle de la bête, façon semailles vanilla.
+        protected override string Effet => "Sow";
+        protected override string Son => "Interact_Sow";
+
+        // Usure du soc : une charrue de bois tient 200 cases.
+        protected override ThingDef Outil => AAW_DefOf.AAW_Charrue;
+        protected override int CasesParOutil => 200;
+        protected override string CleOutilRompu => "AAW_CharrueRompue";
+
+        // Abandonne si la case ne se laboure plus : déjà retournée par une
+        // autre bête, zone supprimée ou labour coupé dessus, sol gelé,
+        // bâtiment posé entre-temps.
+        protected override bool CelluleValide(MapComponent_Labour composante)
         {
-            return pawn.Reserve(job.targetA, job, 1, -1, null, errorOnFailed);
+            return JobGiver_Labourer.Labourable(Cellule, pawn.Map, composante);
         }
 
-        protected override IEnumerable<Toil> MakeNewToils()
+        protected override void Travailler(MapComponent_Labour composante)
         {
-            yield return Toils_Goto.GotoCell(TargetIndex.A, PathEndMode.OnCell);
-
-            int duree = Mathf.RoundToInt(DureeLabourBaseTicks * BeteDeTrait.FacteurDuree(pawn));
-            Toil labour = Toils_General.Wait(duree);
-            labour.WithProgressBarToilDelay(TargetIndex.A);
-            // Terre grattée et souffle de la bête, façon semailles vanilla.
-            Ambiance.Habiller(labour, TargetIndex.A, "Sow", "Interact_Sow");
-            // Abandonne si la case a été labourée entre-temps (autre bête, etc.)
-            labour.FailOn(() => job.targetA.Cell.GetTerrain(pawn.Map) == AAW_DefOf.AAW_SolLaboure);
-            yield return labour;
-
-            yield return Toils_General.Do(delegate
-            {
-                IntVec3 cellule = job.targetA.Cell;
-                TerrainDef terrainAvant = cellule.GetTerrain(pawn.Map);
-                pawn.Map.terrainGrid.SetTerrain(cellule, AAW_DefOf.AAW_SolLaboure);
-                pawn.Map.GetComponent<MapComponent_Labour>().EnregistrerLabour(cellule, terrainAvant);
-
-                // Le sillon use la charrue, et un peu le harnais ; brisés, la
-                // bête ira s'équiper à neuf.
-                EquipementUtility.User(pawn, AAW_DefOf.AAW_Charrue, CasesParCharrue, "AAW_CharrueRompue");
-                EquipementUtility.User(pawn, AAW_DefOf.AAW_HarnaisDeTrait, EquipementUtility.UsagesParHarnais, "AAW_HarnaisRompu");
-            });
+            TerrainDef terrainAvant = Cellule.GetTerrain(pawn.Map);
+            pawn.Map.terrainGrid.SetTerrain(Cellule, AAW_DefOf.AAW_SolLaboure);
+            composante.EnregistrerLabour(Cellule, terrainAvant);
         }
     }
 }

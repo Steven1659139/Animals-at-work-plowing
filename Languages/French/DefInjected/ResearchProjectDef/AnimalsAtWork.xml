@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
   <AAW_Harnachement.label>harnachement</AAW_Harnachement.label>
-  <AAW_Harnachement.description>Confectionner des harnais de trait ajustés aux animaux de ferme. Le harnais répartit l'effort sur l'épaule de la bête et ouvre la voie aux attelages : charrettes, charrues et meules à traction.</AAW_Harnachement.description>
+  <AAW_Harnachement.description>Confectionner des harnais de trait ajustés aux animaux de ferme. Le harnais répartit l'effort sur l'épaule de la bête et ouvre la voie aux attelages : charrettes, charrues et outils attelés.</AAW_Harnachement.description>
   <AAW_Charretterie.label>charretterie</AAW_Charretterie.label>
   <AAW_Charretterie.description>Construire des charrettes de trait en bois. Une bête attelée charge plusieurs piles d'un coup et les livre en une seule tournée dans la colonie, et porte cent kilos de plus en caravane.</AAW_Charretterie.description>
 </LanguageData>
