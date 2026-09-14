@@ -66,12 +66,12 @@ namespace AnimalsAtWork.Plowing
         // meneur : une pile posée là où rien ne l'accepte n'est pas du travail
         // en attente, aucune tournée ne la prendra jamais.
         //
-        // Sans porteur (carrier null), délibérément : la question ne dépend ni
-        // de qui emporte la pile ni d'où il se trouve. Vanilla gère ce cas
-        // partout (IsGoodStoreCell saute alors l'accessibilité et se rabat sur
-        // la réservation par faction), et c'est ce qui permet de la poser depuis
-        // l'enclos, avant même d'avoir sorti la bête. Passer la bête ici serait
-        // un piège : bloquée par les clôtures, elle n'atteint rien du dehors.
+        // Sert au seul envoi (ServiceTrait.ComptePiles), décidé depuis
+        // l'enclos. Sans porteur, délibérément : dans l'enclos la bête est
+        // bloquée par les clôtures, rien du dehors ne lui est accessible, et
+        // lui poser la question reviendrait à ne jamais la sortir. Le
+        // chargement, lui, se décide une fois la bête au champ et passe par
+        // Destination, qui tient compte d'elle.
         //
         // Coûteux : à n'appeler qu'après les filtres bon marché.
         public static bool ADestination(Map carte, Thing pile)
@@ -81,6 +81,31 @@ namespace AnimalsAtWork.Plowing
                 out _, needAccurateResult: false);
         }
 
+        // La case où CETTE bête ira réellement déposer cette pile, si elle
+        // existe. C'est la question du charretier, et elle doit se poser à
+        // l'identique au chargement (PeutEtreCharriee) et à la livraison
+        // (JobDriver_ViderCharrette.ProchaineLivraison) : c'est leur désaccord
+        // qui faisait tourner la bête en boucle. Elle chargeait au nom d'un
+        // stock que la livraison ne lui laissait pas joindre, reposait la pile
+        // là où elle venait de la prendre, et recommençait.
+        //
+        // La bête en porteur, à la différence d'ADestination : la zone
+        // autorisée de l'animal et les réservations comptent ici, puisqu'on
+        // parle du trajet qu'elle fera.
+        //
+        // Et le CanReach par-dessus, parce que TryFindBestBetterStoreCellFor
+        // n'en fait aucun, avec porteur comme sans : le porteur ne change que
+        // l'interdiction, la réservation et l'origine des distances. OnCell
+        // comme le JobDriver, qui fait déposer la bête depuis la case même.
+        public static bool Destination(Pawn bete, Map carte, Thing pile,
+            StoragePriority prioriteActuelle, out IntVec3 cellule)
+        {
+            return StoreUtility.TryFindBestBetterStoreCellFor(pile, bete, carte,
+                    prioriteActuelle, bete.Faction, out cellule,
+                    needAccurateResult: false)
+                && bete.CanReach(cellule, PathEndMode.OnCell, Danger.Some);
+        }
+
         // Une pile que cette bête peut emporter de là où elle est : la question
         // du meneur, plus l'accessibilité et la capacité de ramassage. Ne vaut
         // qu'une fois la bête au champ : depuis l'enclos, elle répond toujours non.
@@ -88,7 +113,8 @@ namespace AnimalsAtWork.Plowing
         {
             return bete.CanReserve(pile)
                 && HaulAIUtility.PawnCanAutomaticallyHaulFast(bete, pile, false)
-                && ADestination(carte, pile);
+                && Destination(bete, carte, pile,
+                    StoreUtility.CurrentStoragePriorityOf(pile), out _);
         }
 
         private static Job TourneeDeChargement(Pawn pawn, Map map)

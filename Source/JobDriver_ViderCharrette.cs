@@ -88,8 +88,12 @@ namespace AnimalsAtWork.Plowing
                 {
                     continue;
                 }
-                if (!StoreUtility.TryFindBestBetterStoreCellFor(t, pawn, Map,
-                        StoragePriority.Unstored, pawn.Faction, out IntVec3 c))
+                // Même test qu'au chargement (JobGiver_Charretier.Destination),
+                // accessibilité comprise : ce qui est monté dans la charrette
+                // doit pouvoir en descendre quelque part, sinon la bête repose
+                // sa pile là où elle l'a prise et recommence.
+                if (!JobGiver_Charretier.Destination(pawn, Map, t,
+                        StoragePriority.Unstored, out IntVec3 c))
                 {
                     continue;
                 }
