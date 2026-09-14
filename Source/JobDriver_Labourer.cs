@@ -8,30 +8,30 @@ namespace AnimalsAtWork.Plowing
     public class JobDriver_Labourer : JobDriver_TravailDeCase
     {
         // L'âne peine, l'éléphant expédie.
-        protected override int DureeBaseTicks => 400;
+        protected override int BaseDurationTicks => 400;
 
         // Terre grattée et souffle de la bête, façon semailles vanilla.
-        protected override string Effet => "Sow";
-        protected override string Son => "Interact_Sow";
+        protected override string Effect => "Sow";
+        protected override string Sound => "Interact_Sow";
 
         // Usure du soc : une charrue de bois tient 200 cases.
-        protected override ThingDef Outil => AAW_DefOf.AAW_Charrue;
-        protected override int CasesParOutil => 200;
-        protected override string CleOutilRompu => "AAW_CharrueRompue";
+        protected override ThingDef Tool => AAW_DefOf.AAW_Charrue;
+        protected override int CellsPerTool => 200;
+        protected override string BrokenToolKey => "AAW_CharrueRompue";
 
         // Abandonne si la case ne se laboure plus : déjà retournée par une
         // autre bête, zone supprimée ou labour coupé dessus, sol gelé,
         // bâtiment posé entre-temps.
-        protected override bool CelluleValide(MapComponent_Labour composante)
+        protected override bool CellStillValid(MapComponent_Labour component)
         {
-            return JobGiver_Labourer.Labourable(Cellule, pawn.Map, composante);
+            return JobGiver_Labourer.Plowable(Cell, pawn.Map, component);
         }
 
-        protected override void Travailler(MapComponent_Labour composante)
+        protected override void DoWork(MapComponent_Labour component)
         {
-            TerrainDef terrainAvant = Cellule.GetTerrain(pawn.Map);
-            pawn.Map.terrainGrid.SetTerrain(Cellule, AAW_DefOf.AAW_SolLaboure);
-            composante.EnregistrerLabour(Cellule, terrainAvant);
+            TerrainDef terrainBefore = Cell.GetTerrain(pawn.Map);
+            pawn.Map.terrainGrid.SetTerrain(Cell, AAW_DefOf.AAW_SolLaboure);
+            component.RecordPlowing(Cell, terrainBefore);
         }
     }
 }

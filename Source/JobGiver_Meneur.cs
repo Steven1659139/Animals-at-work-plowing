@@ -20,18 +20,18 @@ namespace AnimalsAtWork.Plowing
     // l'arbre « Animal » vanilla en entier. Voir le commentaire du patch.
     public class JobGiver_Meneur : ThinkNode_JobGiver
     {
-        protected override Job TryGiveJob(Pawn chien)
+        protected override Job TryGiveJob(Pawn dog)
         {
-            Map map = chien.Map;
-            if (map == null || chien.Faction != Faction.OfPlayer)
+            Map map = dog.Map;
+            if (map == null || dog.Faction != Faction.OfPlayer)
             {
                 return null;
             }
 
-            MapComponent_Labour composante = MapComponent_Labour.De(map);
+            MapComponent_Labour component = MapComponent_Labour.Of(map);
             // Un éléphant peut être dressé au troupeau et attelé à une charrue :
             // en service, il travaille, il ne mène pas les autres.
-            if (composante.EstEnService(chien))
+            if (component.IsOnDuty(dog))
             {
                 return null;
             }
@@ -39,38 +39,38 @@ namespace AnimalsAtWork.Plowing
             // finit par chercher une case de travail (parcours des zones avec
             // atteignabilité), et rien là-dedans ne demande une réaction
             // immédiate. Même raison que les scans de MapComponent_Bergerie.
-            if (!composante.PeutScannerMeneur(chien))
+            if (!component.HandlerMayScan(dog))
             {
                 return null;
             }
 
-            List<Pawn> animaux = map.mapPawns.SpawnedPawnsInFaction(Faction.OfPlayer);
-            for (int i = 0; i < animaux.Count; i++)
+            List<Pawn> animals = map.mapPawns.SpawnedPawnsInFaction(Faction.OfPlayer);
+            for (int i = 0; i < animals.Count; i++)
             {
-                Pawn bete = animaux[i];
-                if (bete == chien || !bete.RaceProps.Animal)
+                Pawn beast = animals[i];
+                if (beast == dog || !beast.RaceProps.Animal)
                 {
                     continue;
                 }
-                if (!BeteDeTrait.Est(bete.def))
+                if (!BeteDeTrait.Is(beast.def))
                 {
                     continue;
                 }
                 // Mêmes filtres que le colon (WorkGiver_BeteDeTrait) : ni marquée
                 // ni en service, déjà menée par quelqu'un, ou en crise, on passe.
-                if (!composante.EstBeteDeTrait(bete) && !composante.EstEnService(bete))
+                if (!component.IsDraftBeast(beast) && !component.IsOnDuty(beast))
                 {
                     continue;
                 }
-                if (bete.roping.IsRoped || bete.InMentalState)
+                if (beast.roping.IsRoped || beast.InMentalState)
                 {
                     continue;
                 }
-                if (!chien.CanReserveAndReach(bete, PathEndMode.Touch, Danger.Some))
+                if (!dog.CanReserveAndReach(beast, PathEndMode.Touch, Danger.Some))
                 {
                     continue;
                 }
-                Job job = ServiceTrait.JobDeService(chien, bete, composante, false, false);
+                Job job = ServiceTrait.ServiceJob(dog, beast, component, false, false);
                 if (job != null)
                 {
                     return job;

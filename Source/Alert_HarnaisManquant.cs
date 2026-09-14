@@ -12,7 +12,7 @@ namespace AnimalsAtWork.Plowing
     // d'Alert.
     public class Alert_HarnaisManquant : Alert
     {
-        private readonly List<GlobalTargetInfo> coupables = new List<GlobalTargetInfo>();
+        private readonly List<GlobalTargetInfo> culprits = new List<GlobalTargetInfo>();
 
         public override string GetLabel()
         {
@@ -26,46 +26,46 @@ namespace AnimalsAtWork.Plowing
 
         public override AlertReport GetReport()
         {
-            coupables.Clear();
+            culprits.Clear();
             if (!AAW_DefOf.AAW_Harnachement.IsFinished)
             {
                 return false;
             }
             foreach (Map map in Find.Maps)
             {
-                if (Disponible(map, AAW_DefOf.AAW_HarnaisDeTrait))
+                if (Available(map, AAW_DefOf.AAW_HarnaisDeTrait))
                 {
                     continue;
                 }
-                MapComponent_Labour composante = MapComponent_Labour.De(map);
-                bool attelageEnAttente = Disponible(map, AAW_DefOf.AAW_Charrue)
-                    || Disponible(map, AAW_DefOf.AAW_Charrette)
-                    || Disponible(map, AAW_DefOf.AAW_Grattoir);
+                MapComponent_Labour component = MapComponent_Labour.Of(map);
+                bool implementPending = Available(map, AAW_DefOf.AAW_Charrue)
+                    || Available(map, AAW_DefOf.AAW_Charrette)
+                    || Available(map, AAW_DefOf.AAW_Grattoir);
                 foreach (Pawn animal in map.mapPawns.SpawnedColonyAnimals)
                 {
                     // Seules les bêtes que le joueur a marquées (opt-in) comptent :
                     // un colon voudra les équiper mais aucun harnais n'est là.
-                    if (!BeteDeTrait.Est(animal.def)
-                        || !composante.EstBeteDeTrait(animal)
-                        || EquipementUtility.Porte(animal, AAW_DefOf.AAW_HarnaisDeTrait) != null)
+                    if (!BeteDeTrait.Is(animal.def)
+                        || !component.IsDraftBeast(animal)
+                        || EquipementUtility.Carries(animal, AAW_DefOf.AAW_HarnaisDeTrait) != null)
                     {
                         continue;
                     }
-                    if (attelageEnAttente || EquipementUtility.AttelagePorte(animal) != null)
+                    if (implementPending || EquipementUtility.CarriedImplement(animal) != null)
                     {
-                        coupables.Add(animal);
+                        culprits.Add(animal);
                     }
                 }
             }
-            return AlertReport.CulpritsAre(coupables);
+            return AlertReport.CulpritsAre(culprits);
         }
 
-        private static bool Disponible(Map map, ThingDef def)
+        private static bool Available(Map map, ThingDef def)
         {
-            List<Thing> objets = map.listerThings.ThingsOfDef(def);
-            for (int i = 0; i < objets.Count; i++)
+            List<Thing> items = map.listerThings.ThingsOfDef(def);
+            for (int i = 0; i < items.Count; i++)
             {
-                if (!objets[i].IsForbidden(Faction.OfPlayer))
+                if (!items[i].IsForbidden(Faction.OfPlayer))
                 {
                     return true;
                 }

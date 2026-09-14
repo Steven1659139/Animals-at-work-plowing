@@ -19,46 +19,46 @@ namespace AnimalsAtWork.Plowing
         {
             // La bête ne laboure qu'une fois menée au champ par un colon (en
             // service) et déjà équipée du harnais et de la charrue.
-            if (!ServiceTrait.PreteAuTravail(pawn, TacheTrait.Labour, out MapComponent_Labour composante)
-                || !composante.TravailLabourEnAttente())
+            if (!ServiceTrait.ReadyForWork(pawn, TacheTrait.Labour, out MapComponent_Labour component)
+                || !component.PlowWorkPending())
             {
                 return null;
             }
 
-            IntVec3 cible = ChoisirCase(pawn, pawn.Map, composante);
-            if (!cible.IsValid)
+            IntVec3 target = ChooseCell(pawn, pawn.Map, component);
+            if (!target.IsValid)
             {
                 return null;
             }
-            return JobMaker.MakeJob(AAW_DefOf.AAW_Labourer, cible);
+            return JobMaker.MakeJob(AAW_DefOf.AAW_Labourer, target);
         }
 
         // La prochaine case à labourer, en sillons droits : d'abord tout droit
         // dans le sillon en cours (si la bête est encore dessus et que la case
         // suivante se laboure), sinon la case labourable la plus proche, qui
         // ouvre un nouveau sillon dans la meilleure direction.
-        private static IntVec3 ChoisirCase(Pawn pawn, Map map, MapComponent_Labour composante)
+        private static IntVec3 ChooseCell(Pawn pawn, Map map, MapComponent_Labour component)
         {
-            if (composante.EnSillon(pawn, out IntVec3 derniere, out IntVec3 direction)
-                && pawn.Position == derniere)
+            if (component.InFurrow(pawn, out IntVec3 last, out IntVec3 direction)
+                && pawn.Position == last)
             {
-                IntVec3 suite = derniere + direction;
-                if (Labourable(suite, map, composante)
-                    && pawn.CanReserveAndReach(suite, PathEndMode.OnCell, Danger.Some))
+                IntVec3 rest = last + direction;
+                if (Plowable(rest, map, component)
+                    && pawn.CanReserveAndReach(rest, PathEndMode.OnCell, Danger.Some))
                 {
-                    composante.NoterSillon(pawn, suite, direction);
-                    return suite;
+                    component.NoteFurrow(pawn, rest, direction);
+                    return rest;
                 }
             }
 
-            IntVec3 depart = CaseLabourableLaPlusProche(pawn);
-            if (!depart.IsValid)
+            IntVec3 start = ClosestPlowableCell(pawn);
+            if (!start.IsValid)
             {
-                composante.OublierSillon(pawn);
+                component.ForgetFurrow(pawn);
                 return IntVec3.Invalid;
             }
-            composante.NoterSillon(pawn, depart, DirectionSillon(depart, map, composante));
-            return depart;
+            component.NoteFurrow(pawn, start, FurrowDirection(start, map, component));
+            return start;
         }
 
         // Cardinaux testés dans cet ordre : les sillons partent horizontaux et
@@ -68,11 +68,11 @@ namespace AnimalsAtWork.Plowing
 
         // Direction d'un nouveau sillon depuis 'depart' : le premier cardinal
         // dont la case voisine se laboure encore. Est par défaut.
-        private static IntVec3 DirectionSillon(IntVec3 depart, Map map, MapComponent_Labour composante)
+        private static IntVec3 FurrowDirection(IntVec3 start, Map map, MapComponent_Labour component)
         {
             foreach (IntVec3 d in Cardinaux)
             {
-                if (Labourable(depart + d, map, composante))
+                if (Plowable(start + d, map, component))
                 {
                     return d;
                 }
@@ -83,28 +83,28 @@ namespace AnimalsAtWork.Plowing
         // La case se laboure-t-elle, dans une zone de culture où le labour est
         // autorisé ? Sert au suivi de sillon, case par case, et au JobDriver
         // pour abandonner une case qui ne s'y prête plus en cours d'ouvrage.
-        public static bool Labourable(IntVec3 cellule, Map map, MapComponent_Labour composante)
+        public static bool Plowable(IntVec3 cell, Map map, MapComponent_Labour component)
         {
-            return cellule.InBounds(map)
-                && cellule.GetZone(map) is Zone_Growing zoneCulture
-                && composante.LabourAutorise(zoneCulture)
-                && CelluleLabourable(cellule, map);
+            return cell.InBounds(map)
+                && cell.GetZone(map) is Zone_Growing growZone
+                && component.PlowingAllowed(growZone)
+                && CellIsPlowable(cell, map);
         }
 
         // Y a-t-il une case à labourer quelque part (réservations mises à
         // part) ? Sert aussi à décider de poser ou de prendre la charrue.
         // Toujours via le cache de MapComponent_Labour, jamais en direct.
-        public static bool TravailExiste(Map map, MapComponent_Labour composante)
+        public static bool WorkExists(Map map, MapComponent_Labour component)
         {
             foreach (Zone zone in map.zoneManager.AllZones)
             {
-                if (!(zone is Zone_Growing zoneCulture) || !composante.LabourAutorise(zoneCulture))
+                if (!(zone is Zone_Growing growZone) || !component.PlowingAllowed(growZone))
                 {
                     continue;
                 }
-                foreach (IntVec3 cellule in zoneCulture.Cells)
+                foreach (IntVec3 cell in growZone.Cells)
                 {
-                    if (CelluleLabourable(cellule, map))
+                    if (CellIsPlowable(cell, map))
                     {
                         return true;
                     }
@@ -118,46 +118,46 @@ namespace AnimalsAtWork.Plowing
         //   meneur != null → un colon l'y mène à la corde (voir ServiceTrait).
         // Tests coûteux (atteignabilité) en dernier, seulement pour une case plus
         // proche que la meilleure trouvée.
-        public static IntVec3 CaseLabourableLaPlusProche(Pawn bete, Pawn meneur = null)
+        public static IntVec3 ClosestPlowableCell(Pawn beast, Pawn handler = null)
         {
-            Map map = bete.Map;
-            MapComponent_Labour composante = MapComponent_Labour.De(map);
-            IntVec3 meilleure = IntVec3.Invalid;
-            float meilleureDist = float.MaxValue;
+            Map map = beast.Map;
+            MapComponent_Labour component = MapComponent_Labour.Of(map);
+            IntVec3 best = IntVec3.Invalid;
+            float bestDist = float.MaxValue;
             foreach (Zone zone in map.zoneManager.AllZones)
             {
-                if (!(zone is Zone_Growing zoneCulture) || !composante.LabourAutorise(zoneCulture))
+                if (!(zone is Zone_Growing growZone) || !component.PlowingAllowed(growZone))
                 {
                     continue;
                 }
-                foreach (IntVec3 cellule in zoneCulture.Cells)
+                foreach (IntVec3 cell in growZone.Cells)
                 {
-                    float dist = cellule.DistanceToSquared(bete.Position);
-                    if (dist >= meilleureDist || !CelluleLabourable(cellule, map))
+                    float dist = cell.DistanceToSquared(beast.Position);
+                    if (dist >= bestDist || !CellIsPlowable(cell, map))
                     {
                         continue;
                     }
-                    if (ServiceTrait.Accessible(bete, meneur, cellule))
+                    if (ServiceTrait.Reachable(beast, handler, cell))
                     {
-                        meilleure = cellule;
-                        meilleureDist = dist;
+                        best = cell;
+                        bestDist = dist;
                     }
                 }
             }
-            return meilleure;
+            return best;
         }
 
         // Case vers laquelle le colon mène la bête : la plus proche d'elle et
         // joignable en la menant. Elle re-scanne ensuite depuis là.
-        public static bool TrouverCelluleTravail(Pawn bete, Pawn meneur, out IntVec3 result)
+        public static bool FindWorkCell(Pawn beast, Pawn handler, out IntVec3 result)
         {
-            result = CaseLabourableLaPlusProche(bete, meneur);
+            result = ClosestPlowableCell(beast, handler);
             return result.IsValid;
         }
 
-        private static bool CelluleLabourable(IntVec3 cellule, Map map)
+        private static bool CellIsPlowable(IntVec3 cell, Map map)
         {
-            TerrainDef terrain = cellule.GetTerrain(map);
+            TerrainDef terrain = cell.GetTerrain(map);
             if (terrain == AAW_DefOf.AAW_SolLaboure)
             {
                 return false;
@@ -175,11 +175,11 @@ namespace AnimalsAtWork.Plowing
             // Labourer un sol gelé est du harnais gaspillé : rien n'y poussera
             // avant que la terre ne se tasse. Température par case, pour que
             // les serres chauffées restent labourables en plein hiver.
-            if (GenTemperature.GetTemperatureForCell(cellule, map) < TemperatureMin)
+            if (GenTemperature.GetTemperatureForCell(cell, map) < TemperatureMin)
             {
                 return false;
             }
-            return cellule.GetEdifice(map) == null;
+            return cell.GetEdifice(map) == null;
         }
     }
 }

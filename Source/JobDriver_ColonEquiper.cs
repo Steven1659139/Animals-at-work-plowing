@@ -12,9 +12,9 @@ namespace AnimalsAtWork.Plowing
     //   targetA = la bête    targetB = la pile d'équipement au sol
     public class JobDriver_ColonEquiper : JobDriver
     {
-        private const int DureePoseTicks = 180;
+        private const int PlacingDurationTicks = 180;
 
-        private Pawn Bete => (Pawn)job.GetTarget(TargetIndex.A).Thing;
+        private Pawn Beast => (Pawn)job.GetTarget(TargetIndex.A).Thing;
 
         public override bool TryMakePreToilReservations(bool errorOnFailed)
         {
@@ -24,49 +24,49 @@ namespace AnimalsAtWork.Plowing
 
         protected override IEnumerable<Toil> MakeNewToils()
         {
-            Toil versPile = Toils_Goto.GotoThing(TargetIndex.B, PathEndMode.ClosestTouch);
-            versPile.FailOnDespawnedNullOrForbidden(TargetIndex.B);
-            yield return versPile;
+            Toil towardStack = Toils_Goto.GotoThing(TargetIndex.B, PathEndMode.ClosestTouch);
+            towardStack.FailOnDespawnedNullOrForbidden(TargetIndex.B);
+            yield return towardStack;
 
             yield return Toils_Haul.StartCarryThing(TargetIndex.B);
 
-            Toil versBete = Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.Touch);
-            versBete.FailOnDespawnedOrNull(TargetIndex.A);
-            yield return versBete;
+            Toil towardBeast = Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.Touch);
+            towardBeast.FailOnDespawnedOrNull(TargetIndex.A);
+            yield return towardBeast;
 
-            Toil poser = Toils_General.Wait(DureePoseTicks);
-            poser.FailOnDespawnedOrNull(TargetIndex.A);
-            poser.WithProgressBarToilDelay(TargetIndex.A);
-            yield return poser;
+            Toil place = Toils_General.Wait(PlacingDurationTicks);
+            place.FailOnDespawnedOrNull(TargetIndex.A);
+            place.WithProgressBarToilDelay(TargetIndex.A);
+            yield return place;
 
             yield return Toils_General.Do(delegate
             {
-                Pawn bete = Bete;
-                Thing porte = pawn.carryTracker.CarriedThing;
-                if (bete == null || porte == null)
+                Pawn beast = Beast;
+                Thing carried = pawn.carryTracker.CarriedThing;
+                if (beast == null || carried == null)
                 {
                     return;
                 }
-                Thing piece = porte.SplitOff(1);
+                Thing piece = carried.SplitOff(1);
                 // Pose d'un attelage : retirer l'ancien s'il diffère.
-                if (EquipementUtility.EstAttelage(piece.def))
+                if (EquipementUtility.IsImplement(piece.def))
                 {
-                    Thing ancien = EquipementUtility.AttelagePorte(bete);
-                    if (ancien != null && ancien.def != piece.def)
+                    Thing previous = EquipementUtility.CarriedImplement(beast);
+                    if (previous != null && previous.def != piece.def)
                     {
                         // La cargaison vit dans la charrette : elle descend avec
                         // elle, sinon elle voyagerait invisible sous la charrue.
-                        if (ancien.def == AAW_DefOf.AAW_Charrette)
+                        if (previous.def == AAW_DefOf.AAW_Charrette)
                         {
-                            EquipementUtility.DeposerCargaison(bete);
+                            EquipementUtility.DropCargo(beast);
                         }
-                        bete.inventory.innerContainer.TryDrop(
-                            ancien, bete.Position, bete.Map, ThingPlaceMode.Near, out _);
+                        beast.inventory.innerContainer.TryDrop(
+                            previous, beast.Position, beast.Map, ThingPlaceMode.Near, out _);
                     }
                 }
-                if (!bete.inventory.innerContainer.TryAdd(piece, false))
+                if (!beast.inventory.innerContainer.TryAdd(piece, false))
                 {
-                    GenPlace.TryPlaceThing(piece, bete.Position, bete.Map, ThingPlaceMode.Near);
+                    GenPlace.TryPlaceThing(piece, beast.Position, beast.Map, ThingPlaceMode.Near);
                 }
                 // Reliquat éventuel dans les mains du colon : le reposer au sol.
                 if (pawn.carryTracker.CarriedThing != null)

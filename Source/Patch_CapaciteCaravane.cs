@@ -12,7 +12,7 @@ namespace AnimalsAtWork.Plowing
     [HarmonyPatch(typeof(MassUtility), nameof(MassUtility.Capacity))]
     public static class Patch_CapaciteCaravane
     {
-        private const float BonusCharrette = 100f;
+        private const float CartBonus = 100f;
 
         public static void Postfix(Pawn p, StringBuilder explanation, ref float __result)
         {
@@ -21,16 +21,16 @@ namespace AnimalsAtWork.Plowing
             {
                 return;
             }
-            Thing charrette = EquipementUtility.Porte(p, AAW_DefOf.AAW_Charrette);
-            if (charrette == null)
+            Thing cart = EquipementUtility.Carries(p, AAW_DefOf.AAW_Charrette);
+            if (cart == null)
             {
                 return;
             }
-            __result += BonusCharrette + charrette.GetStatValue(StatDefOf.Mass);
+            __result += CartBonus + cart.GetStatValue(StatDefOf.Mass);
             if (explanation != null)
             {
                 explanation.AppendLine();
-                explanation.Append("  - " + "AAW_BonusCharrette".Translate() + ": +" + BonusCharrette.ToStringMass());
+                explanation.Append("  - " + "AAW_BonusCharrette".Translate() + ": +" + CartBonus.ToStringMass());
             }
         }
     }

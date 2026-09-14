@@ -13,16 +13,16 @@ namespace AnimalsAtWork.Plowing
     {
         // Tailles pour le gabarit bovin ; tout le reste s'en déduit. Une pièce
         // qui fait la moitié de la bête se lit de loin, le tiers ne se lit pas.
-        private const float TailleCharrette = 2.3f;
-        private const float TailleCharrue = 1.7f;
-        private const float TailleGrattoir = 1.7f;
-        private const int CargosVisibles = 3;
+        private const float CartSize = 2.3f;
+        private const float PlowSize = 1.7f;
+        private const float ScraperSize = 1.7f;
+        private const int VisibleCargos = 3;
 
         // Disposition des piles, en fraction de la charrette : posées sur le
         // plateau, elles la suivent quand elle change de taille.
-        private const float CargoTaille = 0.37f;
-        private const float CargoPas = 0.22f;
-        private const float CargoDepart = -0.26f;
+        private const float CargoSize = 0.37f;
+        private const float CargoStep = 0.22f;
+        private const float CargoStart = -0.26f;
 
         // La pièce sort du sprite de la bête : demi-longueur de la bête plus
         // demi-longueur de la pièce, moins un serrage. Dessinée sous la bête,
@@ -31,14 +31,14 @@ namespace AnimalsAtWork.Plowing
         // deux tailles, pas seulement l'échelle. Le serrage compense la marge
         // transparente des deux textures, pour que l'attelage reste au cul de
         // la bête.
-        private const float Serrage = 0.85f;
+        private const float Tightening = 0.85f;
 
         // L'attelage suit le gabarit de la bête qui le tire : la charrue d'un
         // âne n'a pas à faire la taille de celle d'un éléphant. On se règle sur
         // la taille dessinée de la bête, pas sur son bodySize : c'est une
         // texture qu'on accorde à une autre texture, et les deux ne vont pas
         // du tout de pair (l'alpaga se dessine aussi grand que le cheval).
-        private const float GabaritReference = 2.6f; // bovin adulte : les tailles ci-dessus
+        private const float ReferenceSize = 2.6f; // bovin adulte : les tailles ci-dessus
         // Le plancher se règle en taille dessinée, pas en proportion : il vaut
         // ce qu'il faut pour que la charrue du poulet reste lisible (~0,6 case),
         // et se redescend donc quand les tailles ci-dessus grandissent.
@@ -61,64 +61,64 @@ namespace AnimalsAtWork.Plowing
             {
                 return;
             }
-            var animaux = map.mapPawns.SpawnedColonyAnimals;
-            for (int i = 0; i < animaux.Count; i++)
+            var animals = map.mapPawns.SpawnedColonyAnimals;
+            for (int i = 0; i < animals.Count; i++)
             {
                 // Une seule recherche par bête : les trois attelages s'excluent,
                 // et cette boucle tourne à chaque frame.
-                Thing attelage = EquipementUtility.AttelagePorte(animaux[i]);
-                if (attelage == null)
+                Thing implement = EquipementUtility.CarriedImplement(animals[i]);
+                if (implement == null)
                 {
                     continue;
                 }
-                bool charrette = attelage.def == AAW_DefOf.AAW_Charrette;
+                bool cart = implement.def == AAW_DefOf.AAW_Charrette;
                 // Le grattoir se pousse, il ne se tire pas : il passe devant la
                 // bête, lame en avant, là où charrue et charrette suivent.
-                bool devant = attelage.def == AAW_DefOf.AAW_Grattoir;
-                Dessiner(animaux[i], attelage, Taille(attelage.def),
-                    avecCargo: charrette, devant: devant);
+                bool front = implement.def == AAW_DefOf.AAW_Grattoir;
+                Draw(animals[i], implement, Size(implement.def),
+                    withCargo: cart, front: front);
             }
         }
 
-        private static float Taille(ThingDef def)
+        private static float Size(ThingDef def)
         {
             if (def == AAW_DefOf.AAW_Charrette)
             {
-                return TailleCharrette;
+                return CartSize;
             }
-            return def == AAW_DefOf.AAW_Charrue ? TailleCharrue : TailleGrattoir;
+            return def == AAW_DefOf.AAW_Charrue ? PlowSize : ScraperSize;
         }
 
-        private static void Dessiner(Pawn bete, Thing attelage, float taille, bool avecCargo,
-            bool devant = false)
+        private static void Draw(Pawn beast, Thing implement, float size, bool withCargo,
+            bool front = false)
         {
-            float gabarit = TailleDessinee(bete);
-            taille *= Facteur(gabarit);
-            Rot4 rot = bete.Rotation;
+            float beastSize = DrawnSize(beast);
+            size *= Factor(beastSize);
+            Rot4 rot = beast.Rotation;
             // Les textures d'attelage sont dessinées timon vers le haut, lame
             // vers le bas : tirées, le timon pointe déjà vers la bête. Poussée,
             // la pièce fait demi-tour pour lui présenter son timon et mettre sa
             // lame en tête.
             Quaternion orientation =
-                Quaternion.AngleAxis(rot.AsAngle + (devant ? 180f : 0f), Vector3.up);
-            float ecart = (gabarit + taille) * 0.5f * Serrage;
-            Vector3 pos = bete.DrawPos
-                + rot.FacingCell.ToVector3() * (ecart * (devant ? 1f : -1f));
+                Quaternion.AngleAxis(rot.AsAngle + (front ? 180f : 0f), Vector3.up);
+            float offset = (beastSize + size) * 0.5f * Tightening;
+            Vector3 pos = beast.DrawPos
+                + rot.FacingCell.ToVector3() * (offset * (front ? 1f : -1f));
             pos.y = AltitudeLayer.Pawn.AltitudeFor() - 0.03f; // juste sous la bête
             Graphics.DrawMesh(MeshPool.plane10,
-                Matrix4x4.TRS(pos, orientation, new Vector3(taille, 1f, taille)),
-                attelage.Graphic.MatSingle, 0);
-            if (!avecCargo)
+                Matrix4x4.TRS(pos, orientation, new Vector3(size, 1f, size)),
+                implement.Graphic.MatSingle, 0);
+            if (!withCargo)
             {
                 return;
             }
 
-            ThingOwner contenu = bete.inventory.innerContainer;
-            int dessines = 0;
-            for (int i = 0; i < contenu.Count && dessines < CargosVisibles; i++)
+            ThingOwner contents = beast.inventory.innerContainer;
+            int drawn = 0;
+            for (int i = 0; i < contents.Count && drawn < VisibleCargos; i++)
             {
-                Thing cargo = contenu[i];
-                if (EquipementUtility.EstEquipement(cargo.def))
+                Thing cargo = contents[i];
+                if (EquipementUtility.IsEquipment(cargo.def))
                 {
                     continue;
                 }
@@ -134,8 +134,8 @@ namespace AnimalsAtWork.Plowing
                 // changeait de forme soixante fois par seconde et gigotait sur
                 // le plateau. MatSingleFor fixe la variante sur l'identifiant
                 // de la pièce, celle-là même que le jeu lui donne au sol.
-                Material materiau = cargo.Graphic?.MatSingleFor(cargo);
-                if (materiau.NullOrBad())
+                Material stuff = cargo.Graphic?.MatSingleFor(cargo);
+                if (stuff.NullOrBad())
                 {
                     continue;
                 }
@@ -144,30 +144,30 @@ namespace AnimalsAtWork.Plowing
                 // reste d'aplomb. Une pile de rochers qui pivote d'un quart de
                 // tour parce que la bête tourne à l'est ne ressemble à rien, et
                 // le jeu ne fait jamais tourner un objet posé.
-                Vector3 posCargo = pos + orientation
-                    * new Vector3(0f, 0f, (dessines * CargoPas + CargoDepart) * taille);
-                posCargo.y = pos.y + 0.02f; // au-dessus du plateau
+                Vector3 cargoPos = pos + orientation
+                    * new Vector3(0f, 0f, (drawn * CargoStep + CargoStart) * size);
+                cargoPos.y = pos.y + 0.02f; // au-dessus du plateau
                 Graphics.DrawMesh(MeshPool.plane10,
-                    Matrix4x4.TRS(posCargo, Quaternion.identity,
-                        Vector3.one * (CargoTaille * taille)),
-                    materiau, 0);
-                dessines++;
+                    Matrix4x4.TRS(cargoPos, Quaternion.identity,
+                        Vector3.one * (CargoSize * size)),
+                    stuff, 0);
+                drawn++;
             }
         }
 
         // Longueur de la bête telle qu'elle est dessinée, en cases. Elle vient
         // de l'étape de vie en cours : un poulain tire une charrue de poulain,
         // et elle grandit avec lui. Le gabarit bovin par défaut, faute de mieux.
-        public static float TailleDessinee(Pawn bete)
+        public static float DrawnSize(Pawn beast)
         {
-            GraphicData corps = bete.ageTracker?.CurKindLifeStage?.bodyGraphicData;
-            return corps == null ? GabaritReference : corps.drawSize.x;
+            GraphicData body = beast.ageTracker?.CurKindLifeStage?.bodyGraphicData;
+            return body == null ? ReferenceSize : body.drawSize.x;
         }
 
         // Rapport entre cette longueur et celle du gabarit bovin.
-        public static float Facteur(float gabarit)
+        public static float Factor(float beastSize)
         {
-            return Mathf.Clamp(gabarit / GabaritReference, FacteurMin, FacteurMax);
+            return Mathf.Clamp(beastSize / ReferenceSize, FacteurMin, FacteurMax);
         }
     }
 }

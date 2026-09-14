@@ -26,86 +26,86 @@ namespace AnimalsAtWork.Plowing
             }
             if (!__instance.Spawned
                 || __instance.Faction != Faction.OfPlayer
-                || !BeteDeTrait.Est(__instance.def))
+                || !BeteDeTrait.Is(__instance.def))
             {
                 yield break;
             }
-            Pawn bete = __instance;
-            MapComponent_Labour composante = MapComponent_Labour.De(bete.Map);
+            Pawn beast = __instance;
+            MapComponent_Labour component = MapComponent_Labour.Of(beast.Map);
             // Labour et déneigement dépendent du harnachement ; la charrette a sa
             // propre recherche. On n'affiche un interrupteur que si sa tâche est
             // seulement possible.
             if (AAW_DefOf.AAW_Harnachement.IsFinished)
             {
-                yield return Interrupteur(bete, composante, TacheTrait.Labour,
-                    "AAW_ToggleLabour", "AAW_ToggleLabourDesc", TexturesPlowing.IconeCharrue);
-                yield return Interrupteur(bete, composante, TacheTrait.Deneigement,
-                    "AAW_ToggleDeneigement", "AAW_ToggleDeneigementDesc", TexturesPlowing.IconeGrattoir);
+                yield return Toggle(beast, component, TacheTrait.Labour,
+                    "AAW_ToggleLabour", "AAW_ToggleLabourDesc", TexturesPlowing.PlowIcon);
+                yield return Toggle(beast, component, TacheTrait.Deneigement,
+                    "AAW_ToggleDeneigement", "AAW_ToggleDeneigementDesc", TexturesPlowing.ScraperIcon);
             }
             if (AAW_DefOf.AAW_Charretterie.IsFinished)
             {
-                yield return Interrupteur(bete, composante, TacheTrait.Charrette,
-                    "AAW_ToggleCharrette", "AAW_ToggleCharretteDesc", TexturesPlowing.IconeCharrette);
+                yield return Toggle(beast, component, TacheTrait.Charrette,
+                    "AAW_ToggleCharrette", "AAW_ToggleCharretteDesc", TexturesPlowing.CartIcon);
             }
         }
 
-        private static Command_Toggle Interrupteur(Pawn bete, MapComponent_Labour composante,
-            TacheTrait tache, string cleLabel, string cleDesc, Texture2D icone)
+        private static Command_Toggle Toggle(Pawn beast, MapComponent_Labour component,
+            TacheTrait task, string labelKey, string descKey, Texture2D icon)
         {
             return new Command_Toggle
             {
-                defaultLabel = cleLabel.Translate(),
-                defaultDesc = cleDesc.Translate(),
-                icon = icone,
-                isActive = () => composante.TacheAutorisee(bete, tache),
-                toggleAction = () => Basculer(bete, composante, tache),
+                defaultLabel = labelKey.Translate(),
+                defaultDesc = descKey.Translate(),
+                icon = icon,
+                isActive = () => component.TaskAllowed(beast, task),
+                toggleAction = () => Toggle(beast, component, task),
             };
         }
 
         // Bascule la tâche, remet l'équipement en accord (la bête pose aussitôt
         // l'attelage d'une tâche coupée, et son harnais si plus rien ne
         // l'occupe), puis coupe son travail en cours pour qu'elle reconsidère.
-        private static void Basculer(Pawn bete, MapComponent_Labour composante, TacheTrait tache)
+        private static void Toggle(Pawn beast, MapComponent_Labour component, TacheTrait task)
         {
-            composante.BasculerTache(bete, tache);
-            ReconcilierEquipement(bete, composante);
-            if (bete.jobs != null && bete.CurJob != null)
+            component.ToggleTask(beast, task);
+            ReconcileEquipment(beast, component);
+            if (beast.jobs != null && beast.CurJob != null)
             {
-                bete.jobs.EndCurrentJob(JobCondition.InterruptForced);
+                beast.jobs.EndCurrentJob(JobCondition.InterruptForced);
             }
         }
 
-        private static void ReconcilierEquipement(Pawn bete, MapComponent_Labour composante)
+        private static void ReconcileEquipment(Pawn beast, MapComponent_Labour component)
         {
             // En plein service (au champ) : ne rien lâcher ici, ce tomberait au
             // milieu des cultures. Si la bête n'est plus bête de trait, le
             // WorkGiver la fera ramener puis déséquiper à l'enclos.
-            if (composante.EstEnService(bete))
+            if (component.IsOnDuty(beast))
             {
                 return;
             }
-            bool labour = composante.TacheAutorisee(bete, TacheTrait.Labour);
-            bool charrette = composante.TacheAutorisee(bete, TacheTrait.Charrette);
-            bool deneige = composante.TacheAutorisee(bete, TacheTrait.Deneigement);
-            if (!labour)
+            bool plowing = component.TaskAllowed(beast, TacheTrait.Labour);
+            bool cart = component.TaskAllowed(beast, TacheTrait.Charrette);
+            bool snowCleared = component.TaskAllowed(beast, TacheTrait.Deneigement);
+            if (!plowing)
             {
-                EquipementUtility.DeposerAttelage(bete, AAW_DefOf.AAW_Charrue);
+                EquipementUtility.DropImplement(beast, AAW_DefOf.AAW_Charrue);
             }
-            if (!charrette)
+            if (!cart)
             {
                 // La cargaison part avec la charrette, sinon elle reste bloquée
                 // dans l'inventaire de la bête sans personne pour l'en sortir.
-                EquipementUtility.DeposerCargaison(bete);
-                EquipementUtility.DeposerAttelage(bete, AAW_DefOf.AAW_Charrette);
+                EquipementUtility.DropCargo(beast);
+                EquipementUtility.DropImplement(beast, AAW_DefOf.AAW_Charrette);
             }
-            if (!deneige)
+            if (!snowCleared)
             {
-                EquipementUtility.DeposerAttelage(bete, AAW_DefOf.AAW_Grattoir);
+                EquipementUtility.DropImplement(beast, AAW_DefOf.AAW_Grattoir);
             }
             // Plus aucune tâche permise : le harnais lui-même ne sert plus à rien.
-            if (!labour && !charrette && !deneige)
+            if (!plowing && !cart && !snowCleared)
             {
-                EquipementUtility.DeposerAttelage(bete, AAW_DefOf.AAW_HarnaisDeTrait);
+                EquipementUtility.DropImplement(beast, AAW_DefOf.AAW_HarnaisDeTrait);
             }
         }
     }

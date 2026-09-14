@@ -26,32 +26,32 @@ namespace AnimalsAtWork.Plowing
     // rien ne travaille tant que le joueur n'a pas allumé une tâche.
     public static class BeteDeTrait
     {
-        public static bool Est(ThingDef def)
+        public static bool Is(ThingDef def)
         {
             if (def == null)
             {
                 return false;
             }
-            if (PlowingMod.EspeceRetiree(def))
+            if (PlowingMod.SpeciesRemoved(def))
             {
                 return false;
             }
-            return PlowingMod.EspeceAjoutee(def) || EstDorigine(def);
+            return PlowingMod.SpeciesAdded(def) || IsOriginal(def);
         }
 
         // Éligible sans que le joueur ait rien touché. Sert à la fenêtre de
         // réglages : elle ne mémorise un choix que s'il diffère de celui-ci.
-        public static bool EstDorigine(ThingDef def)
+        public static bool IsOriginal(ThingDef def)
         {
-            return ParExtension(def) || ParBat(def);
+            return ByExtension(def) || ByPackAnimal(def);
         }
 
-        public static bool ParExtension(ThingDef def)
+        public static bool ByExtension(ThingDef def)
         {
             return def != null && def.GetModExtension<ModExtension_BeteDeTrait>() != null;
         }
 
-        public static bool ParBat(ThingDef def)
+        public static bool ByPackAnimal(ThingDef def)
         {
             return def?.race != null && def.race.packAnimal;
         }
@@ -59,25 +59,25 @@ namespace AnimalsAtWork.Plowing
         // Rendement au travail, partagé par le labour et le déneigement : une
         // bête plus grosse tire plus vite. Facteur multiplicateur de la durée
         // d'une case, 1 pour le gabarit de référence.
-        private const float GabaritReference = 2.4f; // vache, cheval, muffalo, bison
+        private const float ReferenceSize = 2.4f; // vache, cheval, muffalo, bison
         private const float FacteurPlafond = 0.6f;   // atteint par l'éléphant (4.0)
-        private const float GabaritAlpaga = 1.0f;    // plus petite bête de bât vanilla
-        private const float FacteurAlpaga = 1.8f;    // ce qu'elle a toujours valu
+        private const float AlpacaSize = 1.0f;    // plus petite bête de bât vanilla
+        private const float AlpacaFactor = 1.8f;    // ce qu'elle a toujours valu
         // Un poulet (0.3) est déjà à ce maximum. Plus bas, on ne distingue plus :
         // une case interrompue en chemin est reprise de zéro, donc l'allonger
         // sans fin ne punirait plus, elle empêcherait simplement d'aboutir.
         private const float FacteurMax = 6f;
 
-        public static float FacteurDuree(Pawn bete)
+        public static float DurationFactor(Pawn beast)
         {
-            float gabarit = bete.BodySize;
-            if (gabarit >= GabaritAlpaga)
+            float beastSize = beast.BodySize;
+            if (beastSize >= AlpacaSize)
             {
-                return Mathf.Clamp(GabaritReference / gabarit, FacteurPlafond, FacteurAlpaga);
+                return Mathf.Clamp(ReferenceSize / beastSize, FacteurPlafond, AlpacaFactor);
             }
             // Sous l'alpaga, le palier disparaît : rien ne justifiait qu'un
             // écureuil laboure à sa vitesse. La courbe repart de son facteur.
-            return Mathf.Clamp(FacteurAlpaga / gabarit, FacteurAlpaga, FacteurMax);
+            return Mathf.Clamp(AlpacaFactor / beastSize, AlpacaFactor, FacteurMax);
         }
     }
 }

@@ -12,29 +12,29 @@ namespace AnimalsAtWork.Plowing
     {
         // Épaisseur en deçà de laquelle une case est considérée dégagée
         // (même seuil que le déneigement des colons vanilla).
-        public const float NeigeMin = 0.2f;
+        public const float MinSnow = 0.2f;
 
         protected override Job TryGiveJob(Pawn pawn)
         {
             // La bête ne racle qu'une fois menée sur zone par un colon (en
             // service) et déjà équipée du harnais et du grattoir.
-            if (!ServiceTrait.PreteAuTravail(pawn, TacheTrait.Deneigement, out MapComponent_Labour composante)
-                || !composante.TravailDeneigementEnAttente())
+            if (!ServiceTrait.ReadyForWork(pawn, TacheTrait.Deneigement, out MapComponent_Labour component)
+                || !component.SnowWorkPending())
             {
                 return null;
             }
 
-            IntVec3 cible = CaseEnneigeeLaPlusProche(pawn);
-            if (!cible.IsValid)
+            IntVec3 target = ClosestSnowyCell(pawn);
+            if (!target.IsValid)
             {
                 return null;
             }
-            return JobMaker.MakeJob(AAW_DefOf.AAW_Deneiger, cible);
+            return JobMaker.MakeJob(AAW_DefOf.AAW_Deneiger, target);
         }
 
-        public static bool CelluleEnneigee(IntVec3 cellule, Map map)
+        public static bool CellIsSnowy(IntVec3 cell, Map map)
         {
-            return map.snowGrid.GetDepth(cellule) >= NeigeMin;
+            return map.snowGrid.GetDepth(cell) >= MinSnow;
         }
 
         // Case enneigée la plus proche de la bête, dans les deux usages :
@@ -42,43 +42,43 @@ namespace AnimalsAtWork.Plowing
         //   meneur != null → un colon l'y mène à la corde (voir ServiceTrait).
         // Test coûteux (atteignabilité) en dernier, seulement pour une case plus
         // proche que la meilleure trouvée.
-        public static IntVec3 CaseEnneigeeLaPlusProche(Pawn bete, Pawn meneur = null)
+        public static IntVec3 ClosestSnowyCell(Pawn beast, Pawn handler = null)
         {
-            Map map = bete.Map;
-            IntVec3 meilleure = IntVec3.Invalid;
-            float meilleureDist = float.MaxValue;
-            foreach (IntVec3 cellule in map.areaManager.SnowOrSandClear.ActiveCells)
+            Map map = beast.Map;
+            IntVec3 best = IntVec3.Invalid;
+            float bestDist = float.MaxValue;
+            foreach (IntVec3 cell in map.areaManager.SnowOrSandClear.ActiveCells)
             {
-                float dist = cellule.DistanceToSquared(bete.Position);
-                if (dist >= meilleureDist || !CelluleEnneigee(cellule, map))
+                float dist = cell.DistanceToSquared(beast.Position);
+                if (dist >= bestDist || !CellIsSnowy(cell, map))
                 {
                     continue;
                 }
-                if (ServiceTrait.Accessible(bete, meneur, cellule))
+                if (ServiceTrait.Reachable(beast, handler, cell))
                 {
-                    meilleure = cellule;
-                    meilleureDist = dist;
+                    best = cell;
+                    bestDist = dist;
                 }
             }
-            return meilleure;
+            return best;
         }
 
         // Case vers laquelle le colon mène la bête : la plus proche d'elle et
         // joignable en la menant. Elle re-scanne ensuite depuis là.
-        public static bool TrouverCelluleTravail(Pawn bete, Pawn meneur, out IntVec3 result)
+        public static bool FindWorkCell(Pawn beast, Pawn handler, out IntVec3 result)
         {
-            result = CaseEnneigeeLaPlusProche(bete, meneur);
+            result = ClosestSnowyCell(beast, handler);
             return result.IsValid;
         }
 
         // Y a-t-il de la neige à racler quelque part dans la zone de
         // déneigement ? Sert aussi à décider de poser ou de prendre l'outil.
         // Toujours via le cache de MapComponent_Labour, jamais en direct.
-        public static bool TravailExiste(Map map)
+        public static bool WorkExists(Map map)
         {
-            foreach (IntVec3 cellule in map.areaManager.SnowOrSandClear.ActiveCells)
+            foreach (IntVec3 cell in map.areaManager.SnowOrSandClear.ActiveCells)
             {
-                if (CelluleEnneigee(cellule, map))
+                if (CellIsSnowy(cell, map))
                 {
                     return true;
                 }

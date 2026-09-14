@@ -13,17 +13,17 @@ namespace AnimalsAtWork.Plowing
     // (MentalStateWorker_Roaming). On la force donc à false.
     //
     // La fenêtre s'ouvre dès le harnais bouclé, et pas seulement au départ pour
-    // le champ (ServiceTrait.DispenseeDEnclos) : entre les deux, un meneur
+    // le champ (ServiceTrait.ExemptFromPen) : entre les deux, un meneur
     // interrompu peut lâcher la bête en chemin, et sans ça un autre meneur,
     // colon ou chien de berger, la ramènerait aussitôt à l'enclos pour qu'on
     // l'en ressorte juste après. Une bête harnachée qui n'a plus rien à faire
-    // dehors est ramenée par ServiceTrait.JobDeService, pas par les enclos.
+    // dehors est ramenée par ServiceTrait.ServiceJob, pas par les enclos.
     [HarmonyPatch(typeof(Pawn), nameof(Pawn.Roamer), MethodType.Getter)]
     public static class Patch_RoamerEnService
     {
         public static void Postfix(Pawn __instance, ref bool __result)
         {
-            if (__result && ServiceTrait.EstDispensee(__instance))
+            if (__result && ServiceTrait.IsExempt(__instance))
             {
                 __result = false;
             }
@@ -69,7 +69,7 @@ namespace AnimalsAtWork.Plowing
             {
                 return;
             }
-            if (ServiceTrait.EstDispensee(__instance))
+            if (ServiceTrait.IsExempt(__instance))
             {
                 __result = true;
             }
@@ -86,7 +86,7 @@ namespace AnimalsAtWork.Plowing
     {
         public static void Postfix(Pawn p, Thing food, ref bool __result)
         {
-            if (__result && food is Plant plant && plant.sown && ServiceTrait.EstEnService(p))
+            if (__result && food is Plant plant && plant.sown && ServiceTrait.IsOnDuty(p))
             {
                 __result = false;
             }

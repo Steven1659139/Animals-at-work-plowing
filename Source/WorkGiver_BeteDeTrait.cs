@@ -39,15 +39,15 @@ namespace AnimalsAtWork.Plowing
 
         public override IEnumerable<Thing> PotentialWorkThingsGlobal(Pawn pawn)
         {
-            MapComponent_Labour composante = MapComponent_Labour.De(pawn.Map);
-            foreach (Pawn bete in pawn.Map.mapPawns.SpawnedPawnsInFaction(pawn.Faction))
+            MapComponent_Labour component = MapComponent_Labour.Of(pawn.Map);
+            foreach (Pawn beast in pawn.Map.mapPawns.SpawnedPawnsInFaction(pawn.Faction))
             {
                 // Les bêtes marquées (à équiper/mener) et celles encore en
                 // service (à ramener, même si on vient de les dé-marquer).
-                if (bete.RaceProps.Animal
-                    && (composante.EstBeteDeTrait(bete) || composante.EstEnService(bete)))
+                if (beast.RaceProps.Animal
+                    && (component.IsDraftBeast(beast) || component.IsOnDuty(beast)))
                 {
-                    yield return bete;
+                    yield return beast;
                 }
             }
         }
@@ -58,67 +58,67 @@ namespace AnimalsAtWork.Plowing
         // pile) tournait donc deux fois par bête retenue. On garde le dernier
         // job calculé le temps de ce second appel. Le worker est partagé par
         // tous les colons, d'où le meneur dans la clé.
-        private Pawn dernierMeneur;
-        private Pawn derniereBete;
-        private bool derniereForce;
-        private int dernierTick = -1;
-        private Job dernierJob;
+        private Pawn lastHandler;
+        private Pawn lastBeast;
+        private bool lastForced;
+        private int lastTick = -1;
+        private Job lastJob;
 
         public override bool HasJobOnThing(Pawn pawn, Thing t, bool forced = false)
         {
-            Job job = Decider(pawn, t, forced);
-            dernierMeneur = pawn;
-            derniereBete = t as Pawn;
-            derniereForce = forced;
-            dernierTick = Find.TickManager.TicksGame;
-            dernierJob = job;
+            Job job = Decide(pawn, t, forced);
+            lastHandler = pawn;
+            lastBeast = t as Pawn;
+            lastForced = forced;
+            lastTick = Find.TickManager.TicksGame;
+            lastJob = job;
             return job != null;
         }
 
         public override Job JobOnThing(Pawn pawn, Thing t, bool forced = false)
         {
-            if (dernierJob != null
-                && dernierMeneur == pawn
-                && derniereBete == t
-                && derniereForce == forced
-                && dernierTick == Find.TickManager.TicksGame)
+            if (lastJob != null
+                && lastHandler == pawn
+                && lastBeast == t
+                && lastForced == forced
+                && lastTick == Find.TickManager.TicksGame)
             {
-                Job job = dernierJob;
-                dernierJob = null;
+                Job job = lastJob;
+                lastJob = null;
                 return job;
             }
-            return Decider(pawn, t, forced);
+            return Decide(pawn, t, forced);
         }
 
-        private static Job Decider(Pawn pawn, Thing t, bool forced)
+        private static Job Decide(Pawn pawn, Thing t, bool forced)
         {
-            if (!(t is Pawn bete) || bete == pawn)
+            if (!(t is Pawn beast) || beast == pawn)
             {
                 return null;
             }
-            if (!BeteDeTrait.Est(bete.def))
+            if (!BeteDeTrait.Is(beast.def))
             {
                 return null;
             }
-            MapComponent_Labour composante = MapComponent_Labour.De(pawn.Map);
+            MapComponent_Labour component = MapComponent_Labour.Of(pawn.Map);
             // Ni marquée, ni en service : rien à faire avec elle.
-            if (!composante.EstBeteDeTrait(bete) && !composante.EstEnService(bete))
+            if (!component.IsDraftBeast(beast) && !component.IsOnDuty(beast))
             {
                 return null;
             }
             // Déjà menée par quelqu'un, ou en crise : on n'y touche pas.
-            if (bete.roping.IsRoped || bete.InMentalState)
+            if (beast.roping.IsRoped || beast.InMentalState)
             {
                 return null;
             }
-            if (!pawn.CanReserve(bete, 1, -1, null, forced))
+            if (!pawn.CanReserve(beast, 1, -1, null, forced))
             {
                 return null;
             }
 
             // Le reste de la décision est commun aux deux meneurs (colon et chien
             // de berger) ; le colon est celui des deux qui sait aussi équiper.
-            return ServiceTrait.JobDeService(pawn, bete, composante, forced, true);
+            return ServiceTrait.ServiceJob(pawn, beast, component, forced, true);
         }
     }
 }

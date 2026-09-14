@@ -11,7 +11,7 @@ namespace AnimalsAtWork.Plowing
     // reste de l'inventaire est de la cargaison de charrette.
     public static class EquipementUtility
     {
-        public const float CapaciteCharrette = 300f; // kg de cargaison par tournée
+        public const float CartCapacity = 300f; // kg de cargaison par tournée
 
         // Le harnais sert aux trois tâches : sa vie se compte en ouvrages toutes
         // tâches confondues, d'où sa place ici plutôt que dans chaque JobDriver,
@@ -22,33 +22,33 @@ namespace AnimalsAtWork.Plowing
         // de base n'use rien à l'usage (ni arme qui frappe, ni vêtement porté),
         // et une pièce qui casse tous les deux jours n'a pas d'équivalent
         // vanilla. Elle doit rester un événement, pas une corvée d'atelier.
-        public const int UsagesParHarnais = 1200;
+        public const int UsesPerHarness = 1200;
 
         // L'objet de ce type que la bête porte sur elle, s'il y en a un.
-        public static Thing Porte(Pawn pawn, ThingDef def)
+        public static Thing Carries(Pawn pawn, ThingDef def)
         {
             if (pawn.inventory == null)
             {
                 return null;
             }
-            ThingOwner contenu = pawn.inventory.innerContainer;
-            for (int i = 0; i < contenu.Count; i++)
+            ThingOwner contents = pawn.inventory.innerContainer;
+            for (int i = 0; i < contents.Count; i++)
             {
-                if (contenu[i].def == def)
+                if (contents[i].def == def)
                 {
-                    return contenu[i];
+                    return contents[i];
                 }
             }
             return null;
         }
 
-        public static bool EstEquipement(ThingDef def)
+        public static bool IsEquipment(ThingDef def)
         {
-            return def == AAW_DefOf.AAW_HarnaisDeTrait || EstAttelage(def);
+            return def == AAW_DefOf.AAW_HarnaisDeTrait || IsImplement(def);
         }
 
         // Les attelages s'excluent mutuellement : une bête n'en tire qu'un seul.
-        public static bool EstAttelage(ThingDef def)
+        public static bool IsImplement(ThingDef def)
         {
             return def == AAW_DefOf.AAW_Charrue
                 || def == AAW_DefOf.AAW_Charrette
@@ -56,18 +56,18 @@ namespace AnimalsAtWork.Plowing
         }
 
         // L'attelage que la bête tire (charrue, charrette ou grattoir), s'il y en a un.
-        public static Thing AttelagePorte(Pawn pawn)
+        public static Thing CarriedImplement(Pawn pawn)
         {
             if (pawn.inventory == null)
             {
                 return null;
             }
-            ThingOwner contenu = pawn.inventory.innerContainer;
-            for (int i = 0; i < contenu.Count; i++)
+            ThingOwner contents = pawn.inventory.innerContainer;
+            for (int i = 0; i < contents.Count; i++)
             {
-                if (EstAttelage(contenu[i].def))
+                if (IsImplement(contents[i].def))
                 {
-                    return contenu[i];
+                    return contents[i];
                 }
             }
             return null;
@@ -75,13 +75,13 @@ namespace AnimalsAtWork.Plowing
 
         // Pose au sol l'une des pièces que la bête porte, si elle la porte ;
         // un colon la rangera au râtelier.
-        public static void DeposerAttelage(Pawn pawn, ThingDef def)
+        public static void DropImplement(Pawn pawn, ThingDef def)
         {
-            Thing porte = Porte(pawn, def);
-            if (porte != null)
+            Thing carried = Carries(pawn, def);
+            if (carried != null)
             {
                 pawn.inventory.innerContainer.TryDrop(
-                    porte, pawn.Position, pawn.Map, ThingPlaceMode.Near, out _);
+                    carried, pawn.Position, pawn.Map, ThingPlaceMode.Near, out _);
             }
         }
 
@@ -90,18 +90,18 @@ namespace AnimalsAtWork.Plowing
         // prisonnier de son inventaire pour toujours, et vanilla lui dessinait
         // des sacoches sur le dos tant qu'il restait quoi que ce soit dedans
         // (PawnRenderNodeWorker_AnimalPack teste innerContainer.Count > 0).
-        public static void DeposerCargaison(Pawn pawn)
+        public static void DropCargo(Pawn pawn)
         {
             if (pawn.inventory == null)
             {
                 return;
             }
-            ThingOwner contenu = pawn.inventory.innerContainer;
-            for (int i = contenu.Count - 1; i >= 0; i--)
+            ThingOwner contents = pawn.inventory.innerContainer;
+            for (int i = contents.Count - 1; i >= 0; i--)
             {
-                if (!EstEquipement(contenu[i].def))
+                if (!IsEquipment(contents[i].def))
                 {
-                    contenu.TryDrop(contenu[i], pawn.Position, pawn.Map, ThingPlaceMode.Near, out _);
+                    contents.TryDrop(contents[i], pawn.Position, pawn.Map, ThingPlaceMode.Near, out _);
                 }
             }
         }
@@ -110,28 +110,28 @@ namespace AnimalsAtWork.Plowing
         // sol : les colons rangeront l'équipement au râtelier et le chargement en
         // stock. Sert quand une bête cesse d'être bête de trait alors qu'elle
         // était encore équipée.
-        public static void ToutDeposer(Pawn pawn)
+        public static void DropAll(Pawn pawn)
         {
-            DeposerCargaison(pawn);
-            DeposerAttelage(pawn, AAW_DefOf.AAW_Charrue);
-            DeposerAttelage(pawn, AAW_DefOf.AAW_Charrette);
-            DeposerAttelage(pawn, AAW_DefOf.AAW_Grattoir);
-            DeposerAttelage(pawn, AAW_DefOf.AAW_HarnaisDeTrait);
+            DropCargo(pawn);
+            DropImplement(pawn, AAW_DefOf.AAW_Charrue);
+            DropImplement(pawn, AAW_DefOf.AAW_Charrette);
+            DropImplement(pawn, AAW_DefOf.AAW_Grattoir);
+            DropImplement(pawn, AAW_DefOf.AAW_HarnaisDeTrait);
         }
 
         // Première pile de cargaison à bord (hors harnais et charrette).
-        public static Thing PremierCargo(Pawn pawn)
+        public static Thing FirstCargo(Pawn pawn)
         {
             if (pawn.inventory == null)
             {
                 return null;
             }
-            ThingOwner contenu = pawn.inventory.innerContainer;
-            for (int i = 0; i < contenu.Count; i++)
+            ThingOwner contents = pawn.inventory.innerContainer;
+            for (int i = 0; i < contents.Count; i++)
             {
-                if (!EstEquipement(contenu[i].def))
+                if (!IsEquipment(contents[i].def))
                 {
-                    return contenu[i];
+                    return contents[i];
                 }
             }
             return null;
@@ -143,48 +143,48 @@ namespace AnimalsAtWork.Plowing
         // (bonus de charrette compris), soit moins que les 300 kg de cargaison
         // une fois le harnais et la charrette déduits. Sans le second plafond,
         // elle repartirait au ralenti sous le poids.
-        public static float MasseLibre(Pawn pawn)
+        public static float FreeMass(Pawn pawn)
         {
-            return Mathf.Min(CapaciteCharrette - MasseCargaison(pawn), MassUtility.FreeSpace(pawn));
+            return Mathf.Min(CartCapacity - CargoMass(pawn), MassUtility.FreeSpace(pawn));
         }
 
-        public static float MasseCargaison(Pawn pawn)
+        public static float CargoMass(Pawn pawn)
         {
             if (pawn.inventory == null)
             {
                 return 0f;
             }
             float total = 0f;
-            ThingOwner contenu = pawn.inventory.innerContainer;
-            for (int i = 0; i < contenu.Count; i++)
+            ThingOwner contents = pawn.inventory.innerContainer;
+            for (int i = 0; i < contents.Count; i++)
             {
-                if (!EstEquipement(contenu[i].def))
+                if (!IsEquipment(contents[i].def))
                 {
-                    total += contenu[i].GetStatValue(StatDefOf.Mass) * contenu[i].stackCount;
+                    total += contents[i].GetStatValue(StatDefOf.Mass) * contents[i].stackCount;
                 }
             }
             return total;
         }
 
         // L'équipement porté s'use ; détruit, un colon en apportera un neuf à
-        // la bête (ServiceTrait.PieceManquante).
+        // la bête (ServiceTrait.MissingPiece).
         // vieUtile : nombre d'usages qu'encaisse un exemplaire fait du matériau
         // ordinaire (bois pour les attelages, cuir simple pour le harnais).
-        public static void User(Pawn pawn, ThingDef def, int vieUtile, string cleMessage)
+        public static void Wear(Pawn pawn, ThingDef def, int lifespan, string messageKey)
         {
-            Thing porte = Porte(pawn, def);
-            if (porte == null)
+            Thing carried = Carries(pawn, def);
+            if (carried == null)
             {
                 return;
             }
             // Arrondi aléatoire : l'usure d'un usage tombe rarement sur un
             // nombre entier de points de vie, et une pièce n'en perd que des
             // entiers. Sur la vie de l'outil, la moyenne tombe juste.
-            porte.HitPoints -= GenMath.RoundRandom(UsureParUsage(def, vieUtile));
-            if (porte.HitPoints <= 0)
+            carried.HitPoints -= GenMath.RoundRandom(WearPerUse(def, lifespan));
+            if (carried.HitPoints <= 0)
             {
-                porte.Destroy();
-                Messages.Message(cleMessage.Translate(pawn.LabelShortCap),
+                carried.Destroy();
+                Messages.Message(messageKey.Translate(pawn.LabelShortCap),
                     pawn, MessageTypeDefOf.NegativeEvent);
             }
         }
@@ -198,20 +198,20 @@ namespace AnimalsAtWork.Plowing
         // au matériau ordinaire (le bois, le cuir simple) : la durée annoncée
         // est celle de l'exemplaire que tout le monde fabrique, et tout ce qui
         // est plus solide dure davantage.
-        private static float UsureParUsage(ThingDef def, int vieUtile)
+        private static float WearPerUse(ThingDef def, int lifespan)
         {
-            return def.BaseMaxHitPoints * FacteurOrdinaire(def) / vieUtile;
+            return def.BaseMaxHitPoints * PlainStuffFactor(def) / lifespan;
         }
 
-        private static float FacteurOrdinaire(ThingDef def)
+        private static float PlainStuffFactor(ThingDef def)
         {
-            ThingDef ordinaire = def == AAW_DefOf.AAW_HarnaisDeTrait
+            ThingDef plain = def == AAW_DefOf.AAW_HarnaisDeTrait
                 ? AAW_DefOf.Leather_Plain
                 : ThingDefOf.WoodLog;
-            List<StatModifier> facteurs = ordinaire?.stuffProps?.statFactors;
-            return facteurs == null
+            List<StatModifier> factors = plain?.stuffProps?.statFactors;
+            return factors == null
                 ? 1f
-                : facteurs.GetStatFactorFromList(StatDefOf.MaxHitPoints);
+                : factors.GetStatFactorFromList(StatDefOf.MaxHitPoints);
         }
     }
 }

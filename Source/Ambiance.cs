@@ -7,17 +7,17 @@ namespace AnimalsAtWork.Plowing
     // métier correspondant (référencés par nom : absents, rien ne casse).
     public static class Ambiance
     {
-        public static void Habiller(Toil toil, TargetIndex cible, string effet, string son)
+        public static void Dress(Toil toil, TargetIndex target, string effect, string sound)
         {
-            EffecterDef defEffet = DefDatabase<EffecterDef>.GetNamedSilentFail(effet);
-            if (defEffet != null)
+            EffecterDef effectDef = DefDatabase<EffecterDef>.GetNamedSilentFail(effect);
+            if (effectDef != null)
             {
-                toil.WithEffect(defEffet, cible);
+                toil.WithEffect(effectDef, target);
             }
-            SoundDef defSon = DefDatabase<SoundDef>.GetNamedSilentFail(son);
-            if (defSon != null)
+            SoundDef soundDef = DefDatabase<SoundDef>.GetNamedSilentFail(sound);
+            if (soundDef != null)
             {
-                toil.PlaySustainerOrSound(defSon);
+                toil.PlaySustainerOrSound(soundDef);
             }
         }
     }

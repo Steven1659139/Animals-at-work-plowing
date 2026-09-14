@@ -13,27 +13,27 @@ namespace AnimalsAtWork.Plowing
     public abstract class JobDriver_TravailDeCase : JobDriver
     {
         // Durée d'une case pour le gabarit bovin (bodySize 2.4) ; la courbe des
-        // gabarits vit dans BeteDeTrait.FacteurDuree.
-        protected abstract int DureeBaseTicks { get; }
+        // gabarits vit dans BeteDeTrait.DurationFactor.
+        protected abstract int BaseDurationTicks { get; }
 
         // Effet visuel et son vanilla du travail (voir Ambiance).
-        protected abstract string Effet { get; }
-        protected abstract string Son { get; }
+        protected abstract string Effect { get; }
+        protected abstract string Sound { get; }
 
         // L'outil que le travail use, le nombre de cases qu'en tire un
         // exemplaire du matériau ordinaire, et le message quand il casse.
-        protected abstract ThingDef Outil { get; }
-        protected abstract int CasesParOutil { get; }
-        protected abstract string CleOutilRompu { get; }
+        protected abstract ThingDef Tool { get; }
+        protected abstract int CellsPerTool { get; }
+        protected abstract string BrokenToolKey { get; }
 
-        protected IntVec3 Cellule => job.targetA.Cell;
+        protected IntVec3 Cell => job.targetA.Cell;
 
         // La case se prête-t-elle encore au travail ? Vérifié à chaque tick
         // pendant l'ouvrage.
-        protected abstract bool CelluleValide(MapComponent_Labour composante);
+        protected abstract bool CellStillValid(MapComponent_Labour component);
 
         // Ce que le travail fait de la case, une fois le temps écoulé.
-        protected abstract void Travailler(MapComponent_Labour composante);
+        protected abstract void DoWork(MapComponent_Labour component);
 
         public override bool TryMakePreToilReservations(bool errorOnFailed)
         {
@@ -44,21 +44,21 @@ namespace AnimalsAtWork.Plowing
         {
             yield return Toils_Goto.GotoCell(TargetIndex.A, PathEndMode.OnCell);
 
-            int duree = Mathf.RoundToInt(DureeBaseTicks * BeteDeTrait.FacteurDuree(pawn));
-            Toil ouvrage = Toils_General.Wait(duree);
-            ouvrage.WithProgressBarToilDelay(TargetIndex.A);
-            Ambiance.Habiller(ouvrage, TargetIndex.A, Effet, Son);
-            ouvrage.FailOn(() => !CelluleValide(MapComponent_Labour.De(pawn.Map)));
-            yield return ouvrage;
+            int duration = Mathf.RoundToInt(BaseDurationTicks * BeteDeTrait.DurationFactor(pawn));
+            Toil work = Toils_General.Wait(duration);
+            work.WithProgressBarToilDelay(TargetIndex.A);
+            Ambiance.Dress(work, TargetIndex.A, Effect, Sound);
+            work.FailOn(() => !CellStillValid(MapComponent_Labour.Of(pawn.Map)));
+            yield return work;
 
             yield return Toils_General.Do(delegate
             {
-                Travailler(MapComponent_Labour.De(pawn.Map));
+                DoWork(MapComponent_Labour.Of(pawn.Map));
                 // Chaque case use l'outil, et un peu le harnais ; brisés, un
                 // colon rééquipera la bête.
-                EquipementUtility.User(pawn, Outil, CasesParOutil, CleOutilRompu);
-                EquipementUtility.User(pawn, AAW_DefOf.AAW_HarnaisDeTrait,
-                    EquipementUtility.UsagesParHarnais, "AAW_HarnaisRompu");
+                EquipementUtility.Wear(pawn, Tool, CellsPerTool, BrokenToolKey);
+                EquipementUtility.Wear(pawn, AAW_DefOf.AAW_HarnaisDeTrait,
+                    EquipementUtility.UsesPerHarness, "AAW_HarnaisRompu");
             });
         }
     }

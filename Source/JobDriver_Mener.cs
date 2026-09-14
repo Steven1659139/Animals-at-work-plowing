@@ -22,7 +22,7 @@ namespace AnimalsAtWork.Plowing
     {
         // Marge d'arrivée : la bête traîne au bout de la corde (8 cases chez
         // vanilla), inutile d'exiger la case exacte pour la lâcher au travail.
-        private const float ProximiteArrivee = 3f;
+        private const float ArrivalProximity = 3f;
 
         private IntVec3 Destination => job.GetTarget(TargetIndex.B).Cell;
 
@@ -36,14 +36,14 @@ namespace AnimalsAtWork.Plowing
             // patch de service force justement Roamer à false (Patch_Service).
             if (job.def == AAW_DefOf.AAW_RamenerAEnclos)
             {
-                CompAnimalPenMarker marqueur =
+                CompAnimalPenMarker marker =
                     job.GetTarget(TargetIndex.C).Thing?.TryGetComp<CompAnimalPenMarker>();
-                if (marqueur == null)
+                if (marker == null)
                 {
                     return roperWaitingAtDest; // enclos disparu en route
                 }
-                PenMarkerState etat = marqueur.PenState;
-                return !etat.Enclosed || etat.ContainsConnectedRegion(ropee.GetRegion());
+                PenMarkerState state = marker.PenState;
+                return !state.Enclosed || state.ContainsConnectedRegion(ropee.GetRegion());
             }
             // Aller : trois conditions, chacune rattrapant l'angle mort des
             // autres.
@@ -56,49 +56,49 @@ namespace AnimalsAtWork.Plowing
             //     la corde (« IsRopedByPawn »), donc tant que le colon la tient,
             //     CanReach répond vrai depuis l'intérieur de l'enclos. Lâchée
             //     là, elle redevient prisonnière du portail.
-            return ropee.Position.InHorDistOf(Destination, ProximiteArrivee)
-                && MemeEnclos(ropee)
+            return ropee.Position.InHorDistOf(Destination, ArrivalProximity)
+                && SamePen(ropee)
                 && ropee.CanReach(Destination, PathEndMode.OnCell, Danger.Some);
         }
 
         // La bête et la case visée sont-elles du même côté de toute clôture ?
         // Test symétrique : il vaut pour la bête qu'on fait sortir d'un enclos
         // comme pour celle qu'on fait entrer dans un champ enclos.
-        private bool MemeEnclos(Pawn ropee)
+        private bool SamePen(Pawn ropee)
         {
             Map map = ropee.Map;
-            Region regionCible = Destination.GetRegion(map);
-            if (regionCible == null)
+            Region targetRegion = Destination.GetRegion(map);
+            if (targetRegion == null)
             {
                 return true;
             }
             // Même enclos, ou aucun des deux : l'une dedans et l'autre dehors,
             // ce n'est pas encore le moment de lâcher.
-            return ServiceTrait.EnclosContenant(map, regionCible)
-                == ServiceTrait.EnclosContenant(map, ropee.Position.GetRegion(map));
+            return ServiceTrait.PenContaining(map, targetRegion)
+                == ServiceTrait.PenContaining(map, ropee.Position.GetRegion(map));
         }
 
         // La corde vient d'être lâchée par la classe de base : on bascule l'état
         // de service, ce qui rend la bête autonome au champ ou la rend à l'enclos.
         protected override void ProcessArrivedRopee(Pawn ropee)
         {
-            MapComponent_Labour composante = MapComponent_Labour.De(pawn.Map);
+            MapComponent_Labour component = MapComponent_Labour.Of(pawn.Map);
             if (job.def == AAW_DefOf.AAW_RamenerAEnclos)
             {
-                composante.FinService(ropee);
+                component.EndService(ropee);
                 // Elle reste attelée : rien ne l'empêcherait de repartir à la
                 // seconde où du travail réapparaît. On note l'heure du retour.
-                composante.NoterRetour(ropee);
+                component.NoteReturn(ropee);
                 // Ramenée parce qu'elle n'est plus une bête de trait : lui
                 // retirer l'équipement, qui sera rangé au râtelier.
-                if (!composante.EstBeteDeTrait(ropee))
+                if (!component.IsDraftBeast(ropee))
                 {
-                    EquipementUtility.ToutDeposer(ropee);
+                    EquipementUtility.DropAll(ropee);
                 }
             }
             else
             {
-                composante.DebutService(ropee);
+                component.BeginService(ropee);
             }
             // Juste avant de nous appeler, la classe de base coupe le job
             // « suivre le meneur » de la bête, et EndCurrentJob lui en fait

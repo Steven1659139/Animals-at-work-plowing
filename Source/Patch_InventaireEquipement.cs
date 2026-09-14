@@ -12,16 +12,16 @@ namespace AnimalsAtWork.Plowing
     {
         public static void Postfix(Pawn_InventoryTracker __instance, ref ThingCount __result)
         {
-            if (__result.Thing == null || !EquipementUtility.EstEquipement(__result.Thing.def))
+            if (__result.Thing == null || !EquipementUtility.IsEquipment(__result.Thing.def))
             {
                 return;
             }
-            ThingOwner contenu = __instance.innerContainer;
-            for (int i = 0; i < contenu.Count; i++)
+            ThingOwner contents = __instance.innerContainer;
+            for (int i = 0; i < contents.Count; i++)
             {
-                if (!EquipementUtility.EstEquipement(contenu[i].def))
+                if (!EquipementUtility.IsEquipment(contents[i].def))
                 {
-                    __result = new ThingCount(contenu[i], contenu[i].stackCount);
+                    __result = new ThingCount(contents[i], contents[i].stackCount);
                     return;
                 }
             }

@@ -17,27 +17,27 @@ namespace AnimalsAtWork.Plowing
         // masse qui doit décider quand la charrette est pleine. Un plafond bas
         // faisait rentrer les charrettes à moitié vides dès que la cargaison ne
         // s'empilait pas : huit gravats de 20 kg ne font que 160 kg.
-        private const int PilesMax = 25;
-        private const int PilesMin = 2;
+        private const int MaxStacks = 25;
+        private const int MinStacks = 2;
         // Rayon d'enchaînement : la première pile prise, les suivantes se
         // cherchent autour d'ELLE, pas autour de la bête. La tournée reste un
         // paquet compact au lieu d'une étoile aux quatre coins de la carte.
-        // Limite volontairement souple : si la tournée n'atteint pas PilesMin
+        // Limite volontairement souple : si la tournée n'atteint pas MinStacks
         // dans ce rayon, on la refait sans limite plutôt que de ne rien faire.
-        private const float RayonEnchainement = 25f;
+        private const float ChainingRadius = 25f;
 
         protected override Job TryGiveJob(Pawn pawn)
         {
             // La bête ne charrie qu'une fois menée dehors par un colon (en
             // service).
-            if (!ServiceTrait.EnServiceALaColonie(pawn, out MapComponent_Labour composante))
+            if (!ServiceTrait.OnDutyAtColony(pawn, out MapComponent_Labour component))
             {
                 return null;
             }
 
             // Cargaison à bord : on livre avant tout (même si la charrette
             // vient de rendre l'âme en chemin, les piles doivent descendre).
-            if (EquipementUtility.PremierCargo(pawn) != null)
+            if (EquipementUtility.FirstCargo(pawn) != null)
             {
                 return JobMaker.MakeJob(AAW_DefOf.AAW_ViderCharrette);
             }
@@ -46,7 +46,7 @@ namespace AnimalsAtWork.Plowing
             // tournée tout de suite. Les piles déversées sont à ses pieds, donc
             // les premières trouvées : elle les reprendrait à l'instant pour
             // les redéverser, en usant sa charrette à chaque passage.
-            if (composante.EnRepitDeDeversement(pawn))
+            if (component.InDumpGrace(pawn))
             {
                 return null;
             }
@@ -54,19 +54,19 @@ namespace AnimalsAtWork.Plowing
             // Charretage coupé (interrupteur), recherche non faite, ou bête pas
             // (encore) équipée : pas de nouvelle tournée. La cargaison à bord est
             // déjà partie (bloc ci-dessus).
-            if (!ServiceTrait.Equipee(pawn, TacheTrait.Charrette, composante))
+            if (!ServiceTrait.Equipped(pawn, TacheTrait.Charrette, component))
             {
                 return null;
             }
 
-            return TourneeDeChargement(pawn, pawn.Map);
+            return LoadingRound(pawn, pawn.Map);
         }
 
         // Cette pile a-t-elle un stock où aller ? C'est le test qui manquait au
         // meneur : une pile posée là où rien ne l'accepte n'est pas du travail
         // en attente, aucune tournée ne la prendra jamais.
         //
-        // Sert au seul envoi (ServiceTrait.ComptePiles), décidé depuis
+        // Sert au seul envoi (ServiceTrait.CountStacks), décidé depuis
         // l'enclos. Sans porteur, délibérément : dans l'enclos la bête est
         // bloquée par les clôtures, rien du dehors ne lui est accessible, et
         // lui poser la question reviendrait à ne jamais la sortir. Le
@@ -74,22 +74,22 @@ namespace AnimalsAtWork.Plowing
         // Destination, qui tient compte d'elle.
         //
         // Coûteux : à n'appeler qu'après les filtres bon marché.
-        public static bool ADestination(Map carte, Thing pile)
+        public static bool HasDestination(Map map, Thing stack)
         {
-            return StoreUtility.TryFindBestBetterStoreCellFor(pile, null, carte,
-                StoreUtility.CurrentStoragePriorityOf(pile), Faction.OfPlayer,
+            return StoreUtility.TryFindBestBetterStoreCellFor(stack, null, map,
+                StoreUtility.CurrentStoragePriorityOf(stack), Faction.OfPlayer,
                 out _, needAccurateResult: false);
         }
 
         // La case où CETTE bête ira réellement déposer cette pile, si elle
         // existe. C'est la question du charretier, et elle doit se poser à
-        // l'identique au chargement (PeutEtreCharriee) et à la livraison
-        // (JobDriver_ViderCharrette.ProchaineLivraison) : c'est leur désaccord
+        // l'identique au chargement (CanBeCarted) et à la livraison
+        // (JobDriver_ViderCharrette.NextDelivery) : c'est leur désaccord
         // qui faisait tourner la bête en boucle. Elle chargeait au nom d'un
         // stock que la livraison ne lui laissait pas joindre, reposait la pile
         // là où elle venait de la prendre, et recommençait.
         //
-        // La bête en porteur, à la différence d'ADestination : la zone
+        // La bête en porteur, à la différence de HasDestination : la zone
         // autorisée de l'animal et les réservations comptent ici, puisqu'on
         // parle du trajet qu'elle fera.
         //
@@ -97,156 +97,156 @@ namespace AnimalsAtWork.Plowing
         // n'en fait aucun, avec porteur comme sans : le porteur ne change que
         // l'interdiction, la réservation et l'origine des distances. OnCell
         // comme le JobDriver, qui fait déposer la bête depuis la case même.
-        public static bool Destination(Pawn bete, Map carte, Thing pile,
-            StoragePriority prioriteActuelle, out IntVec3 cellule)
+        public static bool Destination(Pawn beast, Map map, Thing stack,
+            StoragePriority prioriteActuelle, out IntVec3 cell)
         {
-            return StoreUtility.TryFindBestBetterStoreCellFor(pile, bete, carte,
-                    prioriteActuelle, bete.Faction, out cellule,
+            return StoreUtility.TryFindBestBetterStoreCellFor(stack, beast, map,
+                    prioriteActuelle, beast.Faction, out cell,
                     needAccurateResult: false)
-                && bete.CanReach(cellule, PathEndMode.OnCell, Danger.Some);
+                && beast.CanReach(cell, PathEndMode.OnCell, Danger.Some);
         }
 
         // Une pile que cette bête peut emporter de là où elle est : la question
         // du meneur, plus l'accessibilité et la capacité de ramassage. Ne vaut
         // qu'une fois la bête au champ : depuis l'enclos, elle répond toujours non.
-        public static bool PeutEtreCharriee(Pawn bete, Map carte, Thing pile)
+        public static bool CanBeCarted(Pawn beast, Map map, Thing stack)
         {
-            return bete.CanReserve(pile)
-                && HaulAIUtility.PawnCanAutomaticallyHaulFast(bete, pile, false)
-                && Destination(bete, carte, pile,
-                    StoreUtility.CurrentStoragePriorityOf(pile), out _);
+            return beast.CanReserve(stack)
+                && HaulAIUtility.PawnCanAutomaticallyHaulFast(beast, stack, false)
+                && Destination(beast, map, stack,
+                    StoreUtility.CurrentStoragePriorityOf(stack), out _);
         }
 
-        private static Job TourneeDeChargement(Pawn pawn, Map map)
+        private static Job LoadingRound(Pawn pawn, Map map)
         {
             // D'abord la tournée resserrée, qui est celle qu'on veut. Si elle ne
             // réunit pas assez de piles (carte clairsemée, fin de ramassage), on
             // reprend sans rayon : mieux vaut une tournée étalée que rien.
-            Job job = Tournee(pawn, map, RayonEnchainement * RayonEnchainement);
-            return job ?? Tournee(pawn, map, float.MaxValue);
+            Job job = Round(pawn, map, ChainingRadius * ChainingRadius);
+            return job ?? Round(pawn, map, float.MaxValue);
         }
 
         // Itinéraire glouton : la pile la plus proche de la bête, puis à chaque
         // fois la plus proche de la PRÉCÉDENTE. L'ordre de la file est donc
         // l'ordre de passage, ce qui évite les allers-retours d'un bout à l'autre
         // de la carte que donnait un simple tri par distance au point de départ.
-        private static Job Tournee(Pawn pawn, Map map, float rayonCarreMax)
+        private static Job Round(Pawn pawn, Map map, float maxRadiusSquared)
         {
             // Filtres bon marché d'abord ; les tests coûteux (atteignabilité,
             // recherche de rangement) ne tournent que pour une pile plus proche
             // que la meilleure du tour, pas pour les centaines de piles qu'un
             // raid laisse au sol. Une pile recalée est écartée définitivement.
-            List<Thing> candidats = new List<Thing>();
+            List<Thing> candidates = new List<Thing>();
             foreach (Thing t in map.listerHaulables.ThingsPotentiallyNeedingHauling())
             {
                 // L'équipement de trait n'est jamais de la cargaison : à bord,
                 // il passerait pour l'équipement porté, le déchargeur
                 // l'ignorerait (jamais livré) et il serait confisqué aux
                 // autres bêtes. Les colons s'en chargent, râtelier compris.
-                if (EquipementUtility.EstEquipement(t.def))
+                if (EquipementUtility.IsEquipment(t.def))
                 {
                     continue;
                 }
                 if (!t.IsForbidden(pawn))
                 {
-                    candidats.Add(t);
+                    candidates.Add(t);
                 }
             }
-            if (candidats.Count < PilesMin)
+            if (candidates.Count < MinStacks)
             {
                 return null;
             }
 
-            float masseLibre = EquipementUtility.MasseLibre(pawn);
-            List<LocalTargetInfo> cibles = new List<LocalTargetInfo>();
-            List<int> quantites = new List<int>();
-            IntVec3 depuis = pawn.Position;
+            float freeMass = EquipementUtility.FreeMass(pawn);
+            List<LocalTargetInfo> targets = new List<LocalTargetInfo>();
+            List<int> counts = new List<int>();
+            IntVec3 from = pawn.Position;
             // La première pile se cherche sans rayon : c'est la plus proche de la
             // bête, le rayon ne borne que l'enchaînement à partir d'elle.
-            float rayonCarre = float.MaxValue;
+            float radiusSquared = float.MaxValue;
 
-            while (cibles.Count < PilesMax && candidats.Count > 0)
+            while (targets.Count < MaxStacks && candidates.Count > 0)
             {
                 // Une passe = la pile la plus proche du point courant, testée à
                 // fond ; recalée, elle sort de la liste et on passe à la
                 // suivante. Seule la tête d'un tri servirait : un balayage du
                 // minimum suffit, sans allocation, et une pile recalée n'est
                 // jamais retestée.
-                Thing retenue = null;
-                int quantite = 0;
-                float masseRetenue = 0f;
-                while (candidats.Count > 0)
+                Thing kept = null;
+                int count = 0;
+                float keptMass = 0f;
+                while (candidates.Count > 0)
                 {
-                    int proche = PlusProche(candidats, depuis);
-                    Thing t = candidats[proche];
+                    int near = Closest(candidates, from);
+                    Thing t = candidates[near];
                     // La plus proche hors rayon : la passe est finie.
-                    if (t.Position.DistanceToSquared(depuis) > rayonCarre)
+                    if (t.Position.DistanceToSquared(from) > radiusSquared)
                     {
                         break;
                     }
-                    Retirer(candidats, proche);
-                    if (!PeutEtreCharriee(pawn, map, t))
+                    Remove(candidates, near);
+                    if (!CanBeCarted(pawn, map, t))
                     {
                         continue;
                     }
-                    float unitaire = t.GetStatValue(StatDefOf.Mass);
-                    int n = unitaire <= 0f
+                    float perUnit = t.GetStatValue(StatDefOf.Mass);
+                    int n = perUnit <= 0f
                         ? t.stackCount
-                        : Mathf.Min(t.stackCount, Mathf.FloorToInt(masseLibre / unitaire));
+                        : Mathf.Min(t.stackCount, Mathf.FloorToInt(freeMass / perUnit));
                     if (n <= 0)
                     {
                         // La place libre ne fera que diminuer : cette pile ne
                         // rentrera plus dans cette tournée-ci.
                         continue;
                     }
-                    retenue = t;
-                    quantite = n;
-                    masseRetenue = n * unitaire;
+                    kept = t;
+                    count = n;
+                    keptMass = n * perUnit;
                     break;
                 }
-                if (retenue == null)
+                if (kept == null)
                 {
                     break;
                 }
-                cibles.Add(retenue);
-                quantites.Add(quantite);
-                masseLibre -= masseRetenue;
-                depuis = retenue.Position;
-                rayonCarre = rayonCarreMax;
+                targets.Add(kept);
+                counts.Add(count);
+                freeMass -= keptMass;
+                from = kept.Position;
+                radiusSquared = maxRadiusSquared;
             }
-            if (cibles.Count < PilesMin)
+            if (targets.Count < MinStacks)
             {
                 return null;
             }
             Job job = JobMaker.MakeJob(AAW_DefOf.AAW_ChargerCharrette);
-            job.targetQueueA = cibles;
-            job.countQueue = quantites;
+            job.targetQueueA = targets;
+            job.countQueue = counts;
             return job;
         }
 
-        private static int PlusProche(List<Thing> piles, IntVec3 depuis)
+        private static int Closest(List<Thing> stacks, IntVec3 from)
         {
-            int meilleur = 0;
-            float meilleureDist = float.MaxValue;
-            for (int i = 0; i < piles.Count; i++)
+            int best = 0;
+            float bestDist = float.MaxValue;
+            for (int i = 0; i < stacks.Count; i++)
             {
-                float dist = piles[i].Position.DistanceToSquared(depuis);
-                if (dist < meilleureDist)
+                float dist = stacks[i].Position.DistanceToSquared(from);
+                if (dist < bestDist)
                 {
-                    meilleureDist = dist;
-                    meilleur = i;
+                    bestDist = dist;
+                    best = i;
                 }
             }
-            return meilleur;
+            return best;
         }
 
         // L'ordre de la liste n'a pas d'importance : le dernier prend la place
         // du retiré, ce qui évite de décaler tout ce qui suit.
-        private static void Retirer(List<Thing> piles, int index)
+        private static void Remove(List<Thing> stacks, int index)
         {
-            int dernier = piles.Count - 1;
-            piles[index] = piles[dernier];
-            piles.RemoveAt(dernier);
+            int last = stacks.Count - 1;
+            stacks[index] = stacks[last];
+            stacks.RemoveAt(last);
         }
     }
 }

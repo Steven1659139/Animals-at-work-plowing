@@ -18,10 +18,10 @@ namespace AnimalsAtWork.Plowing
 
         protected override IEnumerable<Toil> MakeNewToils()
         {
-            Toil chercher = ToilMaker.MakeToil("ChercherRangement");
-            chercher.initAction = delegate
+            Toil search = ToilMaker.MakeToil("ChercherRangement");
+            search.initAction = delegate
             {
-                if (EquipementUtility.PremierCargo(pawn) == null)
+                if (EquipementUtility.FirstCargo(pawn) == null)
                 {
                     EndJobWith(JobCondition.Succeeded);
                     return;
@@ -29,25 +29,25 @@ namespace AnimalsAtWork.Plowing
                 // On livre la pile dont le rangement est le plus proche d'ici,
                 // et pas la première venue dans l'inventaire : sinon chaque
                 // dépôt peut renvoyer la bête à l'autre bout de la colonie.
-                if (ProchaineLivraison(out Thing cargo, out IntVec3 cellule))
+                if (NextDelivery(out Thing cargo, out IntVec3 cell))
                 {
                     job.SetTarget(TargetIndex.B, cargo);
-                    job.SetTarget(TargetIndex.A, cellule);
+                    job.SetTarget(TargetIndex.A, cell);
                 }
                 else
                 {
                     // Plus une seule pile ne trouve de rangement : on déverse
                     // sur place plutôt que de promener la cargaison sans fin.
-                    ToutDeverser();
+                    DumpAll();
                     // Et on pose un répit : sans lui, la tournée suivante
                     // reprendrait ce qu'on vient de poser, et la bête
                     // tournerait en boucle jusqu'à détruire sa charrette.
-                    MapComponent_Labour.De(Map)?.NoterDeversement(pawn);
+                    MapComponent_Labour.Of(Map)?.NoteDump(pawn);
                     EndJobWith(JobCondition.Succeeded);
                 }
             };
-            chercher.defaultCompleteMode = ToilCompleteMode.Instant;
-            yield return chercher;
+            search.defaultCompleteMode = ToilCompleteMode.Instant;
+            yield return search;
 
             yield return Toils_Goto.GotoCell(TargetIndex.A, PathEndMode.OnCell);
 
@@ -55,7 +55,7 @@ namespace AnimalsAtWork.Plowing
             // autre chose) : on repart chercher un rangement plutôt que de
             // poser la pile à côté, hors stock, où la tournée suivante la
             // reprendrait.
-            yield return Toils_Jump.JumpIf(chercher, () => job.targetB.Thing != null
+            yield return Toils_Jump.JumpIf(search, () => job.targetB.Thing != null
                 && !job.targetA.Cell.IsValidStorageFor(Map, job.targetB.Thing));
 
             yield return Toils_General.Do(delegate
@@ -70,21 +70,21 @@ namespace AnimalsAtWork.Plowing
                 }
             });
 
-            yield return Toils_Jump.Jump(chercher);
+            yield return Toils_Jump.Jump(search);
         }
 
         // La pile à bord dont le meilleur rangement est le plus proche de la
         // position actuelle de la bête. Faux s'il n'y a plus rien à ranger.
-        private bool ProchaineLivraison(out Thing cargo, out IntVec3 cellule)
+        private bool NextDelivery(out Thing cargo, out IntVec3 cell)
         {
             cargo = null;
-            cellule = IntVec3.Invalid;
-            float meilleure = float.MaxValue;
-            ThingOwner contenu = pawn.inventory.innerContainer;
-            for (int i = 0; i < contenu.Count; i++)
+            cell = IntVec3.Invalid;
+            float best = float.MaxValue;
+            ThingOwner contents = pawn.inventory.innerContainer;
+            for (int i = 0; i < contents.Count; i++)
             {
-                Thing t = contenu[i];
-                if (EquipementUtility.EstEquipement(t.def))
+                Thing t = contents[i];
+                if (EquipementUtility.IsEquipment(t.def))
                 {
                     continue;
                 }
@@ -98,19 +98,19 @@ namespace AnimalsAtWork.Plowing
                     continue;
                 }
                 float dist = c.DistanceToSquared(pawn.Position);
-                if (dist < meilleure)
+                if (dist < best)
                 {
-                    meilleure = dist;
+                    best = dist;
                     cargo = t;
-                    cellule = c;
+                    cell = c;
                 }
             }
             return cargo != null;
         }
 
-        private void ToutDeverser()
+        private void DumpAll()
         {
-            ThingOwner contenu = pawn.inventory.innerContainer;
+            ThingOwner contents = pawn.inventory.innerContainer;
             // Un déversement veut dire qu'une pile est entrée dans la charrette
             // alors qu'elle ne pouvait plus en sortir : le ramassage et la
             // livraison n'ont pas répondu pareil sur la même pile. On trace
@@ -118,17 +118,17 @@ namespace AnimalsAtWork.Plowing
             // qui suit borne la trace à une par heure et par bête.
             if (Prefs.DevMode)
             {
-                Thing premier = EquipementUtility.PremierCargo(pawn);
+                Thing first = EquipementUtility.FirstCargo(pawn);
                 Log.Warning($"[AAW] {pawn.LabelShort} déverse en {pawn.Position} : "
-                    + $"aucun rangement pour {contenu.Count} pile(s), "
-                    + $"dont {premier?.LabelCap ?? "-"}.");
+                    + $"aucun rangement pour {contents.Count} pile(s), "
+                    + $"dont {first?.LabelCap ?? "-"}.");
             }
-            for (int i = contenu.Count - 1; i >= 0; i--)
+            for (int i = contents.Count - 1; i >= 0; i--)
             {
-                Thing t = contenu[i];
-                if (!EquipementUtility.EstEquipement(t.def))
+                Thing t = contents[i];
+                if (!EquipementUtility.IsEquipment(t.def))
                 {
-                    contenu.TryDrop(t, pawn.Position, Map, ThingPlaceMode.Near, out _);
+                    contents.TryDrop(t, pawn.Position, Map, ThingPlaceMode.Near, out _);
                 }
             }
         }

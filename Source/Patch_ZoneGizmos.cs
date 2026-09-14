@@ -21,14 +21,14 @@ namespace AnimalsAtWork.Plowing
             {
                 yield break;
             }
-            MapComponent_Labour composante = MapComponent_Labour.De(__instance.Map);
+            MapComponent_Labour component = MapComponent_Labour.Of(__instance.Map);
             yield return new Command_Toggle
             {
                 defaultLabel = "AAW_AutoriserLabour".Translate(),
                 defaultDesc = "AAW_AutoriserLabourDesc".Translate(),
-                icon = TexturesPlowing.IconeLabour,
-                isActive = () => composante.LabourAutorise(__instance),
-                toggleAction = () => composante.BasculerLabour(__instance),
+                icon = TexturesPlowing.PlowingIcon,
+                isActive = () => component.PlowingAllowed(__instance),
+                toggleAction = () => component.TogglePlowing(__instance),
             };
         }
     }

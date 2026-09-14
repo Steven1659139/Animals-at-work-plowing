@@ -11,8 +11,8 @@ namespace AnimalsAtWork.Plowing
     // suit dans un job séparé (JobDriver_ViderCharrette).
     public class JobDriver_ChargerCharrette : JobDriver
     {
-        private const int DureeChargementTicks = 60;
-        private const int PilesParCharrette = 400; // usure : ~400 piles hissées
+        private const int LoadingDurationTicks = 60;
+        private const int StacksPerCart = 400; // usure : ~400 piles hissées
 
         public override bool TryMakePreToilReservations(bool errorOnFailed)
         {
@@ -22,54 +22,54 @@ namespace AnimalsAtWork.Plowing
 
         protected override IEnumerable<Toil> MakeNewToils()
         {
-            Toil extraire = Toils_JobTransforms.ExtractNextTargetFromQueue(TargetIndex.A);
-            yield return extraire;
+            Toil extract = Toils_JobTransforms.ExtractNextTargetFromQueue(TargetIndex.A);
+            yield return extract;
 
             yield return Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.ClosestTouch)
                 .FailOnDespawnedNullOrForbidden(TargetIndex.A);
 
-            Toil hisser = Toils_General.Wait(DureeChargementTicks);
-            hisser.FailOnDespawnedNullOrForbidden(TargetIndex.A);
-            hisser.WithProgressBarToilDelay(TargetIndex.A);
-            yield return hisser;
+            Toil hoist = Toils_General.Wait(LoadingDurationTicks);
+            hoist.FailOnDespawnedNullOrForbidden(TargetIndex.A);
+            hoist.WithProgressBarToilDelay(TargetIndex.A);
+            yield return hoist;
 
             yield return Toils_General.Do(delegate
             {
-                Thing pile = job.targetA.Thing;
+                Thing stack = job.targetA.Thing;
                 // Une pile détruite pendant le hissage (feu, explosion) n'a plus
                 // rien à donner : sans ce test, SplitOff en tirerait une copie.
-                if (pile == null || !pile.Spawned)
+                if (stack == null || !stack.Spawned)
                 {
                     return;
                 }
                 // Re-borne au cas où la situation a changé depuis la file :
                 // pile entamée par un colon, cargaison déjà à bord, etc.
-                int n = Mathf.Min(pile.stackCount, job.count > 0 ? job.count : pile.stackCount);
-                float unitaire = pile.GetStatValue(StatDefOf.Mass);
-                if (unitaire > 0f)
+                int n = Mathf.Min(stack.stackCount, job.count > 0 ? job.count : stack.stackCount);
+                float perUnit = stack.GetStatValue(StatDefOf.Mass);
+                if (perUnit > 0f)
                 {
-                    n = Mathf.Min(n, Mathf.FloorToInt(EquipementUtility.MasseLibre(pawn) / unitaire));
+                    n = Mathf.Min(n, Mathf.FloorToInt(EquipementUtility.FreeMass(pawn) / perUnit));
                 }
                 if (n <= 0)
                 {
                     return;
                 }
-                Thing pris = pile.SplitOff(n);
-                if (pris.Spawned)
+                Thing taken = stack.SplitOff(n);
+                if (taken.Spawned)
                 {
-                    pris.DeSpawn();
+                    taken.DeSpawn();
                 }
-                if (!pawn.inventory.innerContainer.TryAdd(pris, false))
+                if (!pawn.inventory.innerContainer.TryAdd(taken, false))
                 {
-                    GenPlace.TryPlaceThing(pris, pawn.Position, pawn.Map, ThingPlaceMode.Near);
+                    GenPlace.TryPlaceThing(taken, pawn.Position, pawn.Map, ThingPlaceMode.Near);
                     return;
                 }
                 // Chaque pile hissée use la charrette, et un peu le harnais.
-                EquipementUtility.User(pawn, AAW_DefOf.AAW_Charrette, PilesParCharrette, "AAW_CharretteRompue");
-                EquipementUtility.User(pawn, AAW_DefOf.AAW_HarnaisDeTrait, EquipementUtility.UsagesParHarnais, "AAW_HarnaisRompu");
+                EquipementUtility.Wear(pawn, AAW_DefOf.AAW_Charrette, StacksPerCart, "AAW_CharretteRompue");
+                EquipementUtility.Wear(pawn, AAW_DefOf.AAW_HarnaisDeTrait, EquipementUtility.UsesPerHarness, "AAW_HarnaisRompu");
             });
 
-            yield return Toils_Jump.JumpIf(extraire, () => !job.targetQueueA.NullOrEmpty());
+            yield return Toils_Jump.JumpIf(extract, () => !job.targetQueueA.NullOrEmpty());
         }
     }
 }
