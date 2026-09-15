@@ -333,15 +333,17 @@ namespace AnimalsAtWork.Plowing
         //
         // Ce test décide de sortir la bête de l'enclos, et il se pose donc
         // depuis l'enclos : il ne retient que ce qui ne dépend pas de l'endroit
-        // où elle est. Surtout pas son accessibilité : une bête est bloquée par
-        // les clôtures (Pawn.FenceBlocked), donc rien du dehors ne lui est
-        // accessible tant qu'un meneur ne l'a pas fait franchir le portail, et
-        // lui poser la question du charretier reviendrait à ne jamais la sortir.
+        // où elle est. Pas son propre accès aux piles, donc : dans l'enclos,
+        // rien du dehors ne lui est accessible tant qu'un meneur ne l'a pas
+        // fait franchir le portail. Mais le rangement, lui, se juge de la pile
+        // au stock (JobGiver_Charretier.HasDestination), avec les règles de
+        // l'espèce et sans la position de la bête.
         //
-        // Ce qu'il retient du charretier, c'est le point décisif : la pile
-        // a-t-elle un stock où aller. Sans ce test, des gravats que rien
-        // n'accepte compteraient comme du travail en attente, et la bête ferait
-        // la navette entre l'enclos et un champ sans tournée.
+        // C'est le point décisif : la pile a-t-elle un stock où aller, que
+        // cette bête pourra joindre. Sans ce test, des gravats que rien
+        // n'accepte, ou dont le seul meilleur stock est derrière une porte,
+        // compteraient comme du travail en attente, et la bête ferait la
+        // navette entre l'enclos et un champ sans tournée.
         public static bool CartWorkPending(Map map, Pawn beast)
         {
             return CountStacks(map, beast) >= MinCartStacks;
@@ -364,7 +366,7 @@ namespace AnimalsAtWork.Plowing
                     continue;
                 }
                 // Coûteux : en dernier, et on s'arrête au seuil.
-                if (JobGiver_Charretier.HasDestination(map, t) && ++n >= MinCartStacks)
+                if (JobGiver_Charretier.HasDestination(beast, map, t) && ++n >= MinCartStacks)
                 {
                     break;
                 }
