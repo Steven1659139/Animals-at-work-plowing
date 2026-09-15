@@ -49,7 +49,10 @@ namespace AnimalsAtWork.Plowing
             search.defaultCompleteMode = ToilCompleteMode.Instant;
             yield return search;
 
-            yield return Toils_Goto.GotoCell(TargetIndex.A, PathEndMode.OnCell);
+            // ClosestTouch, comme les porteurs vanilla : déposer ne demande pas
+            // d'être sur la case, et un rangement qu'on ne peut que toucher
+            // (meuble infranchissable) reste un rangement.
+            yield return Toils_Goto.GotoCell(TargetIndex.A, PathEndMode.ClosestTouch);
 
             // La case a pu se remplir pendant le trajet (un colon y a rangé
             // autre chose) : on repart chercher un rangement plutôt que de

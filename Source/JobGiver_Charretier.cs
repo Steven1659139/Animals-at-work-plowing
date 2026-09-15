@@ -89,21 +89,23 @@ namespace AnimalsAtWork.Plowing
         // stock que la livraison ne lui laissait pas joindre, reposait la pile
         // là où elle venait de la prendre, et recommençait.
         //
-        // La bête en porteur, à la différence de HasDestination : la zone
-        // autorisée de l'animal et les réservations comptent ici, puisqu'on
-        // parle du trajet qu'elle fera.
+        // La bête en porteur, à la différence de HasDestination : vanilla
+        // écarte alors les cases interdites à la bête (zone autorisée), celles
+        // qu'elle ne peut pas réserver, et surtout celles qu'elle ne peut pas
+        // atteindre : IsGoodStoreCell finit par un CanReach depuis la pile,
+        // clôtures et portes selon la bête. C'est ce dernier test qui tranche
+        // le cas d'un stock derrière une porte qu'un animal n'ouvre pas.
         //
-        // Et le CanReach par-dessus, parce que TryFindBestBetterStoreCellFor
-        // n'en fait aucun, avec porteur comme sans : le porteur ne change que
-        // l'interdiction, la réservation et l'origine des distances. OnCell
-        // comme le JobDriver, qui fait déposer la bête depuis la case même.
+        // Le CanReach par-dessus n'ajoute que le danger : vanilla teste en
+        // Deadly, on refuse une case en feu ou mortellement froide. Même mode
+        // d'approche (ClosestTouch) que vanilla et que le JobDriver.
         public static bool Destination(Pawn beast, Map map, Thing stack,
-            StoragePriority prioriteActuelle, out IntVec3 cell)
+            StoragePriority currentPriority, out IntVec3 cell)
         {
             return StoreUtility.TryFindBestBetterStoreCellFor(stack, beast, map,
-                    prioriteActuelle, beast.Faction, out cell,
+                    currentPriority, beast.Faction, out cell,
                     needAccurateResult: false)
-                && beast.CanReach(cell, PathEndMode.OnCell, Danger.Some);
+                && beast.CanReach(cell, PathEndMode.ClosestTouch, Danger.Some);
         }
 
         // Une pile que cette bête peut emporter de là où elle est : la question
