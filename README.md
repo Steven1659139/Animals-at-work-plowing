@@ -19,14 +19,18 @@ Requires [Harmony](https://github.com/pardeike/HarmonyRimWorld). Standalone modu
 
 ## For animal mod authors
 
-If your species is a pack animal (`<packAnimal>true</packAnimal>`), it is already eligible and you have nothing to do. Otherwise players can tick it in the mod settings, or you can mark it yourself so they never have to. Drop this in a file under your mod's `Patches/` folder; `MayRequire` makes the whole operation vanish when Plowing is not installed, so it is safe to ship unconditionally:
+If your species is a pack animal (`<packAnimal>true</packAnimal>`), it is already eligible and you have nothing to do. Otherwise players can tick it in the mod settings, or you can mark it yourself so they never have to. Drop this in a file under your mod's `Patches/` folder. `MayRequire` makes the operation vanish when Plowing is not installed, so it is safe to ship unconditionally; RimWorld only reads it on a list item, hence the sequence:
 
 ```xml
-<Operation Class="PatchOperationAddModExtension" MayRequire="royaltea.animalsatwork.plowing">
-  <xpath>Defs/ThingDef[defName="YourAnimal"]</xpath>
-  <value>
-    <li Class="AnimalsAtWork.Plowing.ModExtension_BeteDeTrait" />
-  </value>
+<Operation Class="PatchOperationSequence">
+  <operations>
+    <li Class="PatchOperationAddModExtension" MayRequire="royaltea.animalsatwork.plowing">
+      <xpath>Defs/ThingDef[defName="YourAnimal"]</xpath>
+      <value>
+        <li Class="AnimalsAtWork.Plowing.ModExtension_BeteDeTrait" />
+      </value>
+    </li>
+  </operations>
 </Operation>
 ```
 
