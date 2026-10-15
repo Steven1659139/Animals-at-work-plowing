@@ -1,6 +1,7 @@
 using RimWorld;
 using Verse;
 using Verse.AI;
+using Verse.AI.Group;
 
 namespace AnimalsAtWork.Plowing
 {
@@ -29,7 +30,17 @@ namespace AnimalsAtWork.Plowing
                 return false;
             }
             component = MapComponent_Labour.Of(map);
-            return component.IsOnDuty(beast);
+            return component.IsOnDuty(beast) && !TakenByLord(beast);
+        }
+
+        // Un lord (caravane en formation, rituel) a pris la bête : c'est lui
+        // qui la dirige, et tout notre régime s'efface le temps qu'il la
+        // tient. Elle ne travaille pas, aucun meneur ne s'en occupe, et elle
+        // perd ses dispenses (ExemptFromPen). L'état de service, lui, reste
+        // posé : caravane annulée ou revenue, elle reprend où elle en était.
+        private static bool TakenByLord(Pawn beast)
+        {
+            return beast.GetLord() != null;
         }
 
         // La bête peut-elle faire cette tâche, là, tout de suite : tâche activée
@@ -68,6 +79,13 @@ namespace AnimalsAtWork.Plowing
         public static Job ServiceJob(Pawn handler, Pawn beast, MapComponent_Labour component,
             bool forced, bool canEquip)
         {
+            // Prise par un lord : les colons de la caravane viennent la
+            // chercher eux-mêmes, on ne la leur dispute pas.
+            if (TakenByLord(beast))
+            {
+                return null;
+            }
+
             bool onDuty = component.IsOnDuty(beast);
 
             // Garde-fou famine : le service ne se coupe normalement que faute de
@@ -174,6 +192,17 @@ namespace AnimalsAtWork.Plowing
             // d'enclos convenable il n'a parfois rien à proposer, et la bête
             // restait alors sous notre régime, à jeun, jusqu'à la mort.
             if (Starving(beast))
+            {
+                return false;
+            }
+            // Le lord aussi : une caravane en formation ne prend à la corde
+            // que les bêtes que vanilla tient pour du bétail
+            // (AnimalPenUtility.NeedsToBeManagedByRope, donc Roamer), et
+            // compte sur les autres pour gagner la sortie toutes seules. Une
+            // bête dispensée n'était donc menée par personne, et les clôtures
+            // qu'on lui rend (Patch_ClotureEnService) la gardaient dans son
+            // enclos : la caravane attendait indéfiniment qu'elle arrive.
+            if (TakenByLord(beast))
             {
                 return false;
             }
