@@ -1,28 +1,36 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- RimWorld 1.6 tourne sur Mono et charge des assemblies .NET Framework 4.7.2.
-       La DLL est produite directement dans ../Assemblies, le dossier que le jeu scanne. -->
+  <!-- Une cible par version du jeu. RimWorld 1.6 tourne sur Mono et charge des
+       assemblies .NET Framework 4.7.2 ; RimWorld 1.7 (moteur Waylith) tourne sur
+       .NET 10. Chaque DLL est produite directement dans le dossier de version que
+       LoadFolders.xml fait charger au jeu : 1.6/Assemblies ou 1.7/Assemblies. -->
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFrameworks>net472;net10.0</TargetFrameworks>
     <AssemblyName>AnimalsAtWork.Plowing</AssemblyName>
     <RootNamespace>AnimalsAtWork.Plowing</RootNamespace>
     <LangVersion>latest</LangVersion>
-    <OutputPath>../Assemblies/</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <GenerateDependencyFile>false</GenerateDependencyFile>
     <DebugType>none</DebugType>
     <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
     <!-- Sans ça, le SDK écrit le SHA du commit courant dans
-         AssemblyInformationalVersion : la DLL versionnée dans Assemblies/
+         AssemblyInformationalVersion : la DLL versionnée dans le dépôt
          changerait à chaque commit, à sources identiques, et aucun rebuild
          ne pourrait reproduire celle qui est publiée. -->
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
 
-  <!-- Versions figées, pas de plages flottantes : la DLL est versionnée dans
-       Assemblies/, et une référence qui glisse toute seule ferait diverger le
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net472'">
+    <OutputPath>../1.6/Assemblies/</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <OutputPath>../1.7/Assemblies/</OutputPath>
+  </PropertyGroup>
+
+  <!-- Versions figées, pas de plages flottantes : les DLL sont versionnées dans
+       le dépôt, et une référence qui glisse toute seule ferait diverger le
        binaire publié de celui qui a été testé, sans rien changer aux sources. -->
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
     <!-- Assemblies de référence du jeu (compile-only, rien n'est copié) -->
     <PackageReference Include="Krafs.Rimworld.Ref" Version="1.6.4871" />
     <!-- Fournie à l'exécution par le mod Harmony (brrainz.harmony), déclaré en
@@ -30,6 +38,12 @@
     <PackageReference Include="Lib.Harmony" Version="2.4.2" ExcludeAssets="runtime" />
     <!-- Assemblies de référence .NET Framework, nécessaires pour compiler net472 sur macOS -->
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <!-- Référence 1.7 encore en alpha (branche unstable) : à remonter au fil des
+         builds publiés par Ludeon, puis à figer sur la version stable. -->
+    <PackageReference Include="Krafs.Rimworld.Ref" Version="1.7.4979-alpha" />
+    <PackageReference Include="Lib.Harmony" Version="3.0.0-rc.3" ExcludeAssets="runtime" />
   </ItemGroup>
 
 </Project>

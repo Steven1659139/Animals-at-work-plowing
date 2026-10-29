@@ -1,4 +1,4 @@
-# Compilation .NET (la DLL finale vit dans Assemblies/, elle, est versionnée)
+# Compilation .NET (les DLL finales vivent dans 1.6/Assemblies/ et 1.7/Assemblies/, elles, sont versionnées)
 Source/bin/
 Source/obj/
 

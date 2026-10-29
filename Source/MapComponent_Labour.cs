@@ -15,6 +15,13 @@ namespace AnimalsAtWork.Plowing
         private List<IntVec3> cells = new List<IntVec3>();
         private List<int> expirations = new List<int>();
         private List<TerrainDef> originalTerrains = new List<TerrainDef>();
+        // Les terrains d'origine se sauvegardent par nom, en texte, et non en
+        // référence de def : le terrain d'un mod retiré depuis ne se résout
+        // plus, et le jeu en faisait une erreur rouge au chargement alors qu'il
+        // suffit de rendre la case au sol ordinaire. Même clé et même forme XML
+        // qu'une liste de defs (<li>nomDuDef</li>, null écrit « null ») : les
+        // sauvegardes existantes se lisent telles quelles.
+        private List<string> terrainNamesScribe;
         // Zones de culture où le joueur a coupé le labour (gizmo sur la zone).
         // Par ID : les zones supprimées laissent un ID orphelin, sans effet.
         private HashSet<int> noPlowZones = new HashSet<int>();
@@ -334,12 +341,84 @@ namespace AnimalsAtWork.Plowing
             return beast != null && !beast.Destroyed;
         }
 
+        // Un nom inconnu (mod de terrain retiré) donne null : la case reviendra
+        // au sol ordinaire à son échéance. On le signale une fois, en
+        // avertissement, pour que le joueur sache d'où vient le changement.
+        private static List<TerrainDef> ResolveTerrains(List<string> names)
+        {
+            var terrains = new List<TerrainDef>(names != null ? names.Count : 0);
+            if (names == null)
+            {
+                return terrains;
+            }
+            HashSet<string> unknown = null;
+            foreach (string name in names)
+            {
+                TerrainDef terrain = null;
+                if (!string.IsNullOrEmpty(name) && name != "null")
+                {
+                    terrain = DefDatabase<TerrainDef>.GetNamedSilentFail(name);
+                    if (terrain == null)
+                    {
+                        if (unknown == null) unknown = new HashSet<string>();
+                        unknown.Add(name);
+                    }
+                }
+                terrains.Add(terrain);
+            }
+            if (unknown != null)
+            {
+                Log.Warning("[Animals at Work — Plowing] Terrain d'origine inconnu sous des cases labourées, "
+                    + "elles reviendront au sol ordinaire : " + string.Join(", ", unknown));
+            }
+            return terrains;
+        }
+
+        // Les trois registres vont de pair, une entrée par case. Une sauvegarde
+        // retouchée (nettoyeur de sauvegarde, entrée retirée à la main) peut les
+        // désaccorder, et le tick plantait alors sur l'index. On les réaligne sur
+        // les cases : échéance manquante, la case revient au prochain contrôle ;
+        // terrain manquant, elle revient au sol ordinaire.
+        private void ReconcileRecords()
+        {
+            int count = cells.Count;
+            if (expirations.Count == count && originalTerrains.Count == count)
+            {
+                return;
+            }
+            Log.Warning("[Animals at Work — Plowing] Registre des cases labourées désaccordé ("
+                + cells.Count + " cases, " + expirations.Count + " échéances, "
+                + originalTerrains.Count + " terrains), réaligné sur les cases.");
+            Resize(expirations, count, Find.TickManager.TicksGame);
+            Resize(originalTerrains, count, null);
+        }
+
+        private static void Resize<T>(List<T> list, int count, T filler)
+        {
+            if (list.Count > count)
+            {
+                list.RemoveRange(count, list.Count - count);
+            }
+            while (list.Count < count)
+            {
+                list.Add(filler);
+            }
+        }
+
         public override void ExposeData()
         {
             base.ExposeData();
+            if (Scribe.mode == LoadSaveMode.Saving)
+            {
+                terrainNamesScribe = new List<string>(originalTerrains.Count);
+                foreach (TerrainDef terrain in originalTerrains)
+                {
+                    terrainNamesScribe.Add(terrain != null ? terrain.defName : "null");
+                }
+            }
             Scribe_Collections.Look(ref cells, "AAW_casesLabourees", LookMode.Value);
             Scribe_Collections.Look(ref expirations, "AAW_expirations", LookMode.Value);
-            Scribe_Collections.Look(ref originalTerrains, "AAW_terrainsOrigine", LookMode.Def);
+            Scribe_Collections.Look(ref terrainNamesScribe, "AAW_terrainsOrigine", LookMode.Value);
             Scribe_Collections.Look(ref noPlowZones, "AAW_zonesSansLabour", LookMode.Value);
             // Le dictionnaire des tâches activées se sauvegarde en deux listes
             // parallèles (comme cases/expirations) : rebâtir à la main écarte
@@ -375,7 +454,9 @@ namespace AnimalsAtWork.Plowing
             {
                 if (cells == null) cells = new List<IntVec3>();
                 if (expirations == null) expirations = new List<int>();
-                if (originalTerrains == null) originalTerrains = new List<TerrainDef>();
+                originalTerrains = ResolveTerrains(terrainNamesScribe);
+                terrainNamesScribe = null;
+                ReconcileRecords();
                 if (noPlowZones == null) noPlowZones = new HashSet<int>();
                 enabledTasks = new Dictionary<Pawn, TacheTrait>();
                 if (beastsScribe != null && tasksScribe != null)

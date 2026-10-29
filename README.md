@@ -1,6 +1,6 @@
 # Animals at Work — Plowing
 
-First module of the **Animals at Work** series for RimWorld 1.6: animals doing useful work.
+First module of the **Animals at Work** series for RimWorld 1.6 and 1.7: animals doing useful work.
 
 ## Features
 
@@ -62,7 +62,7 @@ Clone or download this repository into your RimWorld `Mods` folder, then enable 
 cd Source && dotnet build
 ```
 
-Targets `net472` against [Krafs.Rimworld.Ref](https://www.nuget.org/packages/Krafs.Rimworld.Ref); the DLL lands in `Assemblies/`.
+Targets `net472` (RimWorld 1.6) and `net10.0` (RimWorld 1.7) against [Krafs.Rimworld.Ref](https://www.nuget.org/packages/Krafs.Rimworld.Ref); the DLLs land in `1.6/Assemblies/` and `1.7/Assemblies/`.
 
 ---
 
